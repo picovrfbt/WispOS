@@ -372,6 +372,15 @@ Each part keeps the license of the project it grew from:
 | The bundled Linux kernel | GPL-2.0 (see [`wisp-firmware`](wisp-firmware#license)) |
 | [`wisp-companion`](wisp-companion) and everything else | [Apache-2.0](LICENSE) |
 
+Wisp OS is built on [yocto-superbird](https://github.com/JoeyEamigh/yocto-superbird) (MIT). What Wisp downloads or bundles beside its own code:
+
+| Part | From |
+| --- | --- |
+| Drive Mode music | Made for Wisp with Suno (Pro plan, commercial use) |
+| Wisp's spoken voice | The Piper "Alan" voice ([model card](https://huggingface.co/rhasspy/piper-voices/tree/main/en/en_GB/alan/medium), trained on Mycroft's [Mimic 3](https://github.com/MycroftAI/mimic3-voices) data) with [espeak-ng](https://github.com/espeak-ng/espeak-ng) (GPL-3.0) |
+| Speech recognition | [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) (Apache-2.0) with its Zipformer Small English model |
+| Wake word | [openWakeWord](https://github.com/dscripka/openWakeWord) (Apache-2.0) |
+
 Wisp is an independent project. It isn't affiliated with, endorsed by or sponsored by Spotify, Google, Apple or SoundCloud. Spotify, Car Thing, Android, Google Maps, YouTube Music, iPhone and SoundCloud are trademarks of their owners and are named only to say what Wisp works with.
 
 ---
