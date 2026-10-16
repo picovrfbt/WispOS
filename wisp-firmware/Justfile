@@ -1,0 +1,42 @@
+# Build the go-librespot armv6 binary and the UI dist zip,
+# then drop both into this firmware tree where build.sh expects them.
+prepare:
+    @echo ">> building ${IMAGE_VERSION:-$(grep -m1 'IMAGE_VERSION:=' build.sh | sed 's/.*:="\(.*\)"}"*/\1/')}   (set in build.sh, or override with IMAGE_VERSION=vX.Y.Z just docker-run)"
+    cd ../wisp-daemon && ./crosscompile.sh armv6
+    cp ../wisp-daemon/go-librespot-armv6 ./go-librespot-armv6
+    cp ../wisp-daemon/config.yml ./go-librespot-config.yml
+    -[ -f ../wisp-daemon/.report-key ] && sed -i "s|mira-reports.mira-thing.workers.dev/\"|mira-reports.mira-thing.workers.dev/?k=$(cat ../wisp-daemon/.report-key)\"|" ./go-librespot-config.yml
+    rm -f ./iap2-sidecar-armv7
+    -cd ../wisp-daemon && ./iap2/build.sh || echo ">> iap2 sidecar skipped (no rust toolchain?) - building WITHOUT iPhone volume"
+    -cp ../wisp-daemon/iap2/iap2-sidecar-armv7 ./iap2-sidecar-armv7 2>/dev/null || true
+    # primary lyrics provider secrets (Musixmatch). gitignored; empty if absent
+    # (public builders without it just fall back to lrclib)
+    cp ../wisp-daemon/.env ./lp.env 2>/dev/null || : > ./lp.env
+    cd ../wisp-ui && (command -v bun >/dev/null && bun install || npm install)
+    cd ../wisp-ui && (command -v bun >/dev/null && bun run build || npm run build)
+    rm -f ./ui.zip
+    cd ../wisp-ui/dist && zip -r9 {{justfile_directory()}}/ui.zip .
+    # Voice bundle
+    mkdir -p ./voice-artifacts
+    [ "${BUNDLE_VOICE:-1}" = "0" ] || bash ./scripts/get-voice-artifacts.sh ./voice-artifacts
+
+run: prepare
+    sudo ./build.sh
+
+lint:
+    pre-commit run --all-files
+
+docker-qemu:
+    docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
+docker-build: prepare
+    docker build -t firmware-builder .
+
+docker-run: docker-build
+    # IMAGE_VERSION must be forwarded or the override silently does nothing and
+    # the image ships the internal v1.4.x counter instead of the release name
+    docker run --rm --privileged -e BUNDLE_VOICE -e IMAGE_VERSION -e WAKE_MODEL -e WAKE_THRESHOLD -e WAKE_THRESHOLD_PLAYING -v ./output:/work/output firmware-builder:latest
+
+# the over-the-air update bundle for a release (after `just prepare`)
+app-bundle TAG:
+    sh scripts/make-app-bundle.sh {{TAG}}

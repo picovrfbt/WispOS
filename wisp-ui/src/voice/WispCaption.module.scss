@@ -1,0 +1,84 @@
+// Wisp talking: words at the bottom over the Wisp bar. The dark fade sits under
+// the bar and the words above it, so the colour glows behind the text
+.root {
+  pointer-events: none;
+}
+
+.fade {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 250px;
+  z-index: $z-pairing - 5;
+  background: linear-gradient(
+    to bottom,
+    rgba(6, 6, 8, 0),
+    rgba(6, 6, 8, 0.9) 38%,
+    rgba(6, 6, 8, 0.96)
+  );
+  opacity: 0;
+  transition: opacity $dur-slow $ease-standard;
+}
+
+.on .fade {
+  opacity: 1;
+}
+
+.words {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 30px;
+  z-index: $z-pairing + 1;
+  padding: 0 40px;
+  text-align: center;
+  color: #fff;
+  animation: wispSays $dur-slow $ease-emphasized both;
+}
+
+@keyframes wispSays {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.who {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 15px;
+  font-weight: $fw-bold;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.line {
+  display: block;
+  font-size: 30px;
+  font-weight: $fw-semibold;
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.6);
+  @include truncate;
+
+  b {
+    font-weight: $fw-bold;
+  }
+}
+
+// "Thinking..." is Wisp mulling it over, not saying something
+.quiet .line {
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .words {
+    animation: none;
+  }
+}

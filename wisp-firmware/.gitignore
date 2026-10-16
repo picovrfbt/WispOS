@@ -1,0 +1,16 @@
+/cache/
+/output/
+
+# build artifacts
+/go-librespot-armv6
+/go-librespot-config.yml
+/ui.zip
+/voice-artifacts/
+
+
+# asset generators
+/internal/
+
+# primary lyrics provider secrets
+/lp.env
+/iap2-sidecar-armv7

@@ -1,0 +1,22 @@
+device_name: "Wisp"
+device_type: "car_thing"
+log_level: "debug"
+
+observer_mode: true
+
+credentials:
+  type: interactive
+
+server:
+  enabled: true
+  address: "0.0.0.0"
+  port: 3678
+  allow_origin: "*"
+
+# where Settings -> Report a problem sends a report; empty keeps reports on
+# the Car Thing (Wisp has no report server)
+report_url: ""
+
+voice:
+  enabled: false
+  wake: false

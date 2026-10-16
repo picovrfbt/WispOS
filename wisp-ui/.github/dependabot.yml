@@ -1,0 +1,18 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      vitest:
+        patterns: ['vitest', '@vitest/*']
+      npm-minor-patch:
+        patterns: ['*']
+        exclude-patterns: ['vitest', '@vitest/*']
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

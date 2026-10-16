@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- the Car Thing UI's palette (wisp-ui/src/styles/_variables.scss) -->
+<resources>
+    <color name="wisp_bg">#121212</color>
+    <color name="wisp_green">#1ED760</color>
+</resources>

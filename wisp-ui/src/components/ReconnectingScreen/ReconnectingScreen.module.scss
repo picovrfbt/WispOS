@@ -1,0 +1,61 @@
+.center {
+  flex: 1;
+  @include column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-top: -$s-6;
+}
+
+.title {
+  margin-top: $s-5;
+  font-size: $fs-3xl;
+  max-width: 640px;
+  @include truncate(1);
+}
+
+.body {
+  margin: $s-3 0 0;
+  max-width: 580px;
+  font-size: $fs-lg;
+  line-height: 1.45;
+  color: $text-secondary;
+}
+
+.actions {
+  margin-top: $s-6;
+  display: flex;
+  @include flex-gap-x($s-3);
+}
+
+.restartBtn,
+.altBtn {
+  height: 48px;
+  padding: 0 $s-6;
+  border-radius: $r-pill;
+  font-size: $fs-lg;
+  font-weight: $fw-semibold;
+  cursor: pointer;
+  transition: transform $dur-fast $ease-standard;
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.restartBtn {
+  border: none;
+  color: #0b0b0c;
+  background: rgb(var(--accent-rgb, 30, 215, 96));
+}
+
+.altBtn {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: $text-primary;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+// the knob's choice when there's more than one button
+.focused {
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 30, 215, 96), 0.7);
+}

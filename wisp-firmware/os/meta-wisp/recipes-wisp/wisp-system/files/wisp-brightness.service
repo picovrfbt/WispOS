@@ -1,0 +1,11 @@
+[Unit]
+Description=Wisp: screen brightness (auto or the chosen level)
+After=superbird-weston.service
+
+[Service]
+ExecStart=/usr/libexec/wisp/wisp-brightness
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target

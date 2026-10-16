@@ -1,0 +1,4 @@
+#!/bin/sh
+mkdir -p /var/log/clock_sync
+printf 's16384\nn2\n' > /var/log/clock_sync/config
+exec svlogd -tt /var/log/clock_sync

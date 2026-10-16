@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Car Thing Simulator</title>
+    <!-- dev only: vite serves this next to index.html, the production build only bundles index.html -->
+  </head>
+  <body>
+    <div class="sim">
+      <div class="presets" aria-label="Preset buttons">
+        <button class="hw preset" data-code="Digit1" title="Preset 1 (key 1, hold to save)">
+          1
+        </button>
+        <button class="hw preset" data-code="Digit2" title="Preset 2 (key 2, hold to save)">
+          2
+        </button>
+        <button class="hw preset" data-code="Digit3" title="Preset 3 (key 3, hold to save)">
+          3
+        </button>
+        <button class="hw preset" data-code="Digit4" title="Preset 4 (key 4, hold to save)">
+          4
+        </button>
+        <button
+          class="hw power"
+          data-code="KeyM"
+          title="Top button (M): menu, double-press for clock"
+        >
+          ⏻
+        </button>
+      </div>
+      <div class="body">
+        <iframe id="screen" src="./" title="Car Thing screen" width="800" height="480"></iframe>
+        <div class="controls">
+          <button
+            id="knob"
+            class="knob"
+            title="Dial: scroll or ←/→ to turn, click or Enter to press"
+          >
+            <span class="knob-mark"></span>
+          </button>
+          <div class="nudge">
+            <button class="hw small" id="ccw" title="Turn counter-clockwise (←)">⟲</button>
+            <button class="hw small" id="cw" title="Turn clockwise (→)">⟳</button>
+          </div>
+          <button id="back" class="hw back" title="Back (Esc / Backspace)">back</button>
+        </div>
+      </div>
+      <form id="voice" class="voice" autocomplete="off">
+        <span class="voice-mic" aria-hidden="true">🎙</span>
+        <input
+          id="voice-text"
+          type="text"
+          placeholder="Say to Wisp… e.g. play my liked songs"
+          aria-label="Voice command"
+        />
+        <button class="hw voice-go" type="submit">Okay Wisp</button>
+        <span id="voice-result" class="voice-result"></span>
+      </form>
+      <div class="bar">
+        <span id="status" class="status">connecting to daemon…</span>
+        <span class="keys">
+          dial <kbd>scroll</kbd>/<kbd>←</kbd><kbd>→</kbd> · press <kbd>Enter</kbd> · back
+          <kbd>Esc</kbd> · presets <kbd>1</kbd>–<kbd>4</kbd> · top <kbd>M</kbd>
+        </span>
+      </div>
+    </div>
+    <script type="module" src="/src/dev/device/simulator.ts"></script>
+  </body>
+</html>

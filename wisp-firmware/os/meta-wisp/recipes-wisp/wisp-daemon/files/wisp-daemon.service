@@ -1,0 +1,16 @@
+[Unit]
+Description=Wisp daemon (Spotify Connect, the phone link, voice, updates)
+Wants=bluetooth.service superbird-bluetooth.service
+After=bluetooth.service superbird-bluetooth.service network.target systemd-tmpfiles-setup.service
+# the crash-loop guard in wisp-daemon-start does the counting, not systemd
+StartLimitIntervalSec=0
+
+[Service]
+ExecStart=/usr/libexec/wisp/wisp-daemon-start
+Restart=always
+RestartSec=2
+# Chromium's raster threads must not starve the audio-facing daemon
+Nice=-5
+
+[Install]
+WantedBy=multi-user.target

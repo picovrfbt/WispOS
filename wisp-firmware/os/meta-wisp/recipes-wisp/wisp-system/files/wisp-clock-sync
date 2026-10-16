@@ -1,0 +1,76 @@
+#!/bin/sh
+# wisp-clock-sync: the original firmware's clock_sync, unchanged but for runit. It sets the
+# clock from an HTTPS Date header (or NTP) as soon as any network is up, then
+# touches /run/clock_synced, which the daemon waits on before trusting wall time
+SAVED=/var/local/lib/clock_saved
+SYNCED_FLAG=/run/clock_synced
+
+HTTPS_URLS="https://www.gstatic.com/generate_204 https://apresolve.spotify.com https://connectivitycheck.gstatic.com/generate_204 https://detectportal.firefox.com/success.txt https://1.1.1.1"
+HTTP_URLS="http://www.gstatic.com/generate_204 http://detectportal.firefox.com/success.txt http://1.1.1.1"
+# hostnames first, Google's documented stable NTP IPs as a fallback
+NTP_SERVERS="time.google.com time.cloudflare.com pool.ntp.org 216.239.35.0 216.239.35.4"
+
+persist_clock() {
+  date +%s > "${SAVED}.tmp" 2>/dev/null && mv -f "${SAVED}.tmp" "$SAVED" 2>/dev/null
+}
+
+# Reformat an RFC 1123 HTTP Date into the "YYYY-MM-DD HH:MM:SS" form that busybox `date -s` reliably accepts
+http_date_to_settable() {
+  echo "$1" | awk '
+    { split("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec", names, " ")
+      for (i = 1; i <= 12; i++) mon[names[i]] = sprintf("%02d", i)
+      # Fields: 1=Day,  2=DD  3=Mon  4=YYYY  5=HH:MM:SS  6=GMT
+      if (NF >= 5 && mon[$3] != "") printf "%s-%s-%s %s\n", $4, mon[$3], $2, $5 }'
+}
+
+set_from_urls() {
+  for url in $1; do
+    hdr=$(curl -skI -4 -m 5 "$url" 2>/dev/null | tr -d '\r' \
+      | awk -F': ' 'tolower($1)=="date"{ sub(/^[^:]*: /,""); print; exit }')
+    [ -z "$hdr" ] && continue
+
+    settable=$(http_date_to_settable "$hdr")
+    [ -z "$settable" ] && { echo "clock_sync: unparseable Date '${hdr}' from ${url}"; continue; }
+
+    # -u: the HTTP Date is UTC, so set the clock in UTC.
+    if date -u -s "$settable" > /dev/null 2>&1; then
+      echo "clock_sync: clock set from ${url} -> $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+      persist_clock
+      return 0
+    fi
+    echo "clock_sync: 'date -s ${settable}' failed (from ${url})"
+  done
+  return 1
+}
+
+set_from_ntp() {
+  for srv in $NTP_SERVERS; do
+    if sh -c "timeout 12 ntpd -n -q -p $srv" > /dev/null 2>&1; then
+      echo "clock_sync: clock set via NTP from ${srv} -> $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+      persist_clock
+      return 0
+    fi
+  done
+  return 1
+}
+
+sync_clock() {
+  set_from_urls "$HTTPS_URLS" && return 0
+  set_from_ntp && return 0
+  set_from_urls "$HTTP_URLS"
+}
+
+# Initial fast sync: retry every 3s until a network path is up
+until sync_clock; do
+  sleep 3
+done
+
+# Signal that wall time is now trustworthy
+# here if we later want the daemon to hold playback position until clock is accurate
+touch "$SYNCED_FLAG" 2>/dev/null
+
+# re-sync hourly to correct drift
+while true; do
+  sleep 3600
+  sync_clock > /dev/null 2>&1 || echo "clock_sync: periodic re-sync failed (network down?), will retry next hour"
+done

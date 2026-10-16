@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Wisp on light, with a green spark -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@drawable/ic_icon_bg_light" />
+    <foreground android:drawable="@drawable/ic_icon_fg_light" />
+    <monochrome android:drawable="@drawable/ic_icon_mono" />
+</adaptive-icon>

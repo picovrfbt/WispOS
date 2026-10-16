@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=800, height=480, initial-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#121212" />
+    <title>Wisp</title>
+    <style>
+      @font-face {
+        font-family: 'Inter';
+        src: url('/fonts/Inter-Medium.woff2') format('woff2');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #121212;
+      }
+      /* the same picture as the boot logo and the starting-up screen, until the app draws */
+      #boot-splash {
+        position: fixed;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* the starting-up screen's three glows, where it draws them */
+        background:
+          radial-gradient(circle 310px at 50px 10px, rgba(30, 215, 96, 0.3), rgba(30, 215, 96, 0)),
+          radial-gradient(circle 300px at 800px 420px, rgba(43, 108, 255, 0.2), rgba(43, 108, 255, 0)),
+          radial-gradient(circle 280px at 420px 530px, rgba(20, 184, 166, 0.16), rgba(20, 184, 166, 0)),
+          #0b0b0c;
+      }
+      #boot-splash .mark {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        margin-top: -36px;
+      }
+      #boot-splash .wordmark {
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 84px;
+        letter-spacing: -0.04em;
+        line-height: 1;
+        color: #ffffff;
+      }
+      #boot-splash svg {
+        margin-top: 18px;
+        overflow: visible;
+      }
+      #root:not(:empty) + #boot-splash {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <div id="boot-splash">
+      <div class="mark">
+        <div class="wordmark">wisp</div>
+        <svg width="160" height="23" viewBox="0 0 150 22" aria-hidden="true">
+          <path d="M3 15 C30 3 52 21 76 11 C100 1 122 2 140 7" fill="none" stroke="rgba(30,215,96,0.22)" stroke-width="2.6" stroke-linecap="round" />
+          <circle cx="143" cy="7" r="3.4" fill="rgb(30,215,96)" opacity="0.5" />
+        </svg>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- the WebSocket server the Car Thing connects to over the Bluetooth tether -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- the map on the Car Thing follows the phone; "all the time" because the
+         app is in the background while Google Maps is on screen -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <!-- the "open Spotify" prompt when the Car Thing can't reach it -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- stays running in the background so the Car Thing link survives phones
+         that clear background apps; "connected device" is what it is -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+    <!-- Drive Mode plays its music in the background while the Car Thing shows it -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <!-- reading whether Android restricts this app's background data (the setup step) -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <!-- keeps the phone awake while the Car Thing is linked, so the tether
+         keeps working with the screen off (TetherAwake) -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- calls on the Car Thing: who's calling, Answer and Decline, and a timer -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.ANSWER_PHONE_CALLS" />
+    <!-- the Car Thing's visualizer: Android's Visualizer reads the phone's own sound
+         output, never the microphone, but sits behind this permission -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- and Android only lets an app measure the whole output (audio session 0)
+         with this one too; granted at install, no prompt -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <!-- lets it open Spotify from the background when the Car Thing asks -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- installing its own updates from the Wisp releases; Android asks first -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <!-- Android 11+ hides other apps unless declared: Spotify gets woken -->
+    <queries>
+        <package android:name="com.spotify.music" />
+        <!-- names the app playing on the phone (YouTube, podcasts...) on the Car Thing -->
+        <intent>
+            <action android:name="android.media.browse.MediaBrowserService" />
+        </intent>
+        <package android:name="com.google.android.youtube" />
+        <package android:name="com.google.android.apps.youtube.music" />
+    </queries>
+
+    <application
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher_dark"
+        android:roundIcon="@mipmap/ic_launcher_dark"
+        android:label="@string/app_name"
+        android:theme="@style/Theme.Wisp">
+
+        <receiver
+            android:name=".InstallResultReceiver"
+            android:exported="false" />
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true" />
+
+        <!-- the launcher icon, chosen in the app (AppIcons.kt): one of these is enabled at a time -->
+        <activity-alias
+            android:name=".IconDark"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_dark"
+            android:roundIcon="@mipmap/ic_launcher_dark"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".IconGreen"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_green"
+            android:roundIcon="@mipmap/ic_launcher_green"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".IconLight"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_light"
+            android:roundIcon="@mipmap/ic_launcher_light"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".IconClassic"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- Share a place from Google Maps: the route there on the Car Thing's map -->
+        <activity
+            android:name=".ShareToWispActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:label="Route on Car Thing"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".CarSettingsActivity"
+            android:exported="false"
+            android:label="Car Thing settings" />
+
+        <activity
+            android:name=".YtMusicSignInActivity"
+            android:exported="false"
+            android:label="Sign in to YouTube Music" />
+
+        <activity
+            android:name=".SoundCloudSignInActivity"
+            android:exported="false"
+            android:label="Sign in to SoundCloud" />
+
+        <service
+            android:name=".LinkService"
+            android:exported="false"
+            android:foregroundServiceType="connectedDevice" />
+
+        <service
+            android:name=".DriveService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+
+        <!-- reads Google Maps' turn-by-turn notification; the system keeps it
+             bound, which also keeps the server below alive -->
+        <service
+            android:name=".NavListenerService"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+    </application>
+</manifest>

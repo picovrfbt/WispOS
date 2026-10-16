@@ -1,0 +1,66 @@
+// a banner-sized card across the top, over whatever is on screen
+.card {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  z-index: 8000; // under night mode's shade, over everything else
+  display: flex;
+  align-items: center;
+  width: 560px;
+  max-width: calc(100vw - 32px);
+  padding: 16px 22px;
+  border-radius: 22px;
+  background: #1a73e8;
+  color: #fff;
+  text-align: left;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  transform: translateX(-50%);
+  animation: arriveIn $dur-slow $ease-emphasized both;
+}
+
+@keyframes arriveIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -24px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.flag {
+  @include flex-center;
+  flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+// fixed width: Chrome 69 sizes a button's inner box to its longest line
+.text {
+  display: block;
+  width: 440px;
+  max-width: calc(100vw - 150px);
+  margin-left: 18px;
+}
+
+.title,
+.sub {
+  display: block;
+  @include truncate;
+}
+
+.title {
+  font-size: 30px;
+  font-weight: $fw-bold;
+  letter-spacing: -0.01em;
+}
+
+.sub {
+  margin-top: 2px;
+  font-size: 18px;
+  font-weight: $fw-semibold;
+  opacity: 0.85;
+}

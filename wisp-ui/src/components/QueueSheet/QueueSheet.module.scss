@@ -1,0 +1,133 @@
+// the same sheet as the player's menu, holding a list instead of rows
+.root {
+  @include absolute-fill;
+  z-index: $z-menu;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transition: opacity $dur-base $ease-standard;
+}
+
+.sheet {
+  position: absolute;
+  left: 50%;
+  bottom: $s-4;
+  transform: translate(-50%, calc(100% + 16px));
+  width: 560px;
+  max-width: calc(100% - #{$s-7});
+  max-height: calc(100% - #{$s-6});
+  padding: $s-4 $s-4 $s-3;
+  background: $menu-bg;
+  border: 1px solid $menu-border;
+  border-radius: $r-2xl;
+  @include column;
+  opacity: 0;
+  transition:
+    transform $dur-base $ease-emphasized,
+    opacity $dur-base $ease-standard;
+}
+
+.open {
+  pointer-events: auto;
+  opacity: 1;
+
+  .sheet {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+.handle {
+  flex-shrink: 0;
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: $text-disabled;
+  margin: 0 auto $s-2;
+}
+
+.title {
+  flex-shrink: 0;
+  padding: 0 $s-2 $s-2;
+  font-size: 22px;
+  font-weight: $fw-bold;
+  color: $text-primary;
+}
+
+.empty {
+  padding: $s-4 $s-2 $s-5;
+  font-size: 18px;
+  color: $text-tertiary;
+}
+
+.list {
+  @include column;
+  min-height: 0;
+  overflow-y: auto;
+  @include hide-scrollbar;
+  // a flex column with a capped height squeezes its rows on Chrome 69
+  > * {
+    flex-shrink: 0;
+  }
+  scroll-behavior: smooth;
+}
+
+.track {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: $s-2;
+  border-radius: $r-md;
+  color: $text-primary;
+  text-align: left;
+
+  &:active:not(:disabled) {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+// the knob's cursor, as in Home's track lists
+.focused {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.art {
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+// a fixed width, not 100%: Chrome 69 sizes a button's inner box to its longest line
+.text {
+  display: block;
+  width: 420px;
+  max-width: calc(100vw - 180px);
+  margin-left: $s-3;
+}
+
+.name,
+.artist {
+  display: block;
+  @include truncate;
+}
+
+.name {
+  font-size: 19px;
+  font-weight: $fw-semibold;
+}
+
+.artist {
+  margin-top: 2px;
+  font-size: 15px;
+  color: $text-secondary;
+}

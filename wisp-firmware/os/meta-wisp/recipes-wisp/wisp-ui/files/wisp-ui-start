@@ -1,0 +1,8 @@
+#!/bin/sh
+# Wisp's screen, served to Chromium on localhost:80: an installed update's UI,
+# else the flashed one (the original firmware's wisp-ui service)
+ROOT=/etc/wisp/ui
+APP=$(/usr/libexec/wisp-app-dir)
+[ -n "$APP" ] && ROOT="$APP/ui"
+exec /usr/bin/static-web-server --host 127.0.0.1 --port 80 --root "$ROOT" \
+  --compression false --cache-control-headers=false

@@ -1,0 +1,435 @@
+import { useCallback, useEffect, useEffectEvent, useRef } from 'react'
+import type { ObserverStatusActive } from '@/api/types'
+import {
+  type ButtonAction,
+  getPreset,
+  isDJPreset,
+  presetForContext,
+  presetIndexFromCode,
+  refreshPresetLabels,
+  setPreset,
+} from '@/presets'
+import { getSettings } from '@/settings'
+import type { NotifyFn } from '@/notify/notifyContext'
+import { useNav } from './navContext'
+import { setVolumeOverlay } from './volumeOverlayStore'
+import { subscribeEvents } from '@/api/eventBus'
+
+// physical controls
+
+const VOLUME_MAX = 65535
+
+// quadrature encoder wheel so its two contact pads sometimes send erronious signals still ever after a kernal level change
+// volume change per notch is user-adjustable now
+
+const VOLUME_DIRECTION = -1
+
+// drop events that are close together by this much
+const MIN_STEP_INTERVAL_MS = 55
+
+// similar idea
+const REVERSAL_DEBOUNCE_MS = 140
+
+const OVERLAY_MS = 1400
+
+// throttle the "can't control volume" banner
+const DISABLED_VOLUME_NOTIFY_MS = 4000
+
+// for the local optimistic value
+const INTERACTION_GRACE_MS = 1500
+
+const SEND_THROTTLE_MS = 80
+
+// a phone's media volume has about 15 steps
+const PHONE_STEPS = 15
+
+export interface UseHardwareButtonsParams {
+  // observer status
+  status: ObserverStatusActive | null
+  onPlayPause: () => void
+  // set device volume
+  setVolume: (volume: number, relative?: boolean) => Promise<void> | void
+  // play a context (used by preset buttons)
+  playContext: (uri: string) => Promise<void> | void
+  // a DJ set is playing: a long-press saves the slot as DJ, and a short press on a DJ slot
+  // becomes a retry rather than a fresh start
+  inDJSet: boolean
+  // the DJ is mid-sentence, so the retry is ignored
+  djNarrating: boolean
+  // ask the DJ for a different set
+  onDJSignal: () => void
+  // back button (esc), go back one step, or no-op
+  onBack: () => void
+  // power button (KeyM): short press opens the power menu
+  onTogglePowerMenu: () => void
+  // power button double-press: opens the clock screensaver
+  onScreensaver: () => void
+  // hold preset 1 + 4 together for 3s: open the debug screen
+  onOpenDebug: () => void
+  // top banner message for playlist msgs
+  notify: NotifyFn
+  // a screen (home) owns the dial, its press and back while true
+  navigating?: boolean
+  // a top button set to an action (Home, Map, Voice…) rather than a playlist
+  onButtonAction?: (action: ButtonAction) => void
+}
+
+// hold a preset this long to save the current context
+const PRESET_HOLD_MS = 2000
+
+// hold preset 1 + 4 together this long to open the debug screen
+const CHORD_MS = 3000
+
+// power button: a press held longer than this is ignored (no long-press action yet?)
+const POWER_LONG_PRESS_MS = 600
+// power button: a second press within this window counts as a double-press
+const POWER_DOUBLE_MS = 350
+
+export type { VolumeOverlayState } from './volumeOverlayStore'
+
+export function useHardwareButtons({
+  status,
+  onPlayPause,
+  setVolume,
+  playContext,
+  inDJSet,
+  djNarrating,
+  onDJSignal,
+  onBack,
+  onTogglePowerMenu,
+  onScreensaver,
+  onOpenDebug,
+  notify,
+  navigating = false,
+  onButtonAction,
+}: UseHardwareButtonsParams): void {
+  const volumeRef = useRef(0)
+  const lastTurnAtRef = useRef(0)
+  const overlayTimerRef = useRef<number | undefined>(undefined)
+  const sendTimerRef = useRef<number | undefined>(undefined)
+  const pendingSendRef = useRef<number | null>(null)
+  const lastStepAtRef = useRef(0)
+  const lastStepDirRef = useRef<1 | -1>(1)
+  const lastDisabledNotifyRef = useRef(0)
+
+  const statusVolume = status?.volume
+  const volumeDisabled = status?.volume_disabled ?? false
+
+  const volumeDisabledRef = useRef(volumeDisabled)
+  volumeDisabledRef.current = volumeDisabled
+  const statusRef = useRef(status)
+  statusRef.current = status
+  const djRef = useRef({ inSet: inDJSet, narrating: djNarrating, signal: onDJSignal })
+  djRef.current = { inSet: inDJSet, narrating: djNarrating, signal: onDJSignal }
+  // effect events, so the button listeners below attach once: their cleanups
+  // clear the hold and double-press timers, dropping a press already in progress
+  const togglePower = useEffectEvent(() => onTogglePowerMenu())
+  const openScreensaver = useEffectEvent(() => onScreensaver())
+  const openDebug = useEffectEvent(() => onOpenDebug())
+  const playPreset = useEffectEvent((uri: string) => playContext(uri))
+  const notifyEvent = useEffectEvent<NotifyFn>((message, opts) => notify(message, opts))
+  const runAction = useEffectEvent((action: ButtonAction) => onButtonAction?.(action))
+
+  const contextUri = status?.context_uri
+  const contextName = status?.context_name
+  useEffect(() => {
+    if (contextUri && contextName) refreshPresetLabels(contextUri, contextName)
+  }, [contextUri, contextName])
+
+  // sync volume from the device when not mid turn
+  useEffect(() => {
+    if (typeof statusVolume !== 'number') return
+    if (Date.now() - lastTurnAtRef.current < INTERACTION_GRACE_MS) return
+    volumeRef.current = statusVolume
+  }, [statusVolume])
+
+  // the Wisp app on the phone is connected: the volume's way through when Spotify won't take it
+  const nav = useNav()
+  const phoneLinkedRef = useRef(nav.connected)
+  useEffect(() => {
+    phoneLinkedRef.current = nav.connected
+  }, [nav.connected])
+
+  // the phone's media volume, 0-1, as it last reported it
+  const phoneLevelRef = useRef(0.5)
+
+  const queueSend = useCallback(
+    (v: number) => {
+      pendingSendRef.current = v
+      if (sendTimerRef.current != null) return
+      sendTimerRef.current = window.setTimeout(() => {
+        sendTimerRef.current = undefined
+        if (pendingSendRef.current == null) return
+        const send = pendingSendRef.current
+        pendingSendRef.current = null
+        // swallow quietly
+        void Promise.resolve(setVolume(send, false)).catch(() => {})
+      }, SEND_THROTTLE_MS)
+    },
+    [setVolume],
+  )
+
+  const showOverlay = useCallback(
+    (value01: number, disabled: boolean, extra?: { phone?: boolean; dir?: 1 | -1 }) => {
+      setVolumeOverlay({ visible: true, value: value01, disabled, ...extra })
+      if (overlayTimerRef.current != null) window.clearTimeout(overlayTimerRef.current)
+      overlayTimerRef.current = window.setTimeout(() => {
+        setVolumeOverlay((o) => ({ ...o, visible: false }))
+      }, OVERLAY_MS)
+    },
+    [],
+  )
+
+  // one knob click is one volume step.
+  const stepVolume = useCallback(
+    (dir: 1 | -1) => {
+      if (volumeDisabledRef.current) {
+        if (Date.now() - lastDisabledNotifyRef.current < DISABLED_VOLUME_NOTIFY_MS) return
+        // the bar where the phone's volume was last seen, a step on; the phone's own
+        // answer corrects it a moment later
+        const guess = Math.max(0, Math.min(1, phoneLevelRef.current + dir / PHONE_STEPS))
+        phoneLevelRef.current = guess
+        showOverlay(guess, false, { phone: true, dir })
+        void Promise.resolve(setVolume(dir, true)).catch(() => {
+          setVolumeOverlay((o) => ({ ...o, visible: false }))
+          const now = Date.now()
+          if (now - lastDisabledNotifyRef.current > DISABLED_VOLUME_NOTIFY_MS) {
+            lastDisabledNotifyRef.current = now
+            // Spotify on the phone takes its volume through the Wisp app; asleep, it can't
+            notify(
+              phoneLinkedRef.current
+                ? "Your phone didn't take the volume change"
+                : 'Open the Wisp app on your phone to turn the volume',
+              { variant: 'warning' },
+            )
+          }
+        })
+        return
+      }
+      // user adjustable
+      const step = Math.max(1, Math.round((getSettings().volumeStepPct / 100) * VOLUME_MAX))
+      const next = Math.max(0, Math.min(VOLUME_MAX, volumeRef.current + dir * step))
+      volumeRef.current = next
+      showOverlay(next / VOLUME_MAX, false)
+      queueSend(next)
+    },
+    [showOverlay, queueSend, notify, setVolume],
+  )
+
+  // the phone reports its real level after a phone-volume step: show that
+  // instead of just the direction
+  useEffect(
+    () =>
+      subscribeEvents((evt) => {
+        if (evt.type !== 'phone/volume') return
+        const { volume, max } = evt.data as { volume: number; max: number }
+        if (!(max > 0)) return
+        phoneLevelRef.current = volume / max
+        setVolumeOverlay((o) => (o.visible && o.phone ? { ...o, value: volume / max } : o))
+      }),
+    [],
+  )
+
+  // knob turn -> volume only when something is playing
+  useEffect(() => {
+    if (!status || navigating) return
+
+    const onWheel = (e: WheelEvent) => {
+      // the knob is REL_HWHEEL -> horizontal deltaX
+      if (e.deltaX === 0) return
+      e.preventDefault()
+
+      const now = Date.now()
+      lastTurnAtRef.current = now
+      const dir: 1 | -1 = (e.deltaX > 0 ? 1 : -1) * VOLUME_DIRECTION > 0 ? 1 : -1
+      const sinceStep = now - lastStepAtRef.current
+
+      if (dir !== lastStepDirRef.current && sinceStep < REVERSAL_DEBOUNCE_MS) return
+      if (sinceStep < MIN_STEP_INTERVAL_MS) return
+
+      lastStepAtRef.current = now
+      lastStepDirRef.current = dir
+      stepVolume(dir)
+    }
+
+    // capture phase + window so a lyrics cant scroll from the wheel
+    window.addEventListener('wheel', onWheel, { passive: false, capture: true })
+    return () => window.removeEventListener('wheel', onWheel, { capture: true })
+  }, [status, stepVolume, navigating])
+
+  // knob press (Enter) is play/pause, back (Escape) is go back.
+  // preventDefault so Enter doesnt also trigger a focused button like the menu.
+  useEffect(() => {
+    if (navigating) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        onPlayPause()
+      } else if (e.key === 'Escape') {
+        e.preventDefault()
+        onBack()
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [onPlayPause, onBack, navigating])
+
+  // preset buttons
+  // short press = play the assigned context
+  // hold for 2s = save current context to the slot
+  useEffect(() => {
+    const holdTimers: Record<string, number> = {}
+    const saved: Record<string, boolean> = {}
+    const down: Record<string, boolean> = {}
+    let chordTimer: number | undefined
+
+    const chordCodes = ['Digit1', 'Digit4']
+    const bothChordDown = () => chordCodes.every((c) => down[c])
+    const clearChord = () => {
+      if (chordTimer != null) {
+        window.clearTimeout(chordTimer)
+        chordTimer = undefined
+      }
+    }
+
+    const saveCurrentToPreset = (idx: number) => {
+      const cur = statusRef.current
+      if (cur && cur.context_uri) {
+        const config = presetForContext(cur.context_uri, cur.context_name, djRef.current.inSet)
+        setPreset(idx, config)
+        notifyEvent(`Saved "${config.label}" to preset ${idx}`, { variant: 'success' })
+      } else {
+        notifyEvent('Nothing playing to save', { variant: 'warning' })
+      }
+    }
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      const idx = presetIndexFromCode(e.code)
+      if (idx == null) return
+      if (e.repeat) return
+      down[e.code] = true
+      if (holdTimers[e.code] == null) {
+        saved[e.code] = false
+        holdTimers[e.code] = window.setTimeout(() => {
+          holdTimers[e.code] = undefined as unknown as number
+          saved[e.code] = true // suppress the play on release
+          saveCurrentToPreset(idx)
+        }, PRESET_HOLD_MS)
+      }
+      if (chordCodes.includes(e.code) && bothChordDown() && chordTimer == null) {
+        for (const c of chordCodes) {
+          if (holdTimers[c] != null) {
+            window.clearTimeout(holdTimers[c])
+            holdTimers[c] = undefined as unknown as number
+          }
+          saved[c] = true
+        }
+        chordTimer = window.setTimeout(() => {
+          chordTimer = undefined
+          openDebug()
+        }, CHORD_MS)
+      }
+    }
+    const onKeyUp = (e: KeyboardEvent) => {
+      const idx = presetIndexFromCode(e.code)
+      if (idx == null) return
+      down[e.code] = false
+      if (chordCodes.includes(e.code)) clearChord()
+      if (holdTimers[e.code] != null) {
+        window.clearTimeout(holdTimers[e.code])
+        holdTimers[e.code] = undefined as unknown as number
+      }
+      if (saved[e.code]) {
+        saved[e.code] = false
+        return // hold already saved dont also play
+      }
+      const preset = getPreset(idx)
+      if (preset?.action) {
+        runAction(preset.action)
+        return
+      }
+      const dj = djRef.current
+      // a DJ slot is a retry once a set is playing: `jump` is what asks for a different set,
+      // and replaying the context appears to resume the current one instead. Ignored
+      // mid-narration, matching the on-screen DJ button
+      if (isDJPreset(preset) && dj.inSet) {
+        if (!dj.narrating) {
+          dj.signal()
+          notifyEvent('Switching DJ set', { icon: 'dj' })
+        }
+        return
+      }
+      // short press will play the assigned context, cold-starting DJ like any other
+      if (preset?.contextUri) {
+        // only claim success once the play actually lands
+        void Promise.resolve(playPreset(preset.contextUri))
+          .then(() => notifyEvent(`Playing from ${preset.label}`, { icon: 'playlist' }))
+          .catch(() => notifyEvent(`Couldn't play ${preset.label}`, { variant: 'error' }))
+      } else {
+        notifyEvent(`Button ${idx} is empty. Hold it to save what's playing`, {
+          variant: 'info',
+        })
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    window.addEventListener('keyup', onKeyUp)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener('keyup', onKeyUp)
+      for (const t of Object.values(holdTimers)) if (t != null) window.clearTimeout(t)
+      clearChord()
+    }
+  }, [])
+
+  // power button controls
+  useEffect(() => {
+    let downAt = 0
+    let armed = false
+    let pendingSingle: number | undefined
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.code !== 'KeyM') return
+      if (e.repeat) return
+      downAt = Date.now()
+      armed = true
+    }
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.code !== 'KeyM') return
+      // only count a keyup that had a matching keydown
+      if (!armed) return
+      armed = false
+      const held = downAt ? Date.now() - downAt : 0
+      downAt = 0
+      // a deliberate hold does nothing yet?
+      if (held >= POWER_LONG_PRESS_MS) return
+      if (pendingSingle != null) {
+        // second tap within the window -> double press -> screensaver
+        window.clearTimeout(pendingSingle)
+        pendingSingle = undefined
+        openScreensaver()
+      } else {
+        pendingSingle = window.setTimeout(() => {
+          pendingSingle = undefined
+          togglePower()
+        }, POWER_DOUBLE_MS)
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    window.addEventListener('keyup', onKeyUp)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener('keyup', onKeyUp)
+      if (pendingSingle != null) window.clearTimeout(pendingSingle)
+    }
+    // never re-run: a re-render mid-gesture would clear `pendingSingle` and
+    // swallow the second press
+  }, [])
+
+  // clean up timers
+  useEffect(
+    () => () => {
+      if (overlayTimerRef.current != null) window.clearTimeout(overlayTimerRef.current)
+      if (sendTimerRef.current != null) window.clearTimeout(sendTimerRef.current)
+    },
+    [],
+  )
+}

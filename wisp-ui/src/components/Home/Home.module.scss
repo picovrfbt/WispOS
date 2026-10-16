@@ -1,0 +1,717 @@
+// sizes are kept in step with CARD_STRIDE and RAIL_STRIDE in Home.tsx
+$card: 248px;
+$card-gap: 28px;
+$rail-row: 84px;
+$rail-gap: 12px;
+
+.root {
+  position: fixed;
+  @include inset-0;
+  z-index: $z-menu;
+  overflow: hidden;
+  background: $bg;
+  color: $text-primary;
+  animation: homeIn $dur-base $ease-standard both;
+}
+
+@keyframes homeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// the cover backdrop drawn once on a layer of its own: the rail and cards
+// glide over it, and on the Car Thing (Chrome 69, no GPU raster) sharing their
+// layer meant re-stretching the cover across the screen on every scroll frame
+.backdropLayer {
+  will-change: transform;
+}
+
+// rail + cards
+
+.layout {
+  @include absolute-fill;
+  display: flex;
+}
+
+.rail {
+  flex: 0 0 330px;
+  overflow: hidden;
+  // pointer events drive the drag (useDragScroll), not the browser's own panning
+  touch-action: none;
+  padding: 28px 0 28px 22px;
+  scroll-behavior: smooth;
+}
+
+// what the rail and the cards scroll: a layer of its own, so a glide moves
+// pixels already drawn. On the Car Thing (Chrome 69, no GPU raster) a list
+// scrolled over the backdrop otherwise redrew every cover, shadow and label on
+// every frame of every knob step
+.railTrack {
+  will-change: transform;
+  @include flex-gap-y($rail-gap);
+}
+
+.railItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: $rail-row;
+  padding-left: 22px;
+  color: $text-primary;
+  text-align: left;
+}
+
+// the bar beside the category the cards belong to
+.railCurrent::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 5px;
+  height: 44px;
+  margin-top: -22px;
+  border-radius: 3px;
+  background: $text-primary;
+}
+
+.railTile {
+  @include flex-center;
+  flex: 0 0 auto;
+  width: 70px;
+  height: 70px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.16);
+  transition:
+    background-color $dur-fast $ease-standard,
+    transform $dur-fast $ease-standard;
+}
+
+.railFocused .railTile {
+  background: rgba(255, 255, 255, 0.36);
+  transform: scale(1.06);
+}
+
+.railLabel {
+  margin-left: 20px;
+  min-width: 0;
+  font-size: 30px;
+  font-weight: $fw-bold;
+  letter-spacing: -0.01em;
+  opacity: 0.78;
+  @include truncate;
+}
+
+.railCurrent .railLabel {
+  opacity: 1;
+}
+
+.cards {
+  display: flex;
+  align-items: flex-start;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  @include hide-scrollbar;
+  padding: 44px 40px 0 16px;
+  scroll-behavior: smooth;
+  touch-action: none;
+}
+
+.track {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-start;
+  will-change: transform;
+  @include flex-gap-x($card-gap);
+}
+
+.card {
+  @include column;
+  flex: 0 0 $card;
+  width: $card;
+  color: $text-primary;
+  text-align: left;
+}
+
+.cardArtWrap {
+  position: relative;
+  display: block;
+  // the focused card grows; the cover, its shadow, glow and ring together
+  transition: transform $dur-base $ease-standard;
+}
+
+// the focus ring, over the cover. It fades in on its own layer rather than
+// being part of the cover's soft shadow: animating that shadow redrew both
+// cards' 30px blur on every frame of each knob step on the Car Thing
+.cardArtWrap::after {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  width: $card;
+  height: $card;
+  border-radius: 14px;
+  box-shadow: 0 0 0 4px $text-primary;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity $dur-base $ease-standard;
+}
+
+.roundWrap::after {
+  border-radius: 50%;
+}
+
+.cardArt {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: $card;
+  height: $card;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.round {
+  border-radius: 50%;
+}
+
+.cardFocused .cardArtWrap {
+  transform: scale(1.03);
+}
+
+.cardFocused .cardArtWrap::after {
+  opacity: 1;
+}
+
+.cardTitle {
+  // Chrome 69 lays a button's content out in an inner box that grows to its
+  // longest unbreakable line, so 100% meant "as wide as the title" and the
+  // ellipsis never kicked in; a fixed width is the only thing it respects
+  display: block;
+  width: $card;
+  max-width: $card;
+  margin-top: 18px;
+  font-size: 28px;
+  font-weight: $fw-bold;
+  letter-spacing: -0.01em;
+  @include truncate;
+}
+
+.cardSub {
+  display: block;
+  width: $card;
+  max-width: $card;
+  margin-top: 4px;
+  font-size: 22px;
+  font-weight: $fw-semibold;
+  opacity: 0.78;
+  @include truncate;
+}
+
+.cardsEmpty {
+  flex: 0 0 $card;
+  padding-top: 100px;
+  font-size: 22px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.likedArt {
+  @include flex-center;
+  width: 100%;
+  height: 100%;
+  color: $text-primary;
+  background: linear-gradient(135deg, #450af5, #8e8ee5);
+}
+
+.djArt {
+  @include flex-center;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  color: #0b0b0b;
+  background: linear-gradient(135deg, #1ed760, #b6f36b);
+}
+
+.djLabel {
+  margin-top: 6px;
+  font-size: 34px;
+  font-weight: $fw-bold;
+  letter-spacing: -0.02em;
+}
+
+// placeholders while a first page loads: blocks that breathe. Only opacity
+// animates, which the compositor does without repainting
+.skeleton {
+  animation: skeletonPulse 1.1s ease-in-out infinite alternate;
+}
+
+@keyframes skeletonPulse {
+  from {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.skeletonBlock {
+  background: rgba(255, 255, 255, 0.09);
+  box-shadow: none;
+}
+
+.skeletonLine {
+  display: block;
+  height: 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.skeletonCardLine {
+  width: 80%;
+  margin-top: 16px;
+}
+
+.skeletonShort {
+  width: 50%;
+  margin-top: 10px;
+}
+
+.skeletonRow {
+  display: flex;
+  align-items: center;
+  min-height: 74px;
+  padding: 7px 12px;
+}
+
+.skeletonArt {
+  flex: 0 0 auto;
+  width: 58px;
+  height: 58px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.skeletonLines {
+  display: block;
+  width: 50%;
+  margin-left: 16px;
+
+  .skeletonLine:first-child {
+    width: 80%;
+  }
+}
+
+// a playlist opened from a card
+
+.tracks {
+  @include absolute-fill;
+  @include column;
+}
+
+.tracksHeader {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  height: 84px;
+  padding: 0 28px 0 12px;
+  @include flex-gap-x(14px);
+}
+
+.backButton {
+  @include touch-target;
+  @include flex-center;
+  flex: 0 0 auto;
+  width: 56px;
+  height: 56px;
+  border-radius: $r-pill;
+  color: $text-primary;
+
+  &:active {
+    background: rgba(255, 255, 255, 0.12);
+  }
+}
+
+.tracksHeaderArt {
+  flex: 0 0 auto;
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.tracksTitle {
+  min-width: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  font-size: 30px;
+  font-weight: $fw-bold;
+  @include truncate;
+}
+
+.tracksList {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  touch-action: none;
+  @include hide-scrollbar;
+  padding: 4px 28px 24px;
+  // the dial glides it; a drag turns this off while the finger's down
+  scroll-behavior: smooth;
+}
+
+.tracksActions {
+  display: flex;
+  margin-bottom: 10px;
+  @include flex-gap-x(12px);
+}
+
+.tracksAction {
+  flex: 1 1 0;
+  height: 58px;
+  margin-top: 6px;
+  border-radius: $r-pill;
+  background: rgba(255, 255, 255, 0.16);
+  color: $text-primary;
+  font-size: 22px;
+  font-weight: $fw-bold;
+}
+
+.primary {
+  background: $text-primary;
+  color: #000;
+}
+
+.trackRow {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 74px;
+  padding: 7px 12px;
+  border-radius: 12px;
+  color: $text-primary;
+  text-align: left;
+  @include flex-gap-x(16px);
+
+  &:active {
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.trackArt {
+  flex: 0 0 auto;
+  width: 58px;
+  height: 58px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.trackText {
+  // a fixed width for the same Chrome 69 button quirk as .cardTitle: the row
+  // (list padding 56, row padding 24, art 58, gap 16) leaves the rest of the screen
+  display: block;
+  width: calc(100vw - 160px);
+  min-width: 0;
+}
+
+.trackName {
+  display: block;
+  font-size: 22px;
+  font-weight: $fw-semibold;
+  @include truncate;
+}
+
+.trackSub {
+  display: block;
+  margin-top: 2px;
+  font-size: 17px;
+  opacity: 0.72;
+  @include truncate;
+}
+
+// the dial cursor in the track list; the dark gap keeps it visible on the white Play pill
+.focused {
+  box-shadow:
+    0 0 0 3px rgba(0, 0, 0, 0.3),
+    0 0 0 6px $text-primary;
+}
+
+.trackRow.focused {
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow: none;
+}
+
+.status {
+  display: block;
+  width: 100%;
+  padding: 24px 0;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 20px;
+}
+
+.navArt {
+  @include flex-center;
+  width: 100%;
+  height: 100%;
+  color: $text-primary;
+  background: linear-gradient(135deg, #4285f4, #1a4fb0);
+
+  img {
+    width: 62%;
+    height: 62%;
+    object-fit: contain;
+  }
+}
+
+// "Play on…" when nothing is active
+
+.chooserBackdrop {
+  @include absolute-fill;
+  @include flex-center;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.chooser {
+  @include column;
+  width: 440px;
+  max-height: calc(100% - 48px);
+  overflow-y: auto;
+  @include hide-scrollbar;
+  padding: 22px;
+  border-radius: $r-2xl;
+  background: rgba(24, 24, 28, 0.97);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+}
+
+.chooserTitle {
+  font-size: 28px;
+  font-weight: $fw-bold;
+}
+
+.chooserSub {
+  margin: 2px 0 14px;
+  font-size: 18px;
+  color: $text-secondary;
+  @include truncate;
+}
+
+.chooserRow {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 64px;
+  margin-top: 8px;
+  padding: 0 18px;
+  border-radius: $r-pill;
+  background: rgba(255, 255, 255, 0.07);
+  color: $text-primary;
+  text-align: left;
+}
+
+.chooserFocused {
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.8);
+}
+
+.chooserName {
+  margin-left: 14px;
+  font-size: 22px;
+  font-weight: $fw-semibold;
+  @include truncate;
+}
+
+.chooserHint {
+  margin-bottom: 6px;
+  font-size: 16px;
+  color: $text-tertiary;
+}
+
+// a library other than Spotify's: a red tint over the backdrop, so it's never
+// in doubt which one is up
+.otherSource::after {
+  content: '';
+  @include absolute-fill;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 70% 25%,
+    rgba(255, 40, 60, 0.22),
+    rgba(255, 40, 60, 0) 70%
+  );
+}
+
+// above the tint. Every child here is already positioned (the backdrop, the
+// layout or the opened list fill the screen absolutely), so only the z-index:
+// making them relative undid that fill, the layout shrank to its content and the
+// rail and the opened list stopped scrolling with the dial on every library but Spotify
+// the first child is the cover backdrop, which stays under the tint
+.otherSource > :not(:first-child) {
+  z-index: 1;
+}
+
+// the top of the rail: Spotify or the other library
+.sourceSwitch {
+  display: flex;
+  align-items: center;
+  height: $rail-row;
+  margin-left: 22px;
+  margin-right: 8px;
+}
+
+.sourceGroup {
+  display: flex;
+  align-items: center;
+  padding: 6px;
+  border-radius: 32px;
+  background: rgba(255, 255, 255, 0.06);
+  transition: background-color $dur-fast $ease-standard;
+}
+
+.sourceFocused {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+// each library is just its mark; the picked one sits in a ring
+.sourceOption {
+  @include flex-center;
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  opacity: 0.5;
+  transition:
+    opacity $dur-fast $ease-standard,
+    box-shadow $dur-fast $ease-standard;
+
+  & + & {
+    margin-left: 6px;
+  }
+
+  &:active {
+    transform: scale(0.92);
+  }
+}
+
+.sourceOn {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 0 0 2px #fff;
+}
+
+// the picked library's name: a small bubble pointing back at the marks
+.sourceBubble {
+  position: relative;
+  flex-shrink: 0;
+  margin-left: 10px;
+  padding: 4px 9px;
+  border-radius: 11px;
+  background: #fff;
+  color: #111;
+  font-size: 14px;
+  font-weight: $fw-bold;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition:
+    opacity $dur-fast $ease-standard,
+    transform $dur-fast $ease-standard;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -5px;
+    width: 10px;
+    height: 10px;
+    margin-top: -5px;
+    background: #fff;
+    transform: rotate(45deg);
+  }
+}
+
+.bubbleShown {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+// the Settings tab: a doorway to the Settings page
+.settingsDoor {
+  @include column;
+  align-items: center;
+  justify-content: center;
+  width: 300px;
+  height: 300px;
+  margin: 44px 0 0 16px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.07);
+  color: $text-primary;
+
+  &:active {
+    background: rgba(255, 255, 255, 0.12);
+  }
+}
+
+.settingsDoorIcon svg {
+  width: 84px;
+  height: 84px;
+}
+
+.settingsDoorTitle {
+  margin-top: 16px;
+  font-size: 30px;
+  font-weight: $fw-bold;
+}
+
+.settingsDoorHint {
+  margin-top: 4px;
+  font-size: 18px;
+  color: $text-secondary;
+}
+
+// the Settings tab: the settings list in place of the cards, scrolled by drag or dial
+.settingsPane {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-y: auto;
+  @include hide-scrollbar;
+  touch-action: none;
+  padding: 36px 40px 36px 16px;
+  @include column;
+  @include flex-gap-y($s-4);
+  // a dark plate so the sliders read over a bright cover
+  background: rgba(0, 0, 0, 0.45);
+
+  // Chrome 69 squeezes the rows of a fixed-height column on top of each other
+  // rather than letting it scroll; each row keeps its own height
+  > * {
+    flex-shrink: 0;
+  }
+}

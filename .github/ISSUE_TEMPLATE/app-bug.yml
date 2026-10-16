@@ -1,0 +1,46 @@
+name: Wisp app bug
+description: Something wrong in the Android app (directions, the route, calls, Drive Mode, phone media, settings, updates)
+labels: ["bug", "app"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to make it happen
+      placeholder: |
+        1. Start directions in Google Maps to …
+        2. …
+    validations:
+      required: true
+  - type: input
+    id: app-version
+    attributes:
+      label: Wisp app version
+      description: At the top of the Wisp app's main screen.
+      placeholder: "0.9.17"
+    validations:
+      required: true
+  - type: input
+    id: wisp-version
+    attributes:
+      label: Wisp version on the Car Thing
+      description: Settings → Software update on the Car Thing.
+      placeholder: v0.2.29
+  - type: input
+    id: phone
+    attributes:
+      label: Phone and Android version
+      placeholder: Pixel 8, Android 15
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots, a drive recording or anything else
+      description: For Drive Mode, a recording from the Drive Recorder helps tune it. Leave out anything personal, like home addresses.

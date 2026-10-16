@@ -1,0 +1,72 @@
+.banner {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  width: max-content;
+  max-width: calc(100% - 24px);
+  z-index: $z-menu;
+
+  transform: translate(-50%, calc(-100% - 24px));
+  touch-action: none;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    transform $dur-base $ease-standard,
+    opacity $dur-base $ease-standard,
+    top $dur-base $ease-standard,
+    visibility 0s $dur-base;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 54px;
+  padding: $s-3 $s-5;
+
+  @include floating-glass;
+  @include flex-gap-x($s-3);
+
+  pointer-events: none;
+}
+
+.visible {
+  // --drag-y/--drag-fade come from useSwipeDismiss while a finger is on it
+  transform: translate(-50%, var(--drag-y, 0px));
+  opacity: var(--drag-fade, 1);
+  visibility: visible;
+  transition-delay: 0s;
+  pointer-events: auto;
+
+  &[data-dragging] {
+    transition: none;
+  }
+}
+
+.lowered {
+  top: 78px;
+}
+.icon {
+  display: flex;
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.85);
+}
+.warning {
+  color: #efc479;
+}
+.error {
+  color: #f39898;
+}
+
+.message {
+  font-size: $fs-xl;
+  font-weight: $fw-semibold;
+  color: $text-primary;
+  text-align: left;
+  max-width: 460px;
+  overflow-wrap: break-word;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banner {
+    transition: none;
+  }
+}

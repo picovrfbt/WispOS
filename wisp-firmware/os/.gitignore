@@ -1,0 +1,8 @@
+# kas checkouts and the build
+sources/
+build/
+ccache/
+.kas/
+# staged by scripts/prepare.sh
+meta-wisp/recipes-wisp/*/files/payload/
+meta-wisp/conf/distro/include/wisp-version.inc

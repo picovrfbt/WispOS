@@ -1,0 +1,36 @@
+# desktop "live device": the real daemon on this PC, logged into your Spotify
+device_name: "Wisp Dev"
+device_type: "car_thing"
+log_level: "info"
+
+observer_mode: true
+
+credentials:
+  type: interactive
+
+server:
+  enabled: true
+  # this PC only
+  address: "127.0.0.1"
+  port: 3678
+  allow_origin: "*"
+
+# keep dev runs from sending crash reports
+report_url: ""
+
+# voice: the command path only. The wake word, mic capture and speech-to-text
+# are ARM binaries that only run on the Car Thing; the simulator's "Say to
+# Wisp" box types the command instead.
+voice:
+  enabled: true
+  wake: false
+  cascade: false
+  sherpa_enabled: false
+  catalog_sync: false
+  hash_rotate: false
+
+# turn-by-turn: the fake phone (go run ./cmd/fake-nav-phone) or, with "Allow
+# connections over Wi-Fi" on in the Android app, ws://<phone's Wi-Fi IP>:3679/nav
+nav:
+  enabled: true
+  phone_url: "ws://127.0.0.1:3679/nav"
