@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="512" height="512">
+  <!-- Wisp's logo, as the app icon draws it: the wisp of light over the blurred blobs -->
+  <defs>
+    <radialGradient id="g" cx="20" cy="18" r="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1ED760" stop-opacity="0.55"/><stop offset="1" stop-color="#1ED760" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="b" cx="94" cy="58" r="52" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2B6CFF" stop-opacity="0.42"/><stop offset="1" stop-color="#2B6CFF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="t" cx="42" cy="108" r="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#14B8A6" stop-opacity="0.35"/><stop offset="1" stop-color="#14B8A6" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="c"><rect width="108" height="108" rx="26"/></clipPath>
+  </defs>
+  <g clip-path="url(#c)">
+    <rect width="108" height="108" fill="#0B0B0C"/>
+    <rect width="108" height="108" fill="url(#g)"/>
+    <rect width="108" height="108" fill="url(#b)"/>
+    <rect width="108" height="108" fill="url(#t)"/>
+    <g transform="translate(-0.4 9) scale(0.36)">
+      <path d="M58,196 C96,128 128,214 160,150 S214,82 224,74" stroke="#fff" stroke-opacity="0.19" stroke-width="30" stroke-linecap="round" fill="none"/>
+      <circle cx="224" cy="74" r="20" fill="#fff" fill-opacity="0.19"/>
+      <path d="M58,196 C96,128 128,214 160,150 S214,82 224,74" stroke="#fff" stroke-width="16" stroke-linecap="round" fill="none"/>
+      <circle cx="224" cy="74" r="11" fill="#fff"/>
+    </g>
+  </g>
+</svg>

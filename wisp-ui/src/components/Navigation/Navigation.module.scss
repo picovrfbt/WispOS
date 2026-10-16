@@ -1,0 +1,304 @@
+$panel-w: 330px;
+$nav-blue: #4285f4;
+
+// full screen
+
+.screen {
+  position: fixed;
+  @include inset-0;
+  z-index: $z-menu;
+  background: #0e0e10;
+  color: $text-primary;
+  animation: navIn $dur-base $ease-standard both;
+}
+
+@keyframes navIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// the map fills the screen; the panel floats over its left edge
+.map {
+  @include absolute-fill;
+  background: #0e0e10;
+
+  :global(.leaflet-control-attribution) {
+    background: rgba(0, 0, 0, 0.5);
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 9px;
+    line-height: 1.4;
+  }
+}
+
+// night mode for the light OSM tiles: invert, then turn the hues back around
+.tiles {
+  filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.85) saturate(0.6);
+}
+
+// the map's centre is the puck; shift it right of the panel by padding the tiles' frame
+.screen .map {
+  left: $panel-w - 40px;
+}
+
+.mapOff {
+  @include absolute-fill;
+  background: radial-gradient(circle at 70% 50%, #1b2230, #0e0e10 70%);
+}
+
+.puckIcon {
+  background: none;
+  border: 0;
+
+  :global(.nav-puck) {
+    transition: transform 600ms linear;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
+  }
+}
+
+.panel {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: $panel-w;
+  @include column;
+  padding: 16px 22px 20px;
+  background: linear-gradient(90deg, rgba(14, 14, 16, 0.98) 80%, rgba(14, 14, 16, 0));
+  z-index: 500; // above leaflet panes
+}
+
+.close {
+  @include touch-target;
+  @include flex-center;
+  width: 52px;
+  height: 52px;
+  margin-left: -10px;
+  border-radius: $r-pill;
+  color: $text-primary;
+
+  &:active {
+    background: rgba(255, 255, 255, 0.12);
+  }
+}
+
+.hint {
+  @include column;
+  margin-top: 28px;
+  font-size: 19px;
+  line-height: 1.35;
+  color: $text-secondary;
+
+  strong {
+    margin-bottom: 8px;
+    font-size: 28px;
+    color: $text-primary;
+  }
+}
+
+.music {
+  @include column;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid $divider;
+}
+
+.musicTitle {
+  font-size: 19px;
+  font-weight: $fw-semibold;
+  @include truncate;
+}
+
+.musicArtist {
+  font-size: 16px;
+  color: $text-secondary;
+  @include truncate;
+}
+
+// turn card
+
+.turn {
+  @include column;
+  margin-top: 12px;
+
+  .turnIcon {
+    width: 112px;
+    height: 112px;
+    border-radius: 24px;
+  }
+
+  .turnText {
+    margin-top: 18px;
+  }
+
+  .turnTitle {
+    font-size: 48px;
+    line-height: 1.05;
+  }
+
+  .turnInstruction {
+    margin-top: 8px;
+    font-size: 25px;
+    line-height: 1.25;
+    @include truncate(3);
+  }
+}
+
+.turnIcon {
+  @include flex-center;
+  flex: 0 0 auto;
+  background: $nav-blue;
+  color: $text-primary;
+  overflow: hidden;
+
+  img {
+    width: 80%;
+    height: 80%;
+    object-fit: contain;
+  }
+}
+
+.turnText {
+  @include column;
+  min-width: 0;
+}
+
+.turnTitle {
+  font-weight: $fw-bold;
+  letter-spacing: -0.01em;
+  @include truncate;
+}
+
+.turnInstruction {
+  font-weight: $fw-semibold;
+}
+
+// the trip line as chips under the turn
+.trip {
+  display: flex;
+  flex-wrap: nowrap;
+  margin-top: 16px;
+}
+
+.tripChip {
+  @include column;
+  flex: 0 1 auto;
+  min-width: 0;
+  margin-right: 6px;
+  padding: 6px 9px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.tripLabel {
+  font-size: 11px;
+  font-weight: $fw-semibold;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  text-transform: uppercase;
+  color: $text-secondary;
+}
+
+.tripValue {
+  margin-top: 2px;
+  font-size: 17px;
+  font-weight: $fw-bold;
+  @include truncate;
+}
+
+// current speed, bottom right over the map
+.speedo {
+  position: absolute;
+  right: 20px;
+  bottom: 22px;
+  z-index: 500; // above leaflet panes
+  @include column;
+  align-items: center;
+  justify-content: center;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: rgba(14, 14, 16, 0.88);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+}
+
+.speedValue {
+  font-size: 36px;
+  font-weight: $fw-bold;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.speedUnit {
+  margin-top: 3px;
+  font-size: 14px;
+  font-weight: $fw-semibold;
+  color: $text-secondary;
+}
+
+// banner over other screens
+
+.banner {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  z-index: $z-bottom-bar + 10;
+  width: 560px;
+  max-width: calc(100% - 32px);
+  margin-left: -280px;
+  padding: 8px 18px 8px 8px;
+  border-radius: 20px;
+  background: rgba(20, 22, 28, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  color: $text-primary;
+  text-align: left;
+  touch-action: none;
+  // backwards, not both: once in, the drag transform below takes over
+  animation: bannerIn $dur-slow $ease-emphasized backwards;
+  transform: translateY(var(--drag-y, 0px));
+  opacity: var(--drag-fade, 1);
+  transition:
+    transform $dur-base $ease-standard,
+    opacity $dur-base $ease-standard;
+
+  &[data-dragging] {
+    transition: none;
+  }
+}
+
+@keyframes bannerIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.turnCompact {
+  display: flex;
+  align-items: center;
+  @include flex-gap-x(14px);
+
+  .turnIcon {
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
+  }
+
+  .turnTitle {
+    font-size: 26px;
+  }
+
+  .turnInstruction {
+    font-size: 19px;
+    color: $text-secondary;
+    @include truncate;
+  }
+}

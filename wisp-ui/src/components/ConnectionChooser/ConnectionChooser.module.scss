@@ -1,0 +1,92 @@
+.title {
+  margin: 0;
+  font-size: $fs-4xl;
+  font-weight: $fw-semibold;
+  letter-spacing: -0.03em;
+}
+
+.lede {
+  margin: $s-2 0 0;
+  font-size: $fs-xl;
+  color: $text-secondary;
+}
+
+.cards {
+  margin-top: $s-7;
+  display: flex;
+  @include flex-gap-x($s-5);
+}
+
+.card {
+  position: relative;
+  flex: 1;
+  height: 168px;
+  padding: $s-5 $s-6;
+  border-radius: $r-2xl;
+  background: rgba(24, 24, 27, 0.74);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  color: $text-primary;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition:
+    transform $dur-fast $ease-standard,
+    border-color $dur-fast $ease-standard,
+    background $dur-fast $ease-standard;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.cardFocused {
+  border-color: rgba(var(--accent-rgb, 30, 215, 96), 0.75);
+  background: rgba(var(--accent-rgb, 30, 215, 96), 0.08);
+  transform: scale(1.02);
+
+  .icon {
+    color: rgb(var(--accent-rgb, 30, 215, 96));
+  }
+}
+
+.icon {
+  color: $text-secondary;
+  line-height: 0;
+  transition: color $dur-fast $ease-standard;
+}
+
+.cardText {
+  @include column;
+}
+
+.cardTitle {
+  font-size: $fs-2xl;
+  font-weight: $fw-semibold;
+  letter-spacing: -0.01em;
+}
+
+.cardSub {
+  margin-top: 2px;
+  font-size: $fs-lg;
+  color: $text-tertiary;
+}
+
+.badge {
+  position: absolute;
+  top: $s-5;
+  right: $s-5;
+  padding: 3px 10px;
+  border-radius: $r-pill;
+  font-size: $fs-sm;
+  font-weight: $fw-semibold;
+  color: rgb(var(--accent-rgb, 30, 215, 96));
+  background: rgba(var(--accent-rgb, 30, 215, 96), 0.14);
+}
+
+.footnote {
+  margin: auto 0 0;
+  font-size: $fs-md;
+  color: $text-quaternary;
+}

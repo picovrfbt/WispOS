@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if [ "$interface" = "usb1" ] \
+  && [ "$(cat /sys/class/net/usb0/operstate 2>/dev/null)" != "up" ]; then
+    ip addr replace 172.16.42.2/24 dev usb1 2>/dev/null || true
+
+    if ! ip route show default 2>/dev/null | grep -q . \
+      && arping -q -f -w 1 -I usb1 172.16.42.1 > /dev/null 2>&1; then
+        ip route replace default via 172.16.42.1 dev usb1 metric 600 2>/dev/null || true
+    fi
+fi

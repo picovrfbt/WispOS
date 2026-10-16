@@ -1,0 +1,1 @@
+export { ArrivalCard } from './ArrivalCard'

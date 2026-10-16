@@ -1,0 +1,11 @@
+[Unit]
+Description=Wisp: set the clock from the network
+After=network.target
+
+[Service]
+ExecStart=/usr/libexec/wisp/wisp-clock-sync
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

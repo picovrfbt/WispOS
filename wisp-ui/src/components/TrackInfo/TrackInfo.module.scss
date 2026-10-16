@@ -1,0 +1,52 @@
+.info {
+  @include column;
+  max-width: var(--art-size, #{$art-size});
+  min-width: 0;
+  @include flex-gap-y($s-1);
+}
+
+.title {
+  font-size: 24px;
+  font-weight: $fw-bold;
+  letter-spacing: -0.01em;
+  color: $text-primary;
+}
+
+.artist {
+  font-size: 18px;
+  font-weight: $fw-medium;
+  color: $text-secondary;
+}
+
+.large {
+  max-width: 520px;
+  align-items: center;
+  text-align: center;
+
+  .title {
+    font-size: 28px;
+    font-weight: $fw-bold;
+  }
+  .artist {
+    font-size: 20px;
+    color: $text-secondary;
+  }
+}
+
+// the service a song is playing from, as its mark before the artist
+.artistRow {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  @include flex-gap-x($s-2);
+
+  > :last-child {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
+
+.badge {
+  flex-shrink: 0;
+  display: flex;
+}

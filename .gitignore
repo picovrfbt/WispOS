@@ -1,0 +1,24 @@
+node_modules/
+dist/
+build/
+.gradle/
+output/
+voice-artifacts/
+cache/
+*.exe
+*.apk
+go-librespot-armv6
+ui.zip
+lp.env
+go-librespot-config.yml
+iap2-sidecar-armv7
+local.properties
+.report-key
+dev-device/config/state.json
+dev-device/config/lockfile
+
+# Drive Mode prototype audio (Suno-made, not for the repo)
+wisp-companion/drive-mode-prototype/samples/
+
+# speech models fetched by wisp-firmware/os/scripts/prepare.sh
+voice-models/

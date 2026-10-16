@@ -1,0 +1,61 @@
+name: Car Thing bug
+description: Something wrong on the Car Thing itself (the screen, the knob, Spotify, voice, updates)
+labels: ["bug", "car thing"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for reporting it. The more exact the steps, the faster it gets fixed.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to make it happen
+      placeholder: |
+        1. On Home, turn the knob to …
+        2. Press …
+        3. …
+    validations:
+      required: true
+  - type: input
+    id: wisp-version
+    attributes:
+      label: Wisp version
+      description: On the Car Thing, Settings → Software update.
+      placeholder: v0.2.29
+    validations:
+      required: true
+  - type: dropdown
+    id: internet
+    attributes:
+      label: How the Car Thing gets internet
+      options:
+        - Bluetooth, from an Android phone
+        - Bluetooth, from an iPhone
+        - USB, from a PC
+    validations:
+      required: true
+  - type: input
+    id: app-version
+    attributes:
+      label: Wisp app version (if you use it)
+      description: At the top of the Wisp app's main screen.
+      placeholder: "0.9.17"
+  - type: dropdown
+    id: often
+    attributes:
+      label: How often
+      options:
+        - Every time
+        - Sometimes
+        - Once
+  - type: textarea
+    id: extra
+    attributes:
+      label: Photos, videos or anything else
+      description: A photo of the screen helps a lot. Leave out anything personal.

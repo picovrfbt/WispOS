@@ -1,0 +1,322 @@
+// Settings is a page over the whole screen: a header with the back arrow,
+// then the settings scrolling under it
+.root {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: $z-menu;
+  @include column;
+  background: $bg;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(28px);
+  transition:
+    opacity $dur-base $ease-standard,
+    transform $dur-base $ease-emphasized;
+}
+
+.open {
+  pointer-events: auto;
+  opacity: 1;
+  transform: none;
+}
+
+.header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  height: 76px;
+  padding: 0 24px 0 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.back {
+  @include flex-center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  color: $text-primary;
+
+  &:active {
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.title {
+  margin-left: 6px;
+  font-size: 30px;
+  font-weight: $fw-bold;
+  letter-spacing: -0.01em;
+  color: $text-primary;
+}
+
+.scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  @include hide-scrollbar;
+  touch-action: none;
+  // the dial glides it; a drag turns this off while the finger's down
+  scroll-behavior: smooth;
+}
+
+.panel {
+  width: 680px;
+  max-width: calc(100% - 48px);
+  margin: 0 auto;
+  // the knob's cursor is placed in here
+  position: relative;
+  padding: 8px 0 40px;
+  @include column;
+  @include flex-gap-y(10px);
+
+  // scroll, don't squeeze (Chrome 69 shrinks rows in a capped-height column)
+  > * {
+    flex-shrink: 0;
+  }
+}
+
+// each setting on its own card
+.row {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.05);
+  @include flex-gap-x($s-4);
+}
+
+// Auto / Manual, big enough to hit without looking twice
+.segmented {
+  display: flex;
+  padding: 4px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.segment {
+  min-width: 92px;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 19px;
+  font-size: $fs-md;
+  font-weight: $fw-semibold;
+  color: $text-secondary;
+  transition:
+    background-color $dur-fast $ease-standard,
+    color $dur-fast $ease-standard;
+}
+
+.segmentOn {
+  background: $accent;
+  color: #000;
+}
+
+.chip {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: $r-md;
+  background: rgba(255, 255, 255, 0.07);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $text-secondary;
+}
+
+.chipBtn {
+  transition:
+    transform $dur-fast $ease-standard,
+    background-color $dur-base $ease-standard,
+    color $dur-base $ease-standard;
+
+  &:active {
+    transform: scale(0.92);
+  }
+}
+
+// the accent colour itself, in the Accent colour row
+.swatch {
+  display: block;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: $accent;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.14);
+}
+
+.chipOn {
+  background: rgba(var(--accent-rgb, 30, 215, 96), 0.16);
+  color: $accent;
+}
+
+.rowMain {
+  flex: 1 1 auto;
+  min-width: 0;
+  @include column;
+  @include flex-gap-y($s-3);
+}
+
+.rowHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0 $s-2;
+  @include flex-gap-x($s-3);
+}
+
+.label {
+  font-size: $fs-lg;
+  font-weight: $fw-medium;
+  color: $text-primary;
+}
+
+// a label with a quieter line under it
+.labelStack {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: left;
+}
+
+.betaTag {
+  margin-left: 8px;
+  padding: 1px 7px;
+  border-radius: $r-pill;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  font-size: 11px;
+  font-weight: $fw-semibold;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  vertical-align: 3px;
+  color: $text-secondary;
+}
+
+.sublabel {
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: $fw-medium;
+  color: $text-tertiary;
+  @include truncate;
+}
+
+.value {
+  font-size: $fs-md;
+  font-weight: $fw-medium;
+  font-variant-numeric: tabular-nums;
+  color: $text-secondary;
+  white-space: nowrap;
+}
+
+.sectionHead {
+  margin-top: 18px;
+  padding: 0 6px;
+}
+
+.section {
+  font-size: $fs-md;
+  font-weight: $fw-semibold;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $text-tertiary;
+}
+
+.buttonsHint {
+  margin-top: 2px;
+  font-size: $fs-sm;
+  color: $text-quaternary;
+}
+
+.buttonRow {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 64px;
+  padding: 10px 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.05);
+  text-align: left;
+  @include flex-gap-x($s-4);
+
+  .chip {
+    font-weight: $fw-bold;
+    color: $text-primary;
+  }
+
+  .label {
+    flex: 1 1 auto;
+  }
+
+  &:active {
+    background: rgba(255, 255, 255, 0.06);
+  }
+}
+
+// Temperatures: the chip turns red while the Car Thing is hot
+.chipHot {
+  background: rgba(255, 59, 59, 0.22);
+  color: #ff5a5a;
+}
+
+// the sensors, under their row while it's open
+.sensorList {
+  margin: -4px 0 8px 56px;
+  padding: 6px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.sensor {
+  display: flex;
+  justify-content: space-between;
+  padding: 7px 0;
+  font-size: 16px;
+
+  & + & {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+}
+
+.sensorName {
+  color: $text-secondary;
+}
+
+.sensorTemp {
+  font-weight: $fw-semibold;
+  font-variant-numeric: tabular-nums;
+  color: $text-primary;
+}
+
+.sensorHot {
+  color: #ff5a5a;
+}
+
+// the knob's cursor: glides from control to control, filled while a slider is being set
+.cursor {
+  position: absolute;
+  z-index: 1;
+  border-radius: $r-md;
+  box-shadow: 0 0 0 3px $text-primary;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    top $dur-base $ease-standard,
+    left $dur-base $ease-standard,
+    width $dur-base $ease-standard,
+    height $dur-base $ease-standard,
+    opacity $dur-fast $ease-standard,
+    background-color $dur-fast $ease-standard;
+}
+
+.cursorOn {
+  opacity: 1;
+}
+
+.cursorAdjusting {
+  box-shadow: 0 0 0 3px $accent;
+  background: rgba(255, 255, 255, 0.06);
+}

@@ -1,0 +1,5 @@
+#!/bin/sh
+# Persist westonss output for support bundles
+mkdir -p /var/log/weston
+printf 's262144\nn2\n' > /var/log/weston/config
+exec svlogd -tt /var/log/weston

@@ -1,0 +1,146 @@
+// ringing: over everything, the screen dimmed behind
+.ringing {
+  @include absolute-fill;
+  @include flex-center;
+  z-index: $z-pairing;
+  background: rgba(0, 0, 0, 0.72);
+  animation: callIn $dur-slow $ease-standard both;
+}
+
+@keyframes callIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.card {
+  @include column;
+  align-items: center;
+  padding: $s-7 $s-8;
+}
+
+.label {
+  font-size: $fs-xl;
+  color: $text-secondary;
+  letter-spacing: 0.02em;
+}
+
+.name {
+  margin-top: $s-2;
+  max-width: 640px;
+  font-size: 44px;
+  font-weight: $fw-bold;
+  letter-spacing: -0.02em;
+  color: $text-primary;
+  text-align: center;
+  @include truncate;
+}
+
+.buttons {
+  display: flex;
+  margin-top: 40px;
+  @include flex-gap-x(96px);
+}
+
+.round {
+  @include flex-center;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  color: #fff;
+  border: 3px solid transparent;
+  transition: transform $dur-fast $ease-standard;
+
+  &:active {
+    transform: scale(0.94);
+  }
+}
+
+.decline {
+  background: #e5484d;
+}
+
+.answer {
+  background: #1ed760;
+  color: #000;
+  animation: answerPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes answerPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(30, 215, 96, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 18px rgba(30, 215, 96, 0);
+  }
+}
+
+.focus {
+  border-color: #fff;
+}
+
+// during the call: a small pill at the top, the rest of the screen still usable
+.pill {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: $z-menu;
+  display: flex;
+  align-items: center;
+  @include flex-gap-x($s-3);
+  max-width: 520px;
+  padding: 6px 6px 6px 16px;
+  border-radius: $r-pill;
+  background: rgba(30, 215, 96, 0.16);
+  border: 1px solid rgba(30, 215, 96, 0.4);
+  color: $text-primary;
+  animation: callIn $dur-slow $ease-standard both;
+}
+
+.pillIcon {
+  display: flex;
+  color: #1ed760;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.pillName {
+  font-size: $fs-lg;
+  font-weight: $fw-semibold;
+  @include truncate;
+}
+
+.timer {
+  font-size: $fs-lg;
+  color: $text-secondary;
+  font-variant-numeric: tabular-nums;
+}
+
+.end {
+  padding: 6px 16px;
+  border-radius: $r-pill;
+  background: #e5484d;
+  color: #fff;
+  font-size: $fs-md;
+  font-weight: $fw-semibold;
+
+  &:active {
+    background: #c93a3f;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ringing,
+  .pill,
+  .answer {
+    animation: none;
+  }
+}

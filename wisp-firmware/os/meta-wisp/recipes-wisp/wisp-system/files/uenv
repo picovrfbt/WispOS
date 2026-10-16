@@ -1,0 +1,19 @@
+#!/bin/sh
+# uenv on Wisp OS: the original firmware's boot-flag tool, as the daemon uses it.
+# "uenv set firstboot 1" asked the old firmware to reformat its data partition
+# on the next boot (the factory reset); the board's equivalent is the
+# factory_reset flag in the u-boot environment, which superbird-factory-reset
+# acts on before /var is mounted.
+set -u
+
+case "${1:-} ${2:-}" in
+  "set firstboot")
+    [ "${3:-}" = "1" ] && exec fw_setenv factory_reset 1
+    exec fw_setenv factory_reset
+    ;;
+  "get firstboot")
+    exec fw_printenv -n factory_reset
+    ;;
+esac
+echo "uenv: only 'set firstboot 0|1' and 'get firstboot' are supported on Wisp OS" >&2
+exit 2

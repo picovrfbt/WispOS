@@ -1,0 +1,48 @@
+#!/bin/sh
+# wisp-brightness: Settings -> Brightness on Wisp OS.
+#
+# The daemon writes /var/local/etc/backlight.conf (AUTO=0|1, BRIGHTNESS=1..10)
+# when the setting changes and restarts this service ("sv restart
+# auto_brightness"). Auto hands the backlight to the board's light-sensor
+# daemon, superbird-als; manual stops it and holds the chosen level.
+#
+# The mainline backlight runs 0..max_brightness with higher brighter (the
+# stock kernel's was inverted). Below the board's floor of 16 the LED driver
+# flickers, so the slider's 1 is that floor and 10 is full.
+CONF=/var/local/etc/backlight.conf
+FLOOR=16
+
+AUTO=1 BRIGHTNESS=8
+[ -r "$CONF" ] && . "$CONF" 2> /dev/null
+
+if [ "$AUTO" != "0" ]; then
+  systemctl start superbird-als.service
+  exec sleep infinity
+fi
+systemctl stop superbird-als.service
+
+BL=""
+for d in /sys/class/backlight/*; do
+  [ -w "$d/brightness" ] && BL="$d" && break
+done
+[ -n "$BL" ] || { echo "wisp-brightness: no backlight"; exit 1; }
+MAX=$(cat "$BL/max_brightness")
+
+while :; do
+  AUTO=1 BRIGHTNESS=8
+  [ -r "$CONF" ] && . "$CONF" 2> /dev/null
+  # switched back to auto: systemd restarts us into the branch above
+  [ "$AUTO" != "0" ] && exit 0
+  # the same perceptual curve as the original firmware: even steps in how
+  # bright it looks, not in duty cycle
+  awk -v b="$BRIGHTNESS" -v max="$MAX" -v floor="$FLOOR" '
+    function clamp(x, lo, hi) { return x < lo ? lo : (x > hi ? hi : x) }
+    BEGIN {
+      pmin = exp(log(0.005) / 2.5)
+      p = pmin + (1 - pmin) * (clamp(b, 1, 10) - 1) / 9
+      light = exp(2.5 * log(p))
+      printf "%d\n", clamp(floor + light * (max - floor), floor, max)
+    }' > "$BL/brightness" 2> /dev/null
+  # re-applied every few seconds so the level survives sleep
+  sleep 2
+done

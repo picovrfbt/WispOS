@@ -1,0 +1,11 @@
+[Unit]
+Description=Wisp UI (served to the kiosk)
+Before=chromium-kiosk.service
+
+[Service]
+ExecStart=/usr/libexec/wisp/wisp-ui-start
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target

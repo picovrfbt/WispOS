@@ -1,0 +1,38 @@
+# Wisp OS: Wisp on a mainline kernel with Chromium 147 drawing on the Car
+# Thing's graphics chip. The Car Thing's board support (kernel, u-boot, panel,
+# touch, knob, Bluetooth, A/B updates) is JoeyEamigh/yocto-superbird; this
+# layer puts Wisp on top of it.
+#
+#   kas-container build kas/wisp.yml        (or: just build)
+header:
+  version: 18
+  includes:
+    - repo: yocto-superbird
+      file: kas/superbird.yml
+
+distro: wisp
+
+target:
+  - wisp-image
+
+repos:
+  yocto-superbird:
+    url: https://github.com/JoeyEamigh/yocto-superbird.git
+    branch: main
+    commit: bcba74441aa9e35b3a07cc8f087277e8281a5a46
+    path: sources/yocto-superbird
+    layers:
+      meta-superbird:
+
+  wisp-os:
+    path: .
+    layers:
+      meta-wisp:
+
+local_conf_header:
+  wisp: |
+    # the shipped image isn't the board layer's dev image: no empty root password
+    EXTRA_IMAGE_FEATURES:remove = "allow-empty-password empty-root-password serial-autologin-root"
+    # 15 GB of WSL memory: Chromium's link steps need room
+    BB_NUMBER_THREADS = "8"
+    PARALLEL_MAKE = "-j 12"

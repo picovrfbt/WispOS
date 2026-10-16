@@ -1,0 +1,14 @@
+// the album cover as a soft light behind itself: a baked, feathered image
+// stretched past the cover's edges, no filter and no animation
+.glow {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  left: 50%;
+  width: var(--glow-spread, 130%);
+  height: var(--glow-spread, 130%);
+  transform: translate(-50%, -50%);
+  background-size: 100% 100%;
+  pointer-events: none;
+  transition: opacity 400ms ease;
+}

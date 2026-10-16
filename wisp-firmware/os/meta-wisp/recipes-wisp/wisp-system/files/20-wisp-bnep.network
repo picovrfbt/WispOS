@@ -1,0 +1,16 @@
+# Internet from the phone's Bluetooth tether. The daemon brings bnep0 up
+# through BlueZ (Network1.Connect "nap"); networkd takes the address.
+[Match]
+Name=bnep*
+
+[Network]
+DHCP=ipv4
+LinkLocalAddressing=no
+IPv6AcceptRA=no
+
+[DHCPv4]
+RouteMetric=50
+UseDNS=yes
+
+[Link]
+RequiredForOnline=no

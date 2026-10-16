@@ -1,0 +1,149 @@
+// the Wisp bar: soft colour along the bottom edge while the Car Thing listens
+.bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 190px;
+  z-index: $z-pairing;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(60px);
+  transition:
+    opacity 420ms $ease-standard,
+    transform 520ms $ease-emphasized;
+}
+
+.on {
+  opacity: 1;
+  transform: none;
+}
+
+// stands taller with the voice; the level events set its scale directly
+.level {
+  position: absolute;
+  left: -12%;
+  right: -12%;
+  bottom: 0;
+  height: 100%;
+  transform: scaleY(0.42);
+  transform-origin: 50% 100%;
+  transition: transform 110ms linear;
+  will-change: transform;
+}
+
+// no level from an older wake listener: breathe instead
+.breathing {
+  animation: breathe 1.5s ease-in-out infinite;
+}
+
+.thinking .level {
+  transform: scaleY(0.3);
+  transition: transform 400ms $ease-standard;
+}
+
+// each blob is a gradient drawn once onto its own layer, then only moved
+.blob {
+  position: absolute;
+  bottom: -110px;
+  width: 46%;
+  height: 300px;
+  border-radius: 50%;
+  will-change: transform;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+.b1 {
+  left: -4%;
+  background: radial-gradient(
+    closest-side,
+    rgba(var(--accent-rgb, 30, 215, 96), 0.95),
+    rgba(var(--accent-rgb, 30, 215, 96), 0)
+  );
+  animation-name: driftA;
+  animation-duration: 3.4s;
+}
+
+.b2 {
+  left: 18%;
+  background: radial-gradient(closest-side, rgba(45, 212, 214, 0.85), rgba(45, 212, 214, 0));
+  animation-name: driftB;
+  animation-duration: 4.1s;
+}
+
+.b3 {
+  left: 38%;
+  background: radial-gradient(closest-side, rgba(124, 92, 255, 0.85), rgba(124, 92, 255, 0));
+  animation-name: driftA;
+  animation-duration: 3.8s;
+  animation-delay: -1.2s;
+}
+
+.b4 {
+  left: 58%;
+  background: radial-gradient(closest-side, rgba(255, 82, 168, 0.75), rgba(255, 82, 168, 0));
+  animation-name: driftB;
+  animation-duration: 4.6s;
+  animation-delay: -2s;
+}
+
+.b5 {
+  left: 76%;
+  background: radial-gradient(
+    closest-side,
+    rgba(var(--accent-rgb, 30, 215, 96), 0.9),
+    rgba(var(--accent-rgb, 30, 215, 96), 0)
+  );
+  animation-name: driftA;
+  animation-duration: 3.1s;
+  animation-delay: -0.6s;
+}
+
+// Wisp's words are up: a calm, lower glow under them
+.speaking .level {
+  transform: scaleY(0.55);
+  transition: transform 400ms $ease-standard;
+}
+
+// working it out: the colours swirl faster
+.thinking .blob {
+  animation-duration: 1.3s;
+}
+
+@keyframes driftA {
+  from {
+    transform: translate3d(-40px, 10px, 0) scale(0.9);
+  }
+  to {
+    transform: translate3d(60px, -20px, 0) scale(1.15);
+  }
+}
+
+@keyframes driftB {
+  from {
+    transform: translate3d(50px, -10px, 0) scale(1.1);
+  }
+  to {
+    transform: translate3d(-60px, 15px, 0) scale(0.88);
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scaleY(0.5);
+  }
+  50% {
+    transform: scaleY(0.8);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blob,
+  .breathing {
+    animation: none;
+  }
+}

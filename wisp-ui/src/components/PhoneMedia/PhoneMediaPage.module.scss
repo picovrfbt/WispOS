@@ -1,0 +1,284 @@
+// sized for the Car Thing's 800x480, in step with the Spotify player's big-art view
+$art: 300px;
+
+.root {
+  @include absolute-fill;
+  overflow: hidden;
+  background: $bg;
+  color: $text-primary;
+}
+
+// no cover from the app: a still gradient, picked from the title
+.gradient {
+  @include absolute-fill;
+
+  &::after {
+    content: '';
+    @include absolute-fill;
+    background: rgba(0, 0, 0, 0.35);
+  }
+}
+
+.main {
+  position: relative;
+  z-index: $z-content;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 56px 0 64px;
+}
+
+.artWrap {
+  position: relative;
+  flex: 0 0 $art;
+  width: $art;
+  height: $art;
+}
+
+.art {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: $r-lg;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.artFallback {
+  @include flex-center;
+  width: 100%;
+  height: 100%;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.info {
+  @include column;
+  flex: 1 1 auto;
+  min-width: 0;
+  margin-left: 48px;
+}
+
+.sourceRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  @include flex-gap-x($s-3);
+}
+
+// small and quiet: lyrics are off until this turns them on
+.lyricsToggle {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  border-radius: $r-pill;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 15px;
+  font-weight: $fw-semibold;
+  color: $text-secondary;
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.lyricsOn {
+  background: rgba(255, 255, 255, 0.26);
+  color: $text-primary;
+}
+
+.source {
+  display: flex;
+  align-items: center;
+  align-self: flex-start;
+  min-width: 0;
+  max-width: 100%;
+  padding: 6px 14px 6px 10px;
+  border-radius: $r-pill;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 18px;
+  font-weight: $fw-semibold;
+  color: $text-primary;
+  @include flex-gap-x($s-2);
+
+  span {
+    @include truncate;
+  }
+}
+
+.title {
+  margin-top: 18px;
+  font-size: 38px;
+  font-weight: $fw-bold;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+  @include truncate(2);
+}
+
+.artist {
+  margin-top: 8px;
+  font-size: 24px;
+  font-weight: $fw-semibold;
+  color: $text-secondary;
+  @include truncate;
+}
+
+.progress {
+  margin-top: 24px;
+}
+
+// a finger-sized strip around the thin bar
+.barHit {
+  padding: 14px 0;
+  margin: -14px 0;
+  touch-action: none;
+}
+
+.bar {
+  height: 6px;
+  transition: transform $dur-fast $ease-standard;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.22);
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  background: $text-primary;
+  transform-origin: left center;
+}
+
+.seekable:active .bar {
+  // grows under the finger without moving anything around it
+  transform: scaleY(1.7);
+}
+
+.times {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 16px;
+  font-weight: $fw-medium;
+  color: $text-secondary;
+  font-variant-numeric: tabular-nums;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  margin-top: 26px;
+  @include flex-gap-x(28px);
+}
+
+.ctrl {
+  @include flex-center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  color: $text-primary;
+  transition: transform $dur-fast $ease-standard;
+
+  &:active {
+    transform: scale(0.92);
+  }
+}
+
+.play {
+  width: 84px;
+  height: 84px;
+  background: $text-primary;
+  color: #000;
+}
+
+// lyrics on: one column on the left (cover, then the song and its controls
+// under it), centred in its half; the lyrics filling the right
+.withLyrics {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  // the spare height split above and below, so the column sits in the middle
+  grid-template-rows: minmax(0, 1fr) auto auto minmax(0, 1fr);
+  align-items: start;
+  padding: 22px 20px 18px 32px;
+
+  .artWrap {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: center;
+    width: 132px;
+    height: 132px;
+  }
+
+  .info {
+    grid-column: 1;
+    grid-row: 3;
+    width: 250px;
+    margin-left: 0;
+    margin-top: 14px;
+    align-items: center;
+    text-align: center;
+  }
+
+  .sourceRow {
+    justify-content: center;
+  }
+
+  .source {
+    align-self: center;
+  }
+
+  .progress {
+    align-self: stretch;
+  }
+
+  .title {
+    margin-top: 10px;
+    font-size: 26px;
+  }
+
+  .artist {
+    font-size: 19px;
+  }
+
+  .progress {
+    margin-top: 16px;
+  }
+
+  .controls {
+    justify-content: center;
+    margin-top: 16px;
+    @include flex-gap-x(12px);
+  }
+
+  .ctrl {
+    width: 52px;
+    height: 52px;
+  }
+
+  .play {
+    width: 68px;
+    height: 68px;
+  }
+
+  .lyricsPane {
+    grid-column: 2;
+    grid-row: 1 / 5;
+    align-self: stretch;
+    margin-left: 28px;
+  }
+}
+
+.lyricsPane {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  margin-left: 24px;
+  display: flex;
+  flex-direction: column;
+}

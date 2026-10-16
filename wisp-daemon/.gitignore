@@ -1,0 +1,47 @@
+# IDE files
+*.iml
+/.idea
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Configuration files
+/credentials.json
+/state.json
+/.report-key
+/lockfile
+
+# Env files (local dev only, never committed)
+.env
+.env.*
+
+# local-only debug probe, gated behind -tags lyricsprobe
+daemon/lyrics_probe.go
+
+# Build files
+/.gocache
+/vcpkg
+/vcpkg_installed
+/dist
+
+# Compiled binaries
+/thing-daemon
+/go-librespot
+/go-librespot-*
+
+# Dev artifacts
+*.cpuprofile
+*.heapsnapshot
+*.heapprofile
+coverage.out
+coverage.html
+
+# OS junk
+.DS_Store
+Thumbs.db
+iap2/sidecar/target/
+iap2/iap2-sidecar-armv7
+
+# desktop dev build (dev-device/start.ps1)
+wisp-daemon-dev.exe
+fake-nav-phone.exe

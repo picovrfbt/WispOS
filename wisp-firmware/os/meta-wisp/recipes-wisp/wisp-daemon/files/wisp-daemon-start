@@ -1,0 +1,73 @@
+#!/bin/sh
+# wisp-daemon-start: the original firmware's go-librespot runit script on
+# systemd. It copies the config to the data partition the first time, loads the
+# lyrics provider's keys, shortens Bluetooth's advertising interval, names the
+# adapter "Wisp", and runs an installed over-the-air update's daemon unless that
+# one keeps crashing (then the update before it, or the flashed one).
+export HOME=/root
+
+# phones find the knob's HID bond far sooner at 100-150 ms than the 1.28 s default
+BT_DEBUGFS=/sys/kernel/debug/bluetooth/hci0
+grep -q " /sys/kernel/debug " /proc/mounts 2>/dev/null || mount -t debugfs none /sys/kernel/debug 2>/dev/null
+i=0
+while [ ! -w "$BT_DEBUGFS/adv_min_interval" ] && [ "$i" -lt 10 ]; do
+  sleep 1
+  i=$((i + 1))
+done
+if [ -w "$BT_DEBUGFS/adv_min_interval" ]; then
+  echo 160 > "$BT_DEBUGFS/adv_min_interval" && echo 240 > "$BT_DEBUGFS/adv_max_interval" &&
+    echo "bt: le advertising interval set to 100-150ms"
+fi
+busctl set-property org.bluez /org/bluez/hci0 org.bluez.Adapter1 Alias s Wisp 2>/dev/null ||
+  echo "bt: couldn't set the adapter's name yet"
+
+CONFIG_DIR="/var/local/etc/go-librespot"
+mkdir -p "$CONFIG_DIR"
+if [ ! -f "$CONFIG_DIR/config.yml" ]; then
+  cp /etc/go-librespot/config.yml "$CONFIG_DIR/config.yml.new"
+  sync
+  mv "$CONFIG_DIR/config.yml.new" "$CONFIG_DIR/config.yml"
+  sync
+fi
+rm -f "$CONFIG_DIR/lockfile"
+
+# primary lyrics provider config
+if [ -s /etc/go-librespot/lp.env ]; then
+  set -a
+  . /etc/go-librespot/lp.env
+  set +a
+fi
+
+# an installed over-the-air update's daemon, unless it keeps crashing: four
+# starts inside three minutes marks it bad, and the update before it (if it's
+# still good) or else the flashed one takes over
+BIN=/usr/sbin/go-librespot
+APP=$(/usr/libexec/wisp-app-dir)
+if [ -n "$APP" ]; then
+  STARTS=/run/wisp-app.starts
+  NOW=$(awk '{print int($1)}' /proc/uptime)
+  RECENT=$(awk -v n="$NOW" '$1 >= n-180' "$STARTS" 2>/dev/null)
+  if [ "$(printf '%s\n' "$RECENT" | grep -c .)" -ge 4 ]; then
+    echo "WISP: update in $APP keeps crashing, going back" > /dev/kmsg
+    echo "crash loop" > "$APP/.bad"
+    printf '{"from":"%s","to":"","why":"kept crashing","at":%s000}\n' \
+      "$(basename "$APP")" "$(date +%s)" > /var/local/wisp/app/rolled-back.json
+    sync
+    rm -f "$STARTS"
+    # the update before it, when there's a good one
+    APP=$(/usr/libexec/wisp-app-dir)
+    if [ -n "$APP" ]; then
+      BIN="$APP/go-librespot"
+      printf '{"from":"%s","to":"%s","why":"kept crashing","at":%s000}\n' \
+        "$(basename "$(readlink -f /var/local/wisp/app/current)")" "$(basename "$APP")" "$(date +%s)" \
+        > /var/local/wisp/app/rolled-back.json
+      sync
+    fi
+    sv restart wisp-ui chromium 2>/dev/null
+  else
+    { [ -n "$RECENT" ] && printf '%s\n' "$RECENT"; echo "$NOW"; } > "$STARTS"
+    BIN="$APP/go-librespot"
+  fi
+fi
+
+exec "$BIN" --config_dir "$CONFIG_DIR"

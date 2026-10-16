@@ -1,0 +1,393 @@
+// Wisp's setup look, from the phone app (WispViews.kt): near black, three soft
+// glows, the wordmark with its wisp, and the wisp of light linking a phone to
+// the Car Thing. Motion is transform, opacity and a stroke's dash offset only,
+// which Chrome 69 composites without repainting.
+
+$scene-bg: #0b0b0c;
+$blue: rgb(43, 108, 255);
+$teal: rgb(20, 184, 166);
+$amber: rgb(245, 165, 36);
+
+// --- the scene ---------------------------------------------------------------
+
+.scene {
+  @include absolute-fill;
+  background: $scene-bg;
+  overflow: hidden;
+  z-index: $z-menu;
+  color: $text-primary;
+  animation: sceneIn $dur-slow $ease-standard both;
+  --glow: var(--accent-rgb, 30, 215, 96);
+}
+
+.sceneAttention {
+  --glow: 245, 165, 36;
+}
+
+@keyframes sceneIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.glows {
+  @include absolute-fill;
+  pointer-events: none;
+
+  span {
+    position: absolute;
+    border-radius: 50%;
+    will-change: transform;
+  }
+}
+
+.glowTop {
+  left: -260px;
+  top: -300px;
+  width: 620px;
+  height: 620px;
+  background: radial-gradient(closest-side, rgba(var(--glow), 0.3), rgba(var(--glow), 0));
+  animation: drift 14s ease-in-out infinite alternate;
+}
+
+.glowRight {
+  right: -300px;
+  top: 120px;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(closest-side, rgba($blue, 0.2), rgba($blue, 0));
+  animation: drift 17s ease-in-out -6s infinite alternate-reverse;
+}
+
+.glowBottom {
+  left: 140px;
+  bottom: -330px;
+  width: 560px;
+  height: 560px;
+  background: radial-gradient(closest-side, rgba($teal, 0.16), rgba($teal, 0));
+  animation: drift 20s ease-in-out -11s infinite alternate;
+}
+
+@keyframes drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(40px, 24px, 0);
+  }
+}
+
+.sceneMark {
+  position: absolute;
+  left: $s-6;
+  top: $s-5;
+  opacity: 0.85;
+}
+
+.sceneBody {
+  position: relative;
+  height: 100%;
+  padding: 64px 40px 28px;
+  @include column;
+}
+
+// --- the wordmark ------------------------------------------------------------
+
+.mark {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.markWord {
+  font-weight: $fw-semibold;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: $text-primary;
+}
+
+.markWisp {
+  overflow: visible;
+}
+
+.markPath {
+  fill: none;
+  stroke: rgb(var(--accent-rgb, 30, 215, 96));
+  stroke-width: 2.6;
+  stroke-linecap: round;
+}
+
+.markSpark {
+  fill: rgb(var(--accent-rgb, 30, 215, 96));
+}
+
+// loading: the wisp stays faint and light circles along it: one streak runs
+// into the spark as the next is already setting off, so it never pauses
+.markFlow {
+  fill: none;
+  stroke: rgb(var(--accent-rgb, 30, 215, 96));
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  stroke-dasharray: 34 66;
+  stroke-dashoffset: 34;
+  animation: runWisp 1.6s linear infinite;
+  filter: drop-shadow(0 0 6px rgba(var(--accent-rgb, 30, 215, 96), 0.7));
+}
+
+.markAnimate {
+  .markPath {
+    stroke: rgba(var(--accent-rgb, 30, 215, 96), 0.22);
+  }
+
+  .markSpark {
+    transform-origin: 143px 7px;
+    animation: arrive 1.6s linear infinite;
+  }
+}
+
+@keyframes runWisp {
+  from {
+    stroke-dashoffset: 34;
+  }
+  to {
+    stroke-dashoffset: -66;
+  }
+}
+
+// the spark brightens as each streak reaches it
+@keyframes arrive {
+  0%,
+  70% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  85% {
+    transform: scale(1.6);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.6);
+    opacity: 0.55;
+  }
+}
+
+// --- the link ------------------------------------------------------------------
+
+.link {
+  width: 300px;
+  height: 112px;
+  overflow: visible;
+
+  rect,
+  line,
+  circle,
+  path {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+.linkDevice {
+  rect,
+  line {
+    stroke: rgba(255, 255, 255, 0.78);
+    stroke-width: 3;
+  }
+}
+
+.linkTrack {
+  stroke: rgba(var(--accent-rgb, 30, 215, 96), 0.18);
+  stroke-width: 3;
+}
+
+.linkFlow {
+  stroke: rgb(var(--accent-rgb, 30, 215, 96));
+  stroke-width: 3;
+  stroke-dasharray: 10 14;
+  animation: flow 1.2s linear infinite;
+}
+
+@keyframes flow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+.linkCarThing {
+  rect,
+  circle {
+    stroke: rgba(255, 255, 255, 0.5);
+    stroke-width: 3;
+    stroke-dasharray: 6 6;
+  }
+}
+
+.linkSpark {
+  fill: rgb(var(--accent-rgb, 30, 215, 96)) !important;
+  transform-origin: 80px 66px;
+  animation: breathe 2s ease-in-out infinite;
+}
+
+.linkLinked {
+  .linkTrack {
+    stroke: rgba(var(--accent-rgb, 30, 215, 96), 0.55);
+  }
+
+  .linkFlow {
+    stroke-dasharray: none;
+    animation: none;
+    opacity: 0.9;
+  }
+
+  .linkCarThing {
+    rect,
+    circle {
+      stroke: rgb(var(--accent-rgb, 30, 215, 96));
+      stroke-dasharray: none;
+    }
+  }
+
+  .linkSpark {
+    transform-origin: 248px 50px;
+  }
+}
+
+// --- shared pieces -----------------------------------------------------------
+
+.title {
+  margin: 0;
+  font-size: $fs-4xl;
+  font-weight: $fw-semibold;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.lede {
+  margin: $s-3 0 0;
+  font-size: $fs-xl;
+  color: $text-secondary;
+  line-height: 1.4;
+}
+
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  @include column;
+  @include flex-gap-y($s-4);
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    @include flex-gap-x($s-3);
+    font-size: $fs-xl;
+    line-height: 1.35;
+    color: $text-secondary;
+  }
+
+  strong {
+    color: $text-primary;
+    font-weight: $fw-semibold;
+  }
+}
+
+.stepNum {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  margin-top: -1px;
+  border-radius: 50%;
+  @include flex-center;
+  font-size: $fs-md;
+  font-weight: $fw-bold;
+  color: $scene-bg;
+  background: rgb(var(--accent-rgb, 30, 215, 96));
+}
+
+.chip {
+  display: inline-block;
+  padding: 1px 10px;
+  border-radius: $r-pill;
+  background: rgba(var(--accent-rgb, 30, 215, 96), 0.16);
+  color: rgb(var(--accent-rgb, 30, 215, 96));
+  font-weight: $fw-semibold;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  @include flex-gap-x($s-2);
+  font-size: $fs-md;
+  color: $text-tertiary;
+}
+
+.statusSpark {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgb(var(--glow));
+  animation: breathe 2s ease-in-out infinite;
+}
+
+// --- the guide QR --------------------------------------------------------------
+
+.guide {
+  display: flex;
+  align-items: center;
+  @include flex-gap-x($s-3);
+}
+
+.guideQr {
+  flex: none;
+  padding: 6px;
+  border-radius: $r-md;
+  background: #fff;
+  line-height: 0;
+}
+
+.guideText {
+  @include column;
+  font-size: $fs-sm;
+  color: $text-tertiary;
+  line-height: 1.45;
+}
+
+.guideTitle {
+  font-size: $fs-md;
+  font-weight: $fw-semibold;
+  color: $text-secondary;
+}
+
+.guideUrl {
+  color: $text-quaternary;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glows span,
+  .linkFlow,
+  .linkSpark,
+  .statusSpark,
+  .markAnimate .markSpark {
+    animation: none;
+  }
+  .markFlow {
+    animation: none;
+    stroke-dasharray: none;
+  }
+}

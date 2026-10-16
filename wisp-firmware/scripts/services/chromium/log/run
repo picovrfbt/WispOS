@@ -1,0 +1,5 @@
+#!/bin/sh
+# Persist chromiums stderr so support bundles can say why it died
+mkdir -p /var/log/chromium
+printf 's262144\nn2\n' > /var/log/chromium/config
+exec svlogd -tt /var/log/chromium

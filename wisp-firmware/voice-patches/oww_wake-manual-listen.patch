@@ -1,0 +1,51 @@
+--- a/src/oww_wake.c
++++ b/src/oww_wake.c
+@@ -32,6 +32,10 @@
+ static volatile sig_atomic_t g_stop = 0;
+ static void on_signal(int sig) { (void)sig; g_stop = 1; }
+ 
++// SIGUSR1: capture a command now, as if the wake word had been heard (a button)
++static volatile sig_atomic_t g_listen = 0;
++static void on_listen(int sig) { (void)sig; g_listen = 1; }
++
+ static double now_s(void) {
+ 	struct timespec t;
+ 	clock_gettime(CLOCK_MONOTONIC, &t);
+@@ -355,6 +359,7 @@
+ 
+ 	signal(SIGINT, on_signal);
+ 	signal(SIGTERM, on_signal);
++	signal(SIGUSR1, on_listen);
+ 
+ 	long cmd_max    = (long)(cmd_secs * SR);
+ 	long min_n      = (long)(min_secs * SR);
+@@ -400,8 +405,11 @@
+ 				int16_t chunk16[STEP];
+ 				for (int k = 0; k < STEP; k++) chunk16[k] = gained_s16(stage[k], gain);
+ 				float score = chain_push(c, chunk16);
+-				if (score >= threshold && now_s() >= cooldown_until) {
+-					printf("WAKE %.3f\n", score);
++				int manual = g_listen;
++				if (manual || (score >= threshold && now_s() >= cooldown_until)) {
++					g_listen = 0;
++					if (manual) printf("WAKE manual\n");
++					else printf("WAKE %.3f\n", score);
+ 					state = RECORDING;
+ 					cmd_n = 0;
+ 					rec_floor = floor_rms > EP_FLOOR_MIN ? floor_rms : EP_FLOOR_MIN;
+@@ -411,8 +419,15 @@
+ 					rec_minrms = 1e9;
+ 				}
+ 			} else { // recording
++				g_listen = 0;
+ 				for (int k = 0; k < STEP && cmd_n < cmd_max; k++) cmd[cmd_n++] = stage[k];
+ 				if (rms > rec_maxrms) rec_maxrms = rms;
++				{
++					double ratio = rms / (rec_floor > 0 ? rec_floor : EP_FLOOR_MIN);
++					double level = ratio > 1.0 ? log(ratio) / log(40.0) : 0.0;
++					if (level > 1.0) level = 1.0;
++					printf("LEVEL %.3f\n", level);
++				}
+ 				if (rms < rec_minrms) rec_minrms = rms;
+ 				int stop = 0;
+ 				if (endpoint_on) {

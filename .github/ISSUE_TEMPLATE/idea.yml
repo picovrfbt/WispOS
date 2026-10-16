@@ -1,0 +1,26 @@
+name: Idea
+description: Something Wisp could do, or do better
+labels: ["idea"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: What you'd like Wisp to do.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it would help
+      description: When you'd use it, on the road or off it.
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where
+      multiple: true
+      options:
+        - The Car Thing
+        - The Wisp app
+        - Drive Mode
+        - Directions and the map

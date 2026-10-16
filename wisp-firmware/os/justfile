@@ -1,0 +1,21 @@
+# Wisp OS. Run on Linux or in WSL, from a copy on a Linux filesystem (the
+# build needs case-sensitive paths and file locking: `just sync` makes one).
+
+work := env_var_or_default("WISP_OS_WORK", env_var("HOME") + "/wisp-os")
+
+# copy this layer (and what prepare.sh builds from) to the Linux-side work tree
+sync:
+    mkdir -p {{work}}
+    rsync -a --delete --exclude sources --exclude build --exclude ccache ./ {{work}}/os/
+
+# stage Wisp into the layer: just prepare v0.3.0
+prepare VERSION:
+    sh scripts/prepare.sh {{VERSION}}
+
+# build the image (hours the first time; the board layer's shared cache covers most of it)
+build:
+    cd {{work}}/os && kas-container build kas/wisp.yml
+
+# where the flashable zip lands
+artifact:
+    @ls -1 {{work}}/os/build/tmp/deploy/images/superbird/*wisp-image*flashthing.zip

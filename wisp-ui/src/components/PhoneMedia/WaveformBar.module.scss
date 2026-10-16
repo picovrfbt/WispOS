@@ -1,0 +1,59 @@
+// laid out like the plain progress bar: time, bar, length
+.row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: $s-4;
+  width: 100%;
+  height: 44px;
+}
+
+.time {
+  font-size: 16px;
+  font-weight: $fw-medium;
+  font-variant-numeric: tabular-nums;
+  color: $text-tertiary;
+  min-width: 48px;
+}
+
+.timeLeft {
+  text-align: right;
+}
+
+.timeRight {
+  text-align: left;
+}
+
+// the waveform, a little taller than the plain bar so its shape reads
+.area {
+  position: relative;
+  height: 36px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.unplayed,
+.played {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.unplayed {
+  color: rgba(255, 255, 255, 0.28);
+}
+
+.played {
+  color: var(--player-fill, #{$text-primary});
+  clip-path: inset(0 100% 0 0);
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}

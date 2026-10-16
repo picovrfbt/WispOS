@@ -1,0 +1,59 @@
+#!/bin/sh
+
+exec 2>&1
+sv check weston > /dev/null || exit 1
+sv check wisp-ui > /dev/null || exit 1
+
+# wait for the daemon
+i=0
+until sv check go-librespot > /dev/null 2>&1; do
+  i=$((i + 1))
+  if [ "$i" -ge 45 ]; then
+    echo "CHROMIUM: go-librespot not up after ${i}s, starting UI anyway" > /dev/kmsg
+    break
+  fi
+  sleep 1
+done
+
+# crash loop breaking
+STARTS=/run/chromium.starts
+NOW=$(awk '{print int($1)}' /proc/uptime)
+RECENT=$(awk -v n="$NOW" '$1 >= n-300' "$STARTS" 2>/dev/null)
+if [ "$(printf '%s\n' "$RECENT" | grep -c .)" -ge 5 ]; then
+  echo "CHROMIUM: $(printf '%s\n' "$RECENT" | grep -c .) starts in 5min, resetting corrupt profile" > /dev/kmsg
+  rm -rf /var/cache/chrome_storage
+  RECENT=""
+fi
+{ [ -n "$RECENT" ] && printf '%s\n' "$RECENT"; echo "$NOW"; } > "$STARTS"
+
+export XDG_RUNTIME_DIR="/run/wayland/"
+export XDG_CACHE_HOME="/var/cache"
+export BREAKPAD_DUMP_LOCATION="/var/cache/chrome_storage/Crash Reports"
+
+# keep Chrome's HTTP, compiled-code and shader caches between boots: the UI is
+# the same every boot, and re-downloading and re-parsing its scripts is most of
+# the startup time. Clear them only when the installed UI changes (a firmware
+# update or reflash), or a stale cached index.html could point at script files
+# the update removed. The fingerprint is the UI's index.html, which changes on
+# every build because it names the content-hashed bundles.
+UI_STAMP=/var/cache/chrome_storage/.ui-fingerprint
+UI_ROOT=/etc/mira/ui
+APP=$(/usr/libexec/wisp-app-dir)
+[ -n "$APP" ] && UI_ROOT="$APP/ui"
+UI_NOW=$(cksum "$UI_ROOT/index.html" 2>/dev/null | cut -d' ' -f1)
+if [ -z "$UI_NOW" ] || [ "$(cat "$UI_STAMP" 2>/dev/null)" != "$UI_NOW" ]; then
+  rm -rf /var/cache/chrome_storage/Default/Cache \
+    "/var/cache/chrome_storage/Default/Code Cache" \
+    /var/cache/chrome_storage/Default/GPUCache 2>/dev/null
+  mkdir -p /var/cache/chrome_storage
+  [ -n "$UI_NOW" ] && echo "$UI_NOW" > "$UI_STAMP"
+  echo "CHROMIUM: UI changed, browser caches cleared" > /dev/kmsg
+fi
+
+rm -f /var/cache/chrome_storage/Singleton* 2>/dev/null
+
+ls -1t "$BREAKPAD_DUMP_LOCATION"/*.dmp 2>/dev/null | tail -n +4 | while read -r f; do
+  rm -f "$f"
+done
+
+exec /usr/bin/chromium-browser/chrome --no-sandbox --in-process-gpu --remote-debugging-port=2222 --user-data-dir=/var/cache/chrome_storage --disk-cache-size=52428800 --kiosk --disable-pinch --allow-file-access-from-files --ignore-certificate-errors --enable-experimental-web-platform-features --default-background-color=ff121212 --app=http://localhost:80

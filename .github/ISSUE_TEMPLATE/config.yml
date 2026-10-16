@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Setup guide
+    url: https://github.com/picovrfbt/WispOS#-getting-started
+    about: Flashing, getting the Car Thing online and installing the Wisp app.

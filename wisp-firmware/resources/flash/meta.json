@@ -1,0 +1,50 @@
+{
+  "$schema": "https://terbium.app/schema/meta/v1.json",
+  "metadataVersion": 2,
+  "name": "wisp",
+  "version": "@IMAGE_VERSION@",
+  "description": "Wisp firmware for the Spotify Car Thing.",
+  "steps": [
+    { "type": "bulkcmd", "value": "amlmmc part 1" },
+    { "type": "log", "value": "rebuilding partition table from device tree (no-op on healthy devices)" },
+    {
+      "type": "writeLargeMemory",
+      "value": {
+        "address": 17301504,
+        "data": { "filePath": "superbird.dtb" },
+        "blockLength": 4096,
+        "appendZeros": true
+      }
+    },
+    { "type": "bulkcmd", "value": "store dtb write 0x1080000 0x19a00" },
+    { "type": "bulkcmd", "value": "store init 1" },
+    { "type": "log", "value": "restoring factory boot device tree" },
+    { "type": "writeUserArea", "value": { "lba": 81920, "data": { "filePath": "factory_dtb.bin" } } },
+    { "type": "writeUserArea", "value": { "lba": 82432, "data": { "filePath": "factory_dtb.bin" } } },
+    { "type": "log", "value": "restoring partitions" },
+    { "type": "restorePartition", "value": { "name": "fip_a", "data": { "filePath": "fip_a.dump" } } },
+    { "type": "restorePartition", "value": { "name": "fip_b", "data": { "filePath": "fip_b.dump" } } },
+    { "type": "restorePartition", "value": { "name": "logo", "data": { "filePath": "logo.dump" } } },
+    { "type": "restorePartition", "value": { "name": "dtbo_a", "data": { "filePath": "dtbo_a.dump" } } },
+    { "type": "restorePartition", "value": { "name": "dtbo_b", "data": { "filePath": "dtbo_b.dump" } } },
+    { "type": "restorePartition", "value": { "name": "vbmeta_a", "data": { "filePath": "vbmeta_a.dump" } } },
+    { "type": "restorePartition", "value": { "name": "vbmeta_b", "data": { "filePath": "vbmeta_b.dump" } } },
+    { "type": "restorePartition", "value": { "name": "boot_a", "data": { "filePath": "boot_a.dump" } } },
+    { "type": "restorePartition", "value": { "name": "boot_b", "data": { "filePath": "boot_b.dump" } } },
+    { "type": "restorePartition", "value": { "name": "system_a", "data": { "filePath": "system_a.ext2" } } },
+    { "type": "restorePartition", "value": { "name": "system_b", "data": { "filePath": "system_b.ext2" } } },
+    { "type": "restorePartition", "value": { "name": "misc", "data": { "filePath": "misc.dump" } } },
+    { "type": "restorePartition", "value": { "name": "bootloader", "data": { "filePath": "bootloader.dump" } } },
+    { "type": "writeEnv", "value": { "filePath": "env.txt" } },
+    { "type": "bulkcmd", "value": "saveenv" },
+    { "type": "log", "value": "installing bootloader into eMMC boot partitions" },
+    {
+      "type": "writeBootPartition",
+      "value": { "hwpart": 2, "data": { "filePath": "boot_hwpart_wisp.bin" } }
+    },
+    {
+      "type": "writeBootPartition",
+      "value": { "hwpart": 1, "data": { "filePath": "boot_hwpart_wisp.bin" } }
+    }
+  ]
+}

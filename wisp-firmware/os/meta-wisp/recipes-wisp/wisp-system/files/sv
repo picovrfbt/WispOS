@@ -1,0 +1,33 @@
+#!/bin/sh
+# sv on Wisp OS: the daemon starts, stops and restarts its services by their
+# runit names from the original firmware; here they're systemd units.
+#
+#   sv restart chromium   ->  systemctl restart chromium-kiosk.service
+set -u
+
+[ $# -ge 2 ] || { echo "usage: sv start|stop|restart|status|check <service>..." >&2; exit 2; }
+action=$1
+shift
+
+unit_of() {
+  case "$1" in
+    chromium)        echo chromium-kiosk ;;
+    wisp-ui)         echo wisp-ui ;;
+    go-librespot)    echo wisp-daemon ;;
+    auto_brightness) echo wisp-brightness ;;
+    weston)          echo superbird-weston ;;
+    *)               echo "$1" ;;
+  esac
+}
+
+rc=0
+for name in "$@"; do
+  unit="$(unit_of "$name").service"
+  case "$action" in
+    start|stop|restart) systemctl "$action" "$unit" || rc=1 ;;
+    status)             systemctl status --no-pager "$unit" || rc=1 ;;
+    check)              systemctl is-active --quiet "$unit" || rc=1 ;;
+    *) echo "sv: unknown action $action" >&2; exit 2 ;;
+  esac
+done
+exit $rc

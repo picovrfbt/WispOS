@@ -1,0 +1,8 @@
+Welcome.
+
+The rootfs mounts read-only. To make changes:
+    mount -o remount,rw /
+
+A/B slot management: uboot_tool (read/set active slot), ab_flash (write
+an update image to the inactive slot).
+

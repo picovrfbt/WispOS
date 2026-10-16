@@ -1,0 +1,129 @@
+name: Image build
+
+on:
+  push:
+    branches: [main]
+  repository_dispatch:
+    types: [upstream-push]
+  workflow_dispatch:
+    inputs:
+      daemon_ref:
+        description: wisp-daemon ref to build
+        default: main
+      ui_ref:
+        description: wisp-ui ref to build
+        default: main
+      bundle_voice:
+        description: bundle voice artifacts (1/0)
+        default: "1"
+
+concurrency:
+  group: image-build
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      BUNDLE_VOICE: ${{ github.event.inputs.bundle_voice || '1' }}
+    steps:
+      - name: log trigger
+        if: github.event_name == 'repository_dispatch'
+        run: echo "triggered by ${{ github.event.client_payload.repo }}@${{ github.event.client_payload.sha }}"
+
+      - uses: actions/checkout@v7
+        with:
+          path: wisp-firmware
+      - uses: actions/checkout@v7
+        with:
+          repository: mira-thing/mira-daemon
+          ref: ${{ github.event.inputs.daemon_ref || 'main' }}
+          path: wisp-daemon
+      - uses: actions/checkout@v7
+        with:
+          repository: mira-thing/mira-ui
+          ref: ${{ github.event.inputs.ui_ref || 'main' }}
+          path: wisp-ui
+      - uses: actions/checkout@v7
+        with:
+          repository: mira-thing/mira-voice
+          path: mira-voice
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: wisp-daemon/go.mod
+          cache-dependency-path: wisp-daemon/go.sum
+      - name: build daemon
+        working-directory: wisp-daemon
+        run: |
+          ./crosscompile.sh armv6
+          cp go-librespot-armv6 ../wisp-firmware/
+          cp config.yml ../wisp-firmware/go-librespot-config.yml
+
+      - name: build iap2 sidecar (armv7)
+        working-directory: wisp-daemon
+        run: |
+          rustup target add armv7-unknown-linux-musleabihf
+          ./iap2/build.sh
+          cp iap2/iap2-sidecar-armv7 ../wisp-firmware/
+
+      - name: inject report submit key
+        working-directory: wisp-firmware
+        env:
+          KEY: ${{ secrets.REPORT_SUBMIT_KEY }}
+        run: |
+          if [ -n "$KEY" ]; then
+            sed -i "s|mira-reports.mira-thing.workers.dev/\"|mira-reports.mira-thing.workers.dev/?k=$KEY\"|" go-librespot-config.yml
+            echo "report key injected"
+          else
+            echo "no REPORT_SUBMIT_KEY secret - keyless build"
+          fi
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: wisp-ui/package-lock.json
+      - name: build ui
+        working-directory: wisp-ui
+        run: |
+          npm ci
+          npm run build
+          cd dist && zip -r9 ../../wisp-firmware/ui.zip .
+
+      - name: lyrics provider env (empty - lrclib fallback)
+        working-directory: wisp-firmware
+        run: ': > lp.env'
+
+      - name: cache voice artifacts
+        if: env.BUNDLE_VOICE != '0'
+        uses: actions/cache@v6
+        with:
+          path: wisp-firmware/voice-artifacts
+          key: voice-artifacts-${{ hashFiles('mira-voice/fetch-artifacts.sh') }}
+      - name: fetch voice artifacts
+        working-directory: wisp-firmware
+        run: |
+          mkdir -p voice-artifacts
+          [ "$BUNDLE_VOICE" = "0" ] || VOICE_REPO=../mira-voice bash ./scripts/get-voice-artifacts.sh ./voice-artifacts
+
+      - name: register qemu binfmt
+        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+      - name: docker build
+        working-directory: wisp-firmware
+        run: docker build -t firmware-builder .
+      - name: build image
+        working-directory: wisp-firmware
+        run: docker run --rm --privileged -e BUNDLE_VOICE -v "$PWD/output:/work/output" firmware-builder
+
+      - name: checksum
+        working-directory: wisp-firmware
+        run: sha256sum output/*.zip
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: wisp-firmware-image
+          path: wisp-firmware/output/*.zip
+          retention-days: 14
+          if-no-files-found: error

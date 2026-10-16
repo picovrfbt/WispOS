@@ -1,0 +1,27 @@
+# Internet from a PC over USB. Sorts ahead of the board's 11-usb-ncm.network,
+# which would make the Car Thing hand addresses *to* the PC: Wisp takes one
+# from it instead (Windows' Internet Connection Sharing gives 192.168.137.x),
+# and keeps 172.16.42.2 for a PC set up by hand, as the original firmware does.
+[Match]
+Name=usb0
+
+[Network]
+DHCP=ipv4
+Address=172.16.42.2/24
+LinkLocalAddressing=no
+IPv6AcceptRA=no
+ConfigureWithoutCarrier=yes
+DNS=1.1.1.1
+DNS=8.8.8.8
+
+[DHCPv4]
+# the phone's tether (metric 50) wins when both are up
+RouteMetric=200
+UseDNS=yes
+
+[Route]
+Gateway=172.16.42.1
+Metric=600
+
+[Link]
+RequiredForOnline=no

@@ -1,0 +1,39 @@
+#!/bin/sh
+# Prints the directory of the installed over-the-air update the services should
+# run from, or nothing to run the flashed copy. An update is used only when it
+# is complete, not marked bad, and newer than what was flashed (a reflash of
+# the same or a newer version wins). When the current one has gone bad (the
+# daemon's crash loop), the update before it is used if it's still sound
+# (/var/local/wisp/app/previous). See wisp-daemon/daemon/updater.go.
+
+APPS=/var/local/wisp/app
+CUR=$APPS/current
+[ -L "$CUR" ] || exit 0
+
+# whole, not bad, and newer than the flash
+usable() {
+  D=$1
+  [ -x "$D/go-librespot" ] && [ -f "$D/ui/index.html" ] && [ -f "$D/version.txt" ] || return 1
+  [ -e "$D/.bad" ] && return 1
+  OTA=$(tr -d 'v \n' < "$D/version.txt")
+  BUILTIN=$(tr -d 'v \n' < /etc/wisp/version.txt 2>/dev/null ||
+    tr -d 'v \n' < /etc/mira/version.txt 2>/dev/null)
+  newer=$(awk -v a="$OTA" -v b="$BUILTIN" 'BEGIN {
+    split(a, x, /[.-]/); split(b, y, /[.-]/)
+    for (i = 1; i <= 3; i++) { if (x[i] + 0 > y[i] + 0) { print 1; exit } if (x[i] + 0 < y[i] + 0) { print 0; exit } }
+    print 0 }')
+  [ "$newer" = "1" ]
+}
+
+D=$(readlink -f "$CUR") || exit 0
+if usable "$D"; then
+  echo "$D"
+  exit 0
+fi
+
+# the current update went bad: the one before it, if it's still good
+[ -f "$APPS/previous" ] || exit 0
+P=$(tr -d ' \n' < "$APPS/previous")
+case "$P" in ''|*/*|.*) exit 0 ;; esac
+usable "$APPS/$P" && echo "$APPS/$P"
+exit 0
