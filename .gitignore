@@ -22,3 +22,9 @@ wisp-companion/drive-mode-prototype/samples/
 
 # speech models fetched by wisp-firmware/os/scripts/prepare.sh
 voice-models/
+
+# Kotlin 2.3 build cache
+.kotlin/
+
+# the add-on catalog's zips are published from here
+!addons/dist/

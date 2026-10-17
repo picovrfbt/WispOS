@@ -1,0 +1,236 @@
+# What the Car Thing's meaning-matcher knows: a way of saying something, a tab,
+# and the command Wisp's own rules understand for it. make_bank.py turns this
+# into bank.bin (each example's meaning, worked out ahead of time).
+# Lines starting with # are notes.
+
+# --- moods and activities
+i'm getting sleepy	play something energetic
+i'm so tired	play something energetic
+wake me up	play something energetic
+i need some energy	play something energetic
+pump me up	play something energetic
+something to get me going	play something energetic
+i want to dance	play something dance
+let's have a party	play something party
+something to relax to	play something chill
+help me calm down	play something calm
+i'm stressed out	play something calm
+something mellow	play something mellow
+i need to focus	play something focus
+something to study to	play something study
+something for working out	play something workout
+i'm going to the gym	play something workout
+something romantic	play something romantic
+it's date night	play something romantic
+i'm feeling sad	play something sad
+i'm in a good mood	play something happy
+make me happy	play something happy
+something for a long drive	play something road trip
+road trip music	play something road trip
+something for driving at night	play something night drive
+it's raining outside	play something rainy day
+something summery	play something summer
+play the oldies	play something throwback
+something nostalgic	play something throwback
+surprise me with something	play something feel good
+i don't know what to listen to	play something feel good
+pick something for me	play something feel good
+
+# --- what's playing
+what's this tune	what's playing
+what is this music	what's playing
+what are we listening to right now	what's playing
+tell me the name of this song	what's playing
+i like this what is it	what's playing
+remind me what this song is called	what's playing
+who is singing right now	who sings this
+who's the singer	who sings this
+which band is this	who sings this
+who performs this song	who sings this
+what record is this from	what album is this from
+
+# --- the trip
+how long is the drive	when will we get there
+how much time is left	when will we get there
+what time will we arrive	when will we get there
+how far away are we	when will we get there
+when do we get to our destination	when will we get there
+are we close	when will we get there
+where do i need to turn	what's my next turn
+what's the next direction	what's my next turn
+which way do i go	what's my next turn
+take me back home	take me home
+i want to go home	take me home
+head home	take me home
+let's go home	take me home
+bring me to work	take me to work
+i need to get to work	take me to work
+
+# --- the weather and time
+do i need an umbrella	what's the weather
+is it cold outside	what's the weather
+how's the weather looking	what's the weather
+what's it like outside	what's the weather
+is it nice out	what's the weather
+what time is it now	what time is it
+do you know the time	what time is it
+what's the time right now	what time is it
+
+# --- the phone
+how much charge does my phone have	how's my battery
+is my phone running low	how's my battery
+check my phone battery	how's my battery
+
+# --- playback
+this song is boring	next
+i hate this song	next
+not in the mood for this	next
+change the song	next
+something else please	next
+play a different song	next
+go back to the last song	previous
+play the song before this	previous
+i want to hear the last one again	previous
+stop for a second	pause
+give me a minute	pause
+i'm taking a call	pause
+hold the music	pause
+let's keep going	resume
+bring the music back	resume
+start playing again	resume
+i can barely hear it	turn it up
+make it louder	turn it up
+it's too quiet	turn it up
+crank it up	turn it up
+that's way too loud	turn it down
+it's hurting my ears	turn it down
+bring the volume down	turn it down
+keep this song	like this
+add this to my favorites	like this
+remember this song	like this
+i really like this one	like this
+play it from the beginning	start it over
+start this song again	start it over
+i want to hear the whole album	play the album
+put the full album on	play the album
+play more songs by this artist	more by them
+i want more from this singer	more by them
+that's the wrong song	no the other one
+that's not what i asked for	no the other one
+
+# --- the screen and drive mode
+i can't see the screen	make it brighter
+the screen is hard to read	make it brighter
+it's too bright at night	dim the screen
+the screen is blinding me	dim the screen
+switch to the dark look	turn on night mode
+go back to the normal look	turn off night mode
+show me the words	show the lyrics
+i want to sing along	show the lyrics
+hide the words	hide the lyrics
+make the music follow my driving	start drive mode
+turn on the driving music	start drive mode
+i want the drive mode music	start drive mode
+stop the driving music	stop drive mode
+back to my own music	stop drive mode
+
+# --- more ways of saying the common ones
+keep me awake	play something energetic
+i need something upbeat	play something energetic
+something with energy	play something energetic
+i can barely keep my eyes open	play something energetic
+something lively	play something energetic
+something to chill out to	play something chill
+some easy listening	play something chill
+something quiet and calm	play something calm
+music to unwind	play something chill
+something to sleep to	play something calm
+something to concentrate	play something focus
+background music for thinking	play something focus
+something to sweat to	play something workout
+gym music	play something workout
+something for the party	play something party
+something to sing along to	play something feel good
+something cheerful	play something happy
+something fun	play something happy
+something slow and sad	play something sad
+music from the nineties	play something 90s
+eighties music	play something 80s
+what track is this	what's playing
+what song am i hearing	what's playing
+name this track	what's playing
+who is this artist	who sings this
+who's playing this	who sings this
+whose song is this	who sings this
+what album is this song on	what album is this from
+how many more minutes	when will we get there
+how much farther	when will we get there
+when's our arrival	when will we get there
+are we almost there	when will we get there
+what's the next turn	what's my next turn
+where do i go next	what's my next turn
+take me to my place	take me home
+navigate to my house	take me home
+directions home	take me home
+is it going to be sunny	what's the weather
+what's the temperature	what's the weather
+how warm is it	what's the weather
+will i need a jacket	what's the weather
+any rain today	what's the weather
+tell me the time	what time is it
+what hour is it	what time is it
+how's my phone doing	how's my battery
+does my phone need charging	how's my battery
+how much battery is left	how's my battery
+skip it	next
+skip ahead	next
+move on to the next one	next
+i'm bored of this song	next
+not this one again	next
+play the one before	previous
+back one song	previous
+replay the last track	previous
+the song before that	previous
+hang on a second	pause
+wait a moment	pause
+mute the music	pause
+continue the music	resume
+play again	resume
+unpause it	resume
+i can't hear the music	turn it up
+it's not loud enough	turn it up
+volume higher	turn it up
+make the music louder	turn it up
+the music is too loud	turn it down
+it's way too loud	turn it down
+lower the music	turn it down
+softer please	turn it down
+make it quieter	turn it down
+save this song	like this
+i love this track	like this
+add to my liked songs	like this
+put this in my favorites	like this
+restart the song	start it over
+go back to the start of the song	start it over
+play the rest of this album	play the album
+the whole record	play the album
+more songs like this artist	more by them
+other songs by this band	more by them
+not that one	no the other one
+i meant the other song	no the other one
+the screen is too dark	make it brighter
+the display is too dim	make it brighter
+turn the screen up	make it brighter
+make the screen darker	dim the screen
+lower the screen brightness	dim the screen
+the screen is too bright	dim the screen
+dark mode please	turn on night mode
+night mode please	turn on night mode
+turn off dark mode	turn off night mode
+lyrics please	show the lyrics
+show me what they're singing	show the lyrics
+no lyrics	hide the lyrics
+drive mode on	start drive mode
+play music that follows the car	start drive mode
+end drive mode	stop drive mode
+turn off the driving music	stop drive mode

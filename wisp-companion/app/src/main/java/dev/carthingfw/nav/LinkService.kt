@@ -23,6 +23,8 @@ class LinkService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         NavServer.ensureStarted(applicationContext)
+        // Wisp's thinking on this phone, for the Car Thing's voice
+        WispThink.start(applicationContext)
         try {
             startForeground(ID, notification(this), ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE)
         } catch (e: Exception) {

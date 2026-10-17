@@ -17,6 +17,7 @@ export type DevForcedScreen =
   | 'pairing'
   | 'menu'
   | 'home'
+  | 'addons'
   | 'phone-media'
   | 'phone-ytmusic'
   | 'phone-soundcloud'

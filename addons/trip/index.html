@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Trip</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #08090b; color: #fff; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; overflow: hidden; }
+  body { display: grid; grid-template-columns: 1fr 1.25fr; gap: 18px; padding: 26px; background: radial-gradient(60% 80% at 0% 100%, #0f3a26 0%, transparent 70%), #08090b; }
+  .card { border-radius: 26px; background: rgba(255,255,255,.05); padding: 24px 26px; display: flex; flex-direction: column; }
+  .label { font-size: 15px; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.5); }
+  .speed { margin: auto 0; text-align: center; }
+  .speed .n { font-size: 170px; font-weight: 700; letter-spacing: -0.05em; line-height: .9; font-variant-numeric: tabular-nums; }
+  .speed .u { font-size: 30px; color: rgba(255,255,255,.55); }
+  .right { display: grid; grid-template-rows: 1.3fr 1fr; gap: 18px; }
+  .turn .d { font-size: 64px; font-weight: 700; letter-spacing: -0.03em; margin-top: 8px; }
+  .turn .i { font-size: 24px; color: rgba(255,255,255,.75); margin-top: 4px; line-height: 1.3; }
+  .eta .v { font-size: 34px; font-weight: 650; margin-top: 10px; }
+  .eta .s { font-size: 18px; color: rgba(255,255,255,.55); margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .off { color: rgba(255,255,255,.45); font-size: 22px; margin-top: 14px; }
+</style>
+</head>
+<body>
+<div class="card"><div class="label">Speed</div><div class="speed"><div class="n" id="speed">–</div><div class="u">mph</div></div></div>
+<div class="right">
+  <div class="card turn"><div class="label">Next turn</div><div id="turn"><div class="off">No directions right now</div></div></div>
+  <div class="card eta"><div class="label">Arrival</div><div id="eta"><div class="off">Start directions in Google Maps</div></div></div>
+</div>
+<script src="/addons/sdk.js"></script>
+<script>
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] }) }
+
+  function tick() {
+    Wisp.location().then(function (loc) {
+      document.getElementById('speed').textContent = loc ? loc.speed_mph : '–'
+    }).catch(function () {})
+    Wisp.nav().then(function (n) {
+      if (!n || !n.active) {
+        document.getElementById('turn').innerHTML = '<div class="off">No directions right now</div>'
+        document.getElementById('eta').innerHTML = '<div class="off">Start directions in Google Maps</div>'
+        return
+      }
+      document.getElementById('turn').innerHTML = '<div class="d">' + esc(n.distance) + '</div><div class="i">' + esc(n.instruction) + '</div>'
+      var parts = String(n.arrival).split(/\s*[·•]\s*/)
+      var at = parts.filter(function (p) { return /AM|PM|^\d{1,2}:\d{2}$/.test(p) })[0] || ''
+      document.getElementById('eta').innerHTML = '<div class="v">' + esc(at || parts[0] || '') + '</div><div class="s">' + esc(parts.filter(function (p) { return p !== at }).join(' · ')) + '</div>'
+    }).catch(function () {})
+  }
+  tick()
+  setInterval(tick, 2000)
+</script>
+</body>
+</html>

@@ -23,6 +23,7 @@
 
 <p align="center">
   <a href="https://picovrfbt.github.io/WispOS/"><b>Website</b></a> ·
+  <a href="https://picovrfbt.github.io/WispOS/guide.html"><b>Setup guide</b></a> ·
   <a href="#-what-it-does">What it does</a> ·
   <a href="#-on-your-dash">On your dash</a> ·
   <a href="#-a-tour">A tour</a> ·
@@ -50,7 +51,7 @@
   </tr>
   <tr>
     <td width="30%">🗣️ <b>"Okay Wisp"</b></td>
-    <td>Say what to play from your library, or on YouTube Music or SoundCloud. Queue it, like it, add it to a playlist, skip, pause or change the volume. Wisp can answer back through your phone.</td>
+    <td>Ask the way you'd ask a person: "I wanna hear Daft Punk", "who sings this?", "play the album", "when do we get there?", "take me home", "call Mom", "I'm getting sleepy". Wisp understands on the Car Thing itself, remembers what you just asked, and answers on screen and out loud. With the phone app, a language model on your phone (Gemini Nano, or an open model you can download) handles anything looser.</td>
   </tr>
   <tr>
     <td width="30%">📻 <b>More than Spotify</b></td>
@@ -87,6 +88,10 @@
   <tr>
     <td width="30%">💾 <b>Never starts over</b></td>
     <td>Your settings are backed up to your phone and come back after a reflash or a reset.</td>
+  </tr>
+  <tr>
+    <td width="30%">🧩 <b>Add-ons</b></td>
+    <td>Small pages from the community for the dash, installed from Home → Add-ons: a forecast, a big clock, trip gauges and more. Each one is reviewed, sandboxed, and sees only what it asks for. <a href="addons">Make one</a>.</td>
   </tr>
 </table>
 
@@ -261,7 +266,7 @@ The Android app is the Car Thing's link to your phone. It carries directions and
 
 ### 1. Flash Wisp
 
-1. Download the newest `wisp_firmware_vX.Y.Z.zip` from the [releases](../../releases) (not every release has one; any will do, since Wisp updates itself afterwards). Leave it zipped.
+1. Download `wisp-os-vX.Y.Z-flashthing.zip` from the [latest release](../../releases/latest). Leave it zipped.
 2. **On Windows only**, install the USB driver for the flasher first. In PowerShell:
    ```powershell
    irm https://driver.terbium.app/get | iex
@@ -290,7 +295,7 @@ The Car Thing has no Wi-Fi, so it borrows your phone's or your PC's internet. Th
 
 Tap **Connect to PC** on the Car Thing, then share your PC's internet with it:
 
-- **Windows:** Win+R → `ncpa.cpl`. Right-click your internet adapter → Properties → Sharing → tick **Allow other network users…** and pick the Car Thing's adapter (the one described as *Remote NDIS*).
+- **Windows:** Win+R → `ncpa.cpl`. Right-click your internet adapter → Properties → Sharing → tick **Allow other network users…** and pick the Car Thing's adapter (the one described as *UsbNcm Host Device*).
 - **Mac:** System Settings → General → Sharing → Internet Sharing, sharing to the Car Thing's USB interface.
 - **Linux:** share the connection in NetworkManager, using the Car Thing's `enx…` interface (its address starts `a0:b1:c2`):
   ```bash
@@ -379,6 +384,8 @@ Wisp OS is built on [yocto-superbird](https://github.com/JoeyEamigh/yocto-superb
 | Drive Mode music | Made for Wisp with Suno (Pro plan, commercial use) |
 | Wisp's spoken voice | The Piper "Alan" voice ([model card](https://huggingface.co/rhasspy/piper-voices/tree/main/en/en_GB/alan/medium), trained on Mycroft's [Mimic 3](https://github.com/MycroftAI/mimic3-voices) data) with [espeak-ng](https://github.com/espeak-ng/espeak-ng) (GPL-3.0) |
 | Speech recognition | [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) (Apache-2.0) with its Zipformer Small English model |
+| Understanding requests on the Car Thing | [all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2) (Apache-2.0), run on ONNX Runtime (MIT) |
+| Understanding on the phone | Gemini Nano through Android's AICore, or [Qwen3 0.6B](https://huggingface.co/litert-community/Qwen3-0.6B) (Apache-2.0, downloaded only if you choose) with [LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM) |
 | Wake word | [openWakeWord](https://github.com/dscripka/openWakeWord) (Apache-2.0) |
 
 Wisp is an independent project. It isn't affiliated with, endorsed by or sponsored by Spotify, Google, Apple or SoundCloud. Spotify, Car Thing, Android, Google Maps, YouTube Music, iPhone and SoundCloud are trademarks of their owners and are named only to say what Wisp works with.

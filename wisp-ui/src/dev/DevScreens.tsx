@@ -70,6 +70,7 @@ const SCREENS: ScreenDef[] = [
   { id: 'menu', label: 'Menu open', hint: 'Bottom-sheet over player' },
   { id: 'nav', label: 'Navigation', hint: 'Map + turn card (live daemon nav)' },
   { id: 'home', label: 'Home', hint: 'Rail + cards library browser (live daemon data)' },
+  { id: 'addons', label: 'Add-ons', hint: 'Installed add-ons and the catalog (needs the add-on preview server)' },
   { id: 'phone-media', label: 'Phone media', hint: 'YouTube etc. playing on the phone (sample)' },
   {
     id: 'phone-ytmusic',

@@ -4,7 +4,7 @@ LICENSE = "CLOSED"
 
 # payload/ is staged by scripts/prepare.sh:
 #   bin/ lib/ (incl. ld-linux-aarch64.so.1)  -> /usr/lib/wisp/voice
-#   models/ zipformer/ espeak-ng-data/        -> /usr/share/wisp/voice
+#   models/ zipformer/ meaning/ espeak-ng-data/ -> /usr/share/wisp/voice
 SRC_URI = "file://payload/"
 S = "${UNPACKDIR}"
 
@@ -24,7 +24,7 @@ do_install() {
     install -m 0755 ${S}/payload/bin/* $V/bin/
     cp -R --no-preserve=ownership ${S}/payload/lib/. $V/
     chmod 0755 $V/ld-linux-aarch64.so.1
-    for d in models zipformer espeak-ng-data; do
+    for d in models zipformer meaning espeak-ng-data; do
         cp -R --no-preserve=ownership ${S}/payload/$d ${D}/usr/share/wisp/voice/
     done
 }

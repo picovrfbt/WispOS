@@ -23,8 +23,10 @@
     <a class="pill" href="https://github.com/picovrfbt/WispOS/releases/latest"><span class="dot"></span>Latest release ›</a>
     <nav>
       <a href="#features">Features</a>
+      <a href="#voice">Voice</a>
+      <a href="#addons">Add-ons</a>
       <a href="#app">The app</a>
-      <a href="#install">Install</a>
+      <a href="guide.html">Set up</a>
       <a href="https://github.com/picovrfbt/WispOS">Source</a>
     </nav>
   </div>
@@ -35,7 +37,7 @@
     <h1>The Car Thing, <span class="glow">made new.</span></h1>
     <p class="lead">Spotify switched the Car Thing off. Wisp turns it back on, and then some: your music on the knob, directions from your phone, lyrics in time and a voice that answers. Free and open source.</p>
     <div class="actions">
-      <a class="btn primary" href="#install">Get Wisp</a>
+      <a class="btn primary" href="guide.html">Get Wisp</a>
       <a class="btn ghost" href="#features">See what it does</a>
     </div>
   </div>
@@ -89,6 +91,81 @@
   </div>
 </section>
 
+<section id="voice">
+  <div class="wrap voice-sec">
+    <div>
+      <p class="eyebrow">Voice</p>
+      <h2>Just say what you mean.</h2>
+      <p class="sub">Say "Okay Wisp" and ask the way you'd ask a person. Wisp hears you on the Car Thing itself, and keeps track of what you just said.</p>
+      <div class="abilities">
+        <div><h3>Your own words</h3><p>"I wanna hear Daft Punk", "a little louder", "play something chill", "I don't like this one".</p></div>
+        <div><h3>Follow-ups</h3><p>"Play the album", "more by them", "no, the other one", "start it over".</p></div>
+        <div><h3>Questions</h3><p>"Who sings this?", "when do we get there?", "what's my next turn?", "what's the weather?"</p></div>
+        <div><h3>Beyond music</h3><p>"Take me home", "call Mom", "start Drive Mode", "dim the screen", "night mode on".</p></div>
+      </div>
+      <p class="fine">Everyday requests are understood on the Car Thing, with no phone needed. With the Wisp app, anything looser goes to a language model on your phone: Gemini Nano where the phone has it, or an open model you can download. Either way, nothing you say leaves your phone and Car Thing.</p>
+    </div>
+    <div class="chat" aria-label="An example conversation with Wisp">
+      <div class="say you">I'm getting kind of sleepy</div>
+      <div class="say wisp"><span>Wisp</span>Here's something to wake you up</div>
+      <div class="say you">Who sings this?</div>
+      <div class="say wisp"><span>Wisp</span>This is Midnight City, by M83</div>
+      <div class="say you">Play the album</div>
+      <div class="say wisp"><span>Wisp</span>Playing Hurry Up, We're Dreaming</div>
+      <div class="say you">When do we get there?</div>
+      <div class="say wisp"><span>Wisp</span>12 minutes to go. You'll get there at 3:45 PM</div>
+    </div>
+  </div>
+</section>
+
+<section id="addons">
+  <div class="wrap">
+    <p class="eyebrow">Add-ons</p>
+    <h2>Make the dash your own.</h2>
+    <p class="sub">Add-ons are small pages the community makes for the Car Thing's screen: a forecast, a big clock, trip gauges, and whatever comes next. Install them from Home → Add-ons; they open full screen and work with the knob.</p>
+    <div class="addon-row">
+      <figure><img src="screenshots/addon-forecast.png" alt="The Forecast add-on" loading="lazy"><figcaption><b>Forecast</b> The next 12 hours where you are</figcaption></figure>
+      <figure><img src="screenshots/addon-trip.png" alt="The Trip add-on" loading="lazy"><figcaption><b>Trip</b> Speed, the next turn and your arrival</figcaption></figure>
+      <figure><img src="screenshots/addon-clock-digital.png" alt="The Big clock add-on" loading="lazy"><figcaption><b>Big clock</b> Readable from across the car</figcaption></figure>
+    </div>
+    <div class="addon-facts">
+      <div><h3>Reviewed</h3><p>Every add-on in the catalog comes through a pull request, and the Car Thing checks each download against its checksum.</p></div>
+      <div><h3>Sandboxed</h3><p>An add-on can't touch your sign-ins, settings or controls. It sees only what it asks for, like the weather, and you see that list before installing.</p></div>
+      <div><h3>Light</h3><p>Add-ons only run while they're open, so they don't slow the Car Thing down.</p></div>
+      <div><h3>Easy to make</h3><p>Plain HTML and a little script. <a href="https://github.com/picovrfbt/WispOS/tree/main/addons">Start with the guide</a>.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="everything">
+  <div class="wrap">
+    <p class="eyebrow">Every screen</p>
+    <h2>Made for a four-inch screen and a knob.</h2>
+    <div class="gallery">
+      <figure><img src="screenshots/home-library.png" alt="" loading="lazy"><figcaption>Home and your library</figcaption></figure>
+      <figure><img src="screenshots/home-playlist.png" alt="" loading="lazy"><figcaption>A playlist</figcaption></figure>
+      <figure><img src="screenshots/home-recents.png" alt="" loading="lazy"><figcaption>Recents</figcaption></figure>
+      <figure><img src="screenshots/player-lyrics.png" alt="" loading="lazy"><figcaption>Synced lyrics</figcaption></figure>
+      <figure><img src="screenshots/player-queue.png" alt="" loading="lazy"><figcaption>Up next</figcaption></figure>
+      <figure><img src="screenshots/player-menu.png" alt="" loading="lazy"><figcaption>The player's menu</figcaption></figure>
+      <figure><img src="screenshots/player-visualizer.png" alt="" loading="lazy"><figcaption>A visualizer behind the cover</figcaption></figure>
+      <figure><img src="screenshots/visualizer-full.png" alt="" loading="lazy"><figcaption>Full-screen visualizer</figcaption></figure>
+      <figure><img src="screenshots/nav.png" alt="" loading="lazy"><figcaption>Directions with the route</figcaption></figure>
+      <figure><img src="screenshots/drive-sounds.png" alt="" loading="lazy"><figcaption>Drive Mode's sounds</figcaption></figure>
+      <figure><img src="screenshots/drive.png" alt="" loading="lazy"><figcaption>Drive Mode</figcaption></figure>
+      <figure><img src="screenshots/call.png" alt="" loading="lazy"><figcaption>A call</figcaption></figure>
+      <figure><img src="screenshots/soundcloud.png" alt="" loading="lazy"><figcaption>SoundCloud</figcaption></figure>
+      <figure><img src="screenshots/screensaver.png" alt="" loading="lazy"><figcaption>Clock and weather</figcaption></figure>
+      <figure><img src="screenshots/settings.png" alt="" loading="lazy"><figcaption>Settings</figcaption></figure>
+      <figure><img src="screenshots/power-menu.png" alt="" loading="lazy"><figcaption>The power menu</figcaption></figure>
+      <figure><img src="screenshots/update.png" alt="" loading="lazy"><figcaption>Updates over the air</figcaption></figure>
+      <figure><img src="screenshots/idle.png" alt="" loading="lazy"><figcaption>Waiting for music</figcaption></figure>
+      <figure><img src="screenshots/addons-list.png" alt="" loading="lazy"><figcaption>Your add-ons</figcaption></figure>
+      <figure><img src="screenshots/addons-catalog.png" alt="" loading="lazy"><figcaption>Getting add-ons</figcaption></figure>
+    </div>
+  </div>
+</section>
+
 <section id="app">
   <div class="wrap app">
     <div>
@@ -114,12 +191,12 @@
     <p class="eyebrow">Get started</p>
     <h2>Up and running in four steps.</h2>
     <div class="steps">
-      <div class="step"><h3>Flash Wisp</h3><p>Download the latest image from <a href="https://github.com/picovrfbt/WispOS/releases/latest">Releases</a> and flash it from your browser with Terbium.</p></div>
-      <div class="step"><h3>Get it online</h3><p>Over Bluetooth from your phone, or over USB from a PC. <a href="https://github.com/picovrfbt/WispOS#2-get-it-online">How</a></p></div>
+      <div class="step"><h3>Flash Wisp</h3><p>Download the latest image from <a href="https://github.com/picovrfbt/WispOS/releases/latest">Releases</a> and flash it from your browser with <a href="guide.html#flash">Terbium</a>.</p></div>
+      <div class="step"><h3>Get it online</h3><p>Over Bluetooth from your phone, or over USB from a computer. <a href="guide.html#online">How</a></p></div>
       <div class="step"><h3>Sign in to Spotify</h3><p>Scan the code on the Car Thing with your phone and sign in. That's it.</p></div>
       <div class="step"><h3>Add the app</h3><p>Install <a href="https://github.com/picovrfbt/WispOS/releases/latest">Wisp Companion</a> on your Android phone for directions, calls and more.</p></div>
     </div>
-    <p class="note">The full guide, with what you need and what to do if something goes wrong, is in the <a href="https://github.com/picovrfbt/WispOS#-getting-started">README</a>.</p>
+    <p class="note"><a class="btn ghost" href="guide.html">Read the full setup guide</a></p>
 
     <div class="oss">
       <p class="eyebrow">Open source</p>
@@ -138,6 +215,7 @@ cd WispOS/wisp-ui && npm ci && npm run dev   <span class="g">✓ ready</span></d
   <div class="wrap">
     <a class="brand" href="./"><img src="logo.svg" alt="">Wisp</a>
     <nav>
+      <a href="guide.html">Set up</a>
       <a href="privacy.html">Privacy</a>
       <a href="terms.html">Terms</a>
       <a href="https://github.com/picovrfbt/WispOS">GitHub</a>

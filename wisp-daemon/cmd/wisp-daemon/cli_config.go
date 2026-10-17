@@ -80,6 +80,7 @@ type cliConfig struct {
 		SherpaEnabled        bool    `koanf:"sherpa_enabled"`
 		SherpaBin            string  `koanf:"sherpa_bin"`
 		SherpaModelDir       string  `koanf:"sherpa_model_dir"`
+		MeaningDir           string  `koanf:"meaning_dir"`
 	} `koanf:"voice"`
 
 	Credentials struct {
@@ -129,6 +130,7 @@ func (c *cliConfig) toDaemonConfig() *daemon.Config {
 			SherpaEnabled:        c.Voice.SherpaEnabled,
 			SherpaBin:            c.Voice.SherpaBin,
 			SherpaModelDir:       c.Voice.SherpaModelDir,
+			MeaningDir:           c.Voice.MeaningDir,
 		},
 	}
 	dc.Credentials.Type = c.Credentials.Type

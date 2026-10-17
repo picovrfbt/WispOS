@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Big clock</title>
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; height: 100%; background: #000; color: #fff; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; overflow: hidden; }
+  body { display: grid; place-items: center; }
+  .digital { text-align: center; }
+  .time { font-size: 220px; font-weight: 700; letter-spacing: -0.05em; line-height: 0.9; font-variant-numeric: tabular-nums; }
+  .ampm { font-size: 44px; font-weight: 600; color: rgba(255,255,255,.55); margin-left: 8px; letter-spacing: 0; }
+  .date { margin-top: 18px; font-size: 30px; color: rgba(255,255,255,.6); }
+  svg { width: 420px; height: 420px; }
+  .hint { position: fixed; bottom: 16px; left: 0; right: 0; text-align: center; font-size: 16px; color: rgba(255,255,255,.3); }
+</style>
+</head>
+<body>
+<div id="face"></div>
+<div class="hint">Press for <span id="other">analog</span></div>
+<script src="/addons/sdk.js"></script>
+<script>
+  var offset = 0
+  var analog = false
+  var face = document.getElementById('face')
+  var DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+
+  // the time where you are: the Car Thing's clock is UTC, the phone says the zone
+  function now() {
+    var d = new Date(Date.now() + offset * 60000)
+    return { h: d.getUTCHours(), m: d.getUTCMinutes(), s: d.getUTCSeconds(), day: d.getUTCDay(), date: d.getUTCDate(), month: d.getUTCMonth() }
+  }
+
+  function hand(angle, len, width, color) {
+    var a = (angle - 90) * Math.PI / 180
+    return '<line x1="210" y1="210" x2="' + (210 + Math.cos(a) * len) + '" y2="' + (210 + Math.sin(a) * len) +
+      '" stroke="' + color + '" stroke-width="' + width + '" stroke-linecap="round"/>'
+  }
+
+  function draw() {
+    var t = now()
+    if (analog) {
+      var ticks = ''
+      for (var i = 0; i < 12; i++) {
+        var a = (i * 30 - 90) * Math.PI / 180
+        ticks += '<line x1="' + (210 + Math.cos(a) * 180) + '" y1="' + (210 + Math.sin(a) * 180) + '" x2="' + (210 + Math.cos(a) * 196) +
+          '" y2="' + (210 + Math.sin(a) * 196) + '" stroke="rgba(255,255,255,.55)" stroke-width="6" stroke-linecap="round"/>'
+      }
+      face.innerHTML = '<svg viewBox="0 0 420 420"><circle cx="210" cy="210" r="205" fill="#0e0e10"/>' + ticks +
+        hand((t.h % 12) * 30 + t.m / 2, 110, 12, '#fff') + hand(t.m * 6, 160, 8, '#fff') + hand(t.s * 6, 170, 3, '#1ed760') +
+        '<circle cx="210" cy="210" r="9" fill="#1ed760"/></svg>'
+    } else {
+      var h = t.h % 12 || 12
+      face.innerHTML = '<div class="digital"><div class="time">' + h + ':' + String(t.m).padStart(2, '0') +
+        '<span class="ampm">' + (t.h < 12 ? 'AM' : 'PM') + '</span></div><div class="date">' + DAYS[t.day] + ', ' + MONTHS[t.month] + ' ' + t.date + '</div></div>'
+    }
+    document.getElementById('other').textContent = analog ? 'digital' : 'analog'
+  }
+
+  Wisp.on('press', function () {
+    analog = !analog
+    Wisp.storage.set('analog', analog)
+    draw()
+  })
+
+  Promise.all([Wisp.timezoneOffset().catch(function () { return 0 }), Wisp.storage.get('analog').catch(function () { return false })])
+    .then(function (r) {
+      offset = r[0] || 0
+      analog = !!r[1]
+      draw()
+    })
+  draw()
+  setInterval(draw, 1000)
+</script>
+</body>
+</html>

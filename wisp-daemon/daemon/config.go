@@ -57,6 +57,9 @@ type VoiceConfig struct {
 	SherpaEnabled  bool
 	SherpaBin      string
 	SherpaModelDir string
+	// the meaning-matcher's model, vocabulary and example bank (voice_meaning.go);
+	// empty leaves it off
+	MeaningDir string
 }
 
 type CredentialsConfig struct {

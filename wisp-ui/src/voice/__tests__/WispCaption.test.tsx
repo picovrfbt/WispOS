@@ -61,6 +61,15 @@ describe('WispCaption', () => {
     await waitFor(() => expect(said).toHaveLength(2))
   })
 
+  it('shows and says the answer to a question', async () => {
+    const said = captureSay()
+    updateSettings({ wispVoice: 'confirmations' })
+    render(<WispCaption />)
+    voice('answer', 'This is Midnight City, by M83')
+    expect(screen.getByText('This is Midnight City, by M83')).toBeInTheDocument()
+    await waitFor(() => expect(said.map((s) => s.text)).toEqual(['This is Midnight City, by M83']))
+  })
+
   it('keeps "thinking" on screen but never says it', async () => {
     const said = captureSay()
     updateSettings({ wispVoice: 'everything' })

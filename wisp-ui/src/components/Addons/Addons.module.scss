@@ -1,0 +1,155 @@
+// Add-ons: the list from Home, the catalog, and one add-on full screen
+
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: $z-menu;
+  background: $bg;
+  display: flex;
+  flex-direction: column;
+  animation: addonsIn $dur-slow $ease-standard both;
+}
+
+@keyframes addonsIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: $s-3;
+  padding: 26px 32px 14px;
+}
+
+.title {
+  font-size: 30px;
+  font-weight: $fw-bold;
+  letter-spacing: -0.01em;
+  color: $text-primary;
+}
+
+.sub {
+  font-size: $fs-lg;
+  color: $text-tertiary;
+}
+
+.list {
+  flex: 1;
+  overflow: hidden;
+  padding: 4px 20px 24px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  height: 84px;
+  padding: 0 16px;
+  border-radius: $r-xl;
+  transition: background $dur-fast $ease-standard;
+}
+
+.focused {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 2px $accent-dim;
+}
+
+.badge {
+  flex: none;
+  @include flex-center;
+  width: 56px;
+  height: 56px;
+  border-radius: $r-lg;
+  background: $surface-elev;
+  color: $accent;
+  font-size: 26px;
+  font-weight: $fw-bold;
+}
+
+.badgeAdd {
+  background: transparent;
+  border: 2px dashed rgba(255, 255, 255, 0.22);
+  color: $text-secondary;
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rowTitle {
+  font-size: 22px;
+  font-weight: $fw-semibold;
+  color: $text-primary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rowLine {
+  font-size: $fs-lg;
+  color: $text-secondary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chip {
+  flex: none;
+  padding: 8px 16px;
+  border-radius: $r-pill;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: $fs-md;
+  font-weight: $fw-semibold;
+  color: $text-secondary;
+}
+
+.chipOn {
+  background: $accent;
+  color: #000;
+}
+
+.empty {
+  margin: 8px 16px 18px;
+  font-size: $fs-xl;
+  line-height: 1.45;
+  color: $text-secondary;
+  max-width: 600px;
+}
+
+.note {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  padding: 10px 20px;
+  border-radius: $r-pill;
+  background: $menu-bg;
+  border: 1px solid $menu-border;
+  font-size: $fs-lg;
+  color: $text-primary;
+  white-space: nowrap;
+}
+
+.frameWrap {
+  position: fixed;
+  inset: 0;
+  z-index: $z-menu;
+  background: #000;
+}
+
+.frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+  background: #000;
+}

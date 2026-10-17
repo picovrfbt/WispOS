@@ -106,6 +106,7 @@ export interface LyricsResult {
 
 export type ApiEventType =
   | 'observer_track_changed'
+  | 'addons/changed'
   | 'observer_state_changed'
   | 'observer_inactive'
   | 'connect_devices'
@@ -136,7 +137,8 @@ export interface ApiEvent<T = unknown> {
 
 // 'voice' event payload
 export interface VoiceEventData {
-  state: 'listening' | 'thinking' | 'playing' | 'done' | 'error' | 'idle'
+  // answer: a reply to a question ("who sings this?"), shown a little longer
+  state: 'listening' | 'thinking' | 'playing' | 'done' | 'answer' | 'error' | 'idle'
   text?: string
 }
 

@@ -40,9 +40,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
 }
 
 dependencies {
@@ -52,3 +49,9 @@ dependencies {
 /** a signing setting from Gradle properties (wisp.<name>) or the environment */
 fun wispSetting(name: String, env: String): String? =
     (findProperty("wisp.$name") as String?) ?: System.getenv(env)
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
+}

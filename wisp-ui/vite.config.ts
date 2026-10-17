@@ -28,6 +28,7 @@ const apiProxy = {
   '/weather': API_TARGET,
   '/sun': API_TARGET,
   '/drive': API_TARGET,
+  '/addons': API_TARGET,
   '/events': { target: API_TARGET, ws: true, changeOrigin: true },
 }
 

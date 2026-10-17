@@ -134,6 +134,14 @@ const CATEGORIES: Category[] = [
     icon: <SteeringIcon size={34} />,
   },
   {
+    // a doorway, like Drive Mode: the community's add-ons
+    id: 'addons',
+    label: 'Add-ons',
+    icon: svg(
+      'M10.5 2a2.5 2.5 0 0 1 2.5 2.5V5h4a1 1 0 0 1 1 1v4h.5a2.5 2.5 0 1 1 0 5H18v4a1 1 0 0 1-1 1h-4v-.5a2.5 2.5 0 1 0-5 0v.5H4a1 1 0 0 1-1-1v-4h.5a2.5 2.5 0 1 0 0-5H3V6a1 1 0 0 1 1-1h4v-.5A2.5 2.5 0 0 1 10.5 2z',
+    ),
+  },
+  {
     id: 'settings',
     label: 'Settings',
     icon: svg(
@@ -168,6 +176,7 @@ function categoriesFor(service: MusicService | null, switchable: boolean): Categ
   if (!service) return [...head, ...CATEGORIES]
   const now = CATEGORIES.find((c) => c.id === 'now')!
   const drive = CATEGORIES.find((c) => c.id === 'drive')!
+  const addons = CATEGORIES.find((c) => c.id === 'addons')!
   const settings = CATEGORIES.find((c) => c.id === 'settings')!
   const sections = (service.sections ?? []).map<Category>((sec) => ({
     id: `svc-${sec.id}`,
@@ -182,7 +191,7 @@ function categoriesFor(service: MusicService | null, switchable: boolean): Categ
           : fetchServicePage(service.id, sec.id),
     },
   }))
-  return [...head, now, ...sections, drive, settings]
+  return [...head, now, ...sections, drive, addons, settings]
 }
 
 const LIKED_ITEM: LibraryItem = {
@@ -212,6 +221,7 @@ interface Props {
   onOpenSettings?: () => void
   /** opens Drive Mode (its warning first) */
   onOpenDrive?: () => void
+  onOpenAddons?: () => void
   /** something (Settings) is open on top: the dial and back are its, not Home's */
   covered?: boolean
   notify: NotifyFn
@@ -232,6 +242,7 @@ export function Home({
   onOpenNav,
   onOpenSettings,
   onOpenDrive,
+  onOpenAddons,
   covered = false,
   notify,
 }: Props) {
@@ -433,6 +444,7 @@ export function Home({
     else if (category.id === 'nav') onOpenNav()
     else if (category.id === 'settings') onOpenSettings?.()
     else if (category.id === 'drive') onOpenDrive?.()
+    else if (category.id === 'addons') onOpenAddons?.()
     else if (cards.length > 0) setFocus('cards')
   }
 
@@ -585,6 +597,14 @@ export function Home({
               </span>
               <span className={styles.settingsDoorTitle}>Drive Mode</span>
               <span className={styles.settingsDoorHint}>Beta · Press to start</span>
+            </button>
+          ) : category.id === 'addons' ? (
+            <button type="button" className={styles.settingsDoor} onClick={() => onOpenAddons?.()}>
+              <span className={styles.settingsDoorIcon} aria-hidden>
+                {CATEGORIES.find((c) => c.id === 'addons')?.icon}
+              </span>
+              <span className={styles.settingsDoorTitle}>Add-ons</span>
+              <span className={styles.settingsDoorHint}>From the community · Press to open</span>
             </button>
           ) : category.id === 'settings' ? (
             // a doorway: Settings is a page of its own

@@ -293,6 +293,11 @@ class MainActivity : WispActivity() {
             { !PhoneCalls.allowed(this) }) {
             requestPermissions(arrayOf(Manifest.permission.READ_PHONE_STATE, Manifest.permission.ANSWER_PHONE_CALLS), 4)
         }
+        // "call Mom" said to the Car Thing: the contact found here, the call placed here
+        step(R.drawable.ic_w_call, "call by voice", "Call by voice", "Say \"call Mom\" to the Car Thing", "Allow",
+            { !VoiceActions.allowed(this) }) {
+            requestPermissions(arrayOf(Manifest.permission.READ_CONTACTS, Manifest.permission.CALL_PHONE), 9)
+        }
         // the visualizer reads the phone's sound output; Android files that under the microphone
         step(R.drawable.ic_w_bars, "visualizer", "Visualizer", "Reads the phone's sound, not the mic", "Allow",
             { !PhoneViz.allowed(this) }) { requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), 5) }
@@ -395,6 +400,9 @@ class MainActivity : WispActivity() {
         driveMusicSub = text("", 12f, medium, TERTIARY)
         g.addView(groupRowViews(null, text("Drive Mode music", 15f, semibold, WHITE), driveMusicSub, chevron()) { driveMusicSheet() })
         refreshDriveMusic()
+        thinkSub = text("", 12f, medium, TERTIARY)
+        g.addView(groupRowViews(null, text("Wisp's thinking", 15f, semibold, WHITE), thinkSub, chevron()) { thinkSheet() })
+        refreshThink()
         for (i in 1 until g.childCount) divide(g.getChildAt(i), true)
         return g
     }
@@ -552,6 +560,90 @@ class MainActivity : WispActivity() {
         }.start()
     }
 
+    private var thinkSub: TextView? = null
+
+    private fun refreshThink() {
+        thinkSub?.text = when {
+            OpenModel.progress >= 0 -> "Downloading ${OpenModel.NAME}… ${OpenModel.progress}%"
+            WispThink.model == "nano" && WispThink.state == "ready" -> "Gemini Nano, on this phone"
+            WispThink.model == "nano" -> "Getting Gemini Nano ready…"
+            WispThink.model == "open" -> "${OpenModel.NAME}, on this phone"
+            WispThink.nanoMissing -> "Off: no model on this phone yet"
+            else -> "Looking for this phone's model…"
+        }
+    }
+
+    // the language model behind Wisp's voice on this phone; the open one only after a size warning
+    private fun thinkSheet() = sheet("Wisp's thinking", "Understanding what you say to the Car Thing", R.drawable.ic_w_pulse) { body, d ->
+        val note = text("", 14f, medium, SECONDARY).apply { setLineSpacing(0f, 1.3f) }
+        body.addView(note, spaced(14))
+        val button = text("", 16f, bold, Color.BLACK).apply {
+            gravity = Gravity.CENTER
+            background = round(GREEN, dp(16))
+        }
+        val buttonParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(52)).apply { topMargin = dp(18) }
+        when {
+            WispThink.model == "nano" -> note.text = "Wisp understands looser requests and answers questions with Gemini Nano, " +
+                "Google's model built into this phone. It runs on the phone; nothing you say is sent online."
+            OpenModel.downloaded(this) -> {
+                note.text = "Wisp uses ${OpenModel.NAME}, an open model downloaded to this phone (${OpenModel.sizeMb()}). " +
+                    "It runs on the phone; nothing you say is sent online. It only takes up memory while you're talking to Wisp."
+                button.text = "Delete the model"
+                button.setTextColor(Color.WHITE)
+                button.background = round(Color.rgb(0xD9, 0x3B, 0x3B), dp(16))
+                button.setOnClickListener {
+                    OpenModel.delete(this)
+                    WispThink.openModelChanged()
+                    Toast.makeText(this, "Deleted ${OpenModel.sizeMb()}", Toast.LENGTH_SHORT).show()
+                    d.dismiss()
+                    refreshThink()
+                }
+                body.addView(button, buttonParams)
+            }
+            else -> {
+                note.text = "This phone doesn't have Gemini Nano. Without a model, the Car Thing still understands " +
+                    "everyday commands on its own; a model adds questions in your own words and looser requests.\n\n" +
+                    "${OpenModel.NAME} is an open model (Apache-2.0) that runs on this phone. Nothing you say is sent online."
+                button.text = "Download (${OpenModel.sizeMb()})"
+                button.setOnClickListener { confirmModelDownload(d) }
+                body.addView(button, buttonParams)
+            }
+        }
+        body.addView(text("Close", 14f, semibold, SECONDARY).apply {
+            gravity = Gravity.CENTER
+            setPadding(0, dp(14), 0, 0)
+            setOnClickListener { d.dismiss() }
+        })
+    }
+
+    // a large download: said plainly before it starts
+    private fun confirmModelDownload(sheet: android.app.Dialog) {
+        android.app.AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+            .setTitle("Large download: ${OpenModel.sizeMb()}")
+            .setMessage(
+                "This downloads ${OpenModel.NAME} (${OpenModel.sizeMb()}) to this phone. On mobile data it will use " +
+                    "${OpenModel.sizeMb()} of your plan, so Wi-Fi is best. It needs that much free space too. " +
+                    "You can delete it here at any time.",
+            )
+            .setPositiveButton("Download") { _, _ ->
+                sheet.dismiss()
+                Thread {
+                    val ok = OpenModel.download(this) { runOnUiThread { refreshThink() } }
+                    runOnUiThread {
+                        WispThink.openModelChanged()
+                        refreshThink()
+                        Toast.makeText(
+                            this,
+                            if (ok) "${OpenModel.NAME} is ready" else "The download didn't finish; try again on Wi-Fi",
+                            Toast.LENGTH_LONG,
+                        ).show()
+                    }
+                }.start()
+            }
+            .setNegativeButton("Not now", null)
+            .show()
+    }
+
     // the raw readout, for when something needs a closer look
     private fun diagnosticsSheet() = sheet("Diagnostics", "Send this screen when something's wrong", R.drawable.ic_w_pulse) { body, d ->
         val t = text("", 12f, null, SECONDARY).apply {
@@ -583,6 +675,7 @@ class MainActivity : WispActivity() {
     }
 
     private fun refresh() {
+        refreshThink()
         refreshAppUpdate()
         val notif = notificationAccess()
         val loc = granted(Manifest.permission.ACCESS_FINE_LOCATION)

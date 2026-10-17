@@ -16,6 +16,7 @@ export type OverlayId =
   | 'home'
   | 'nav'
   | 'drive'
+  | 'addons'
   | 'viz'
 
 /**
@@ -41,7 +42,7 @@ const BACK_ORDER: readonly OverlayId[] = [
  * Overlays that run their own back button (home steps back through its levels
  * before closing), so `goBack` leaves them alone but they still count as busy.
  */
-const SELF_BACK: readonly OverlayId[] = ['home', 'drive', 'viz']
+const SELF_BACK: readonly OverlayId[] = ['home', 'drive', 'addons', 'viz']
 
 /**
  * Overlays that do not count as "busy": the update card decides for itself
@@ -106,6 +107,7 @@ const NONE: Record<FlagId, boolean> = {
   home: false,
   nav: false,
   drive: false,
+  addons: false,
   viz: false,
 }
 

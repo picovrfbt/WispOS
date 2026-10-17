@@ -5,11 +5,14 @@ What changed in each Wisp release, newest first. Each version is on the
 
 ## v0.3.1 (2026-10-16)
 
-Wisp is open source, on its own modern system, with a lighter voice and new Drive Mode music.
+Wisp is open source, on its own modern system, with a smarter voice, community add-ons and new Drive Mode music.
 
 - **Open source.** Everything is public at [picovrfbt/WispOS](https://github.com/picovrfbt/WispOS), with a website at [picovrfbt.github.io/WispOS](https://picovrfbt.github.io/WispOS/). Updates need no GitHub token any more; the Wisp app forgets the one it kept.
 - **Wisp OS.** Wisp now runs on its own system: a current Linux kernel, the screen drawn by the GPU in a modern Chromium, and Wisp's own boot logo and start-up animation. Flash it once over USB; updates come over the air from then on.
 - **A lighter on-device voice.** A smaller speech model (about half the memory, about three times faster) that steps aside when memory runs short and comes back when there's room.
+- **A smarter voice.** Ask the way you'd ask a person: "I wanna hear Daft Punk", "who sings this?", "play the album", "no, the other one", "when do we get there?", "take me home", "call Mom", "dim the screen". Answers show on the Car Thing and are spoken through your phone. Everyday requests are understood on the Car Thing; with the Wisp app, a language model on your phone handles anything looser: Gemini Nano where the phone has it, or an open model (Qwen3 0.6B, about 345 MB) you can download from Options → Wisp's thinking.
+- **Add-ons.** Small pages from the community, from Home → Add-ons: a forecast, a big clock and trip gauges to start. Each is reviewed before it's listed, checked when it downloads, and sandboxed so it sees only what it asks for.
+- **Call by voice** needs a new, optional setup step in the Wisp app.
 - **The knob turns the right way** on Wisp OS.
 - **YouTube Music signs in with a code** at google.com/device, through YouTube's official API: your playlists (private ones too) and the music you've liked. Google no longer allows signing in inside apps. SoundCloud signs in with your email and password.
 - **New Drive Mode music.** All three sounds, Ethereal, Cinematic and Lo-fi, remade with cleaner stems.

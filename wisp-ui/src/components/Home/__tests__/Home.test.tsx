@@ -284,7 +284,7 @@ describe('Home with nothing active', () => {
         notify={vi.fn()}
       />,
     )
-    await turn(7)
+    await turn(8)
     expect(screen.getByRole('button', { name: /^Settings$/ })).toHaveAttribute(
       'aria-current',
       'true',
@@ -308,7 +308,7 @@ describe('Home with nothing active', () => {
 
   it('opens Settings with the knob even when Home was left "in the cards"', async () => {
     // Home kept "in the cards" from another row, then reopened on Settings
-    writeHomeMemory({ catIndex: 7, focus: 'cards', cardIndexes: {}, opened: null })
+    writeHomeMemory({ catIndex: 8, focus: 'cards', cardIndexes: {}, opened: null })
     const onOpenSettings = vi.fn()
     render(
       <Home
@@ -327,19 +327,22 @@ describe('Home with nothing active', () => {
     expect(onOpenSettings).toHaveBeenCalledTimes(1)
   })
 
-  it('has Drive Mode just above Settings, and a press opens it', async () => {
+  it('has Drive Mode and Add-ons just above Settings, and a press opens each', async () => {
     const onOpenDrive = vi.fn()
+    const onOpenAddons = vi.fn()
     render(
       <Home
         nowPlaying={null}
         onClose={vi.fn()}
         onOpenNav={vi.fn()}
         onOpenDrive={onOpenDrive}
+        onOpenAddons={onOpenAddons}
         notify={vi.fn()}
       />,
     )
     const rows = screen.getAllByRole('button').map((b) => b.textContent)
-    expect(rows.indexOf('Drive Mode') + 1).toBe(rows.indexOf('Settings'))
+    expect(rows.indexOf('Drive Mode') + 1).toBe(rows.indexOf('Add-ons'))
+    expect(rows.indexOf('Add-ons') + 1).toBe(rows.indexOf('Settings'))
     await turn(6)
     expect(screen.getByRole('button', { name: /^Drive Mode$/ })).toHaveAttribute(
       'aria-current',
@@ -347,6 +350,10 @@ describe('Home with nothing active', () => {
     )
     key('Enter')
     expect(onOpenDrive).toHaveBeenCalledTimes(1)
+    await turn(1)
+    expect(screen.getByRole('button', { name: /^Add-ons$/ })).toHaveAttribute('aria-current', 'true')
+    key('Enter')
+    expect(onOpenAddons).toHaveBeenCalledTimes(1)
   })
 
   it('pins the DJ beside Liked Songs, and a press plays it rather than listing it', async () => {
