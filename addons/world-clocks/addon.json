@@ -1,0 +1,8 @@
+{
+  "id": "world-clocks",
+  "name": "World clocks",
+  "version": "1.0.0",
+  "author": "Wisp",
+  "description": "Your time and three cities you pick. Press to choose a clock, turn to change its city.",
+  "image": "preview.png"
+}

@@ -1,0 +1,11 @@
+{
+  "id": "my-gauge",
+  "name": "My gauge",
+  "version": "1.0.0",
+  "author": "Your name",
+  "description": "One big number with a few smaller ones under it.",
+  "permissions": [
+    "location"
+  ],
+  "image": "preview.png"
+}

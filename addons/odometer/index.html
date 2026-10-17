@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Odometer</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #0d0f12; color: #fff; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; overflow: hidden; }
+  body { padding: 30px 36px; display: flex; flex-direction: column; }
+  .top { display: flex; align-items: baseline; gap: 16px; }
+  .miles { font-size: 132px; font-weight: 700; letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .mu { font-size: 30px; font-weight: 600; color: rgba(255,255,255,.6); }
+  .sub { margin-top: 10px; font-size: 19px; color: rgba(255,255,255,.55); }
+  .row { margin-top: auto; display: flex; gap: 12px; }
+  .cell { flex: 1; padding: 16px 20px; border-radius: 18px; background: rgba(255,255,255,.05); }
+  .k { font-size: 15px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.55); }
+  .v { margin-top: 6px; font-size: 36px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .v small { font-size: 18px; font-weight: 600; color: rgba(255,255,255,.55); }
+  .warn { color: #f5a524; }
+</style>
+</head>
+<body>
+<div class="top"><div class="miles" id="miles">0.0</div><div class="mu">miles</div></div>
+<div class="sub" id="sub">This drive · press twice to start a new one</div>
+<div class="row">
+  <div class="cell"><div class="k">Moving</div><div class="v" id="moving">0m</div></div>
+  <div class="cell"><div class="k">Average</div><div class="v" id="avg">0 <small>mph</small></div></div>
+  <div class="cell"><div class="k">Top</div><div class="v" id="top">0 <small>mph</small></div></div>
+  <div class="cell"><div class="k">Now</div><div class="v" id="now">0 <small>mph</small></div></div>
+</div>
+<script src="/addons/sdk.js"></script>
+<script>
+  // counted from the speed every 2 seconds while this is open (the location
+  // is only to about a kilometre, the speed is exact); kept between opens
+  var trip = { miles: 0, movingS: 0, top: 0 }
+  var last = 0
+  var armed = 0
+  var $ = function (id) { return document.getElementById(id) }
+
+  function draw(speed) {
+    $('miles').textContent = trip.miles < 100 ? trip.miles.toFixed(1) : Math.round(trip.miles)
+    var m = Math.round(trip.movingS / 60)
+    $('moving').textContent = m >= 60 ? Math.floor(m / 60) + 'h ' + (m % 60) + 'm' : m + 'm'
+    var avg = trip.movingS > 30 ? trip.miles / (trip.movingS / 3600) : 0
+    $('avg').innerHTML = Math.round(avg) + ' <small>mph</small>'
+    $('top').innerHTML = Math.round(trip.top) + ' <small>mph</small>'
+    if (speed !== undefined) $('now').innerHTML = Math.round(speed) + ' <small>mph</small>'
+  }
+
+  function tick() {
+    Wisp.location().then(function (loc) {
+      var t = Date.now()
+      var speed = loc && typeof loc.speed_mph === 'number' ? loc.speed_mph : null
+      if (speed === null) {
+        $('sub').textContent = 'Waiting for your phone\'s location…'
+        last = 0
+        return
+      }
+      if (!armed) $('sub').textContent = 'This drive · press twice to start a new one'
+      // a gap (closed, or no phone) isn't counted as driving
+      var dt = last ? Math.min(10, (t - last) / 1000) : 0
+      last = t
+      if (speed > 2) {
+        trip.miles += speed * dt / 3600
+        trip.movingS += dt
+      }
+      if (speed > trip.top && speed < 150) trip.top = speed
+      draw(speed)
+      Wisp.storage.set('trip', trip).catch(function () {})
+    }).catch(function () {})
+  }
+
+  Wisp.on('press', function () {
+    if (armed && Date.now() - armed < 4000) {
+      trip = { miles: 0, movingS: 0, top: 0 }
+      armed = 0
+      $('sub').textContent = 'New drive started'
+      Wisp.storage.set('trip', trip).catch(function () {})
+      draw()
+      return
+    }
+    armed = Date.now()
+    $('sub').innerHTML = '<span class="warn">Press again to start a new drive</span>'
+    setTimeout(function () { if (armed && Date.now() - armed >= 4000) { armed = 0; $('sub').textContent = 'This drive · press twice to start a new one' } }, 4100)
+  })
+
+  Wisp.storage.get('trip').then(function (t) {
+    if (t && typeof t.miles === 'number') trip = t
+    draw()
+  }).catch(function () {}).then(function () {
+    tick()
+    setInterval(tick, 2000)
+  })
+</script>
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Make an add-on</title>
+<meta name="description" content="How to make an add-on for Wisp on the Spotify Car Thing: the Add-on Studio, starter templates, the Wisp bridge, designing for the dash, and sending it in.">
+<meta name="theme-color" content="#08080a">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="./"><img src="logo.svg" alt="">Wisp</a>
+    <nav>
+      <a href="./#addons">Add-ons</a>
+      <a href="addons.html" aria-current="page">Make one</a>
+      <a href="studio.html">Studio</a>
+      <a href="use.html">How to use</a>
+      <a href="guide.html">Set up</a>
+      <a href="https://github.com/picovrfbt/WispOS">Source</a>
+    </nav>
+  </div>
+</header>
+
+<main class="doc guide">
+<div class="wrap">
+  <p class="eyebrow">Make an add-on</p>
+  <h1>Make something for the dash.</h1>
+  <p class="lead-doc">An add-on is a small web page that opens full screen on the Car Thing and works with the knob: a gauge, a timer, a game for passengers, whatever you'd like to see on the road. You don't need to know how to code to make one, and if you do, it's plain HTML.</p>
+  <div class="cta-row">
+    <a class="btn primary" href="studio.html">Open the Add-on Studio</a>
+    <a class="btn" href="#templates">Or start from a template</a>
+  </div>
+
+  <nav class="toc" aria-label="On this page">
+    <a href="#what"><span>00</span>What an add-on is</a>
+    <a href="#studio"><span>01</span>The Studio</a>
+    <a href="#templates"><span>02</span>Templates</a>
+    <a href="#try"><span>03</span>Try it</a>
+    <a href="#sdk"><span>04</span>Talking to the Car Thing</a>
+    <a href="#design"><span>05</span>Designing for the dash</a>
+    <a href="#picture"><span>06</span>Its picture</a>
+    <a href="#share"><span>07</span>Send it in</a>
+    <a href="#sideload"><span>08</span>On your own Car Thing</a>
+    <a href="#rules"><span>?</span>The rules</a>
+  </nav>
+
+  <section id="what" class="gstep">
+    <h2><span class="num">00</span>What an add-on is</h2>
+    <p>A folder with a few files:</p>
+    <div class="code small"><span class="c"># addons/trip-stats/</span>
+addon.json    <span class="c">what it is, who made it, and what it may use</span>
+index.html    <span class="c">the page: 800 × 480, the knob to move</span>
+style.css     <span class="c">Wisp's style kit, or your own</span>
+preview.png   <span class="c">its picture in the catalog</span></div>
+    <p>People find it in <b>Home → Add-ons → Get add-ons</b> on their Car Thing, with its picture, name, your name and its description, and install it with a press. It runs only while it's open, in a sandbox: it can't see sign-ins, settings or anything it didn't ask for, and it reaches only the websites it lists.</p>
+    <p><code>addon.json</code> looks like this:</p>
+    <div class="code small">{
+  "id": "trip-stats",
+  "name": "Trip stats",
+  "version": "1.0.0",
+  "author": "Your name",
+  "description": "This drive's miles, time and top speed.",
+  "permissions": ["location"],
+  "network": [],
+  "image": "preview.png"
+}</div>
+    <div class="table">
+      <div class="row head"><span>Field</span><span>What it is</span></div>
+      <div class="row"><span><code>id</code></span><span>Lowercase letters, digits and dashes, 2 to 40 of them; the folder's name.</span></div>
+      <div class="row"><span><code>name</code> · <code>author</code></span><span>Shown in the catalog. 40 and 60 characters at most.</span></div>
+      <div class="row"><span><code>description</code></span><span>One line, up to 200 characters, on what it shows.</span></div>
+      <div class="row"><span><code>version</code></span><span>Like <code>1.0.0</code>. A new version is how an update reaches people.</span></div>
+      <div class="row"><span><code>permissions</code></span><span>Any of <code>now_playing</code>, <code>weather</code>, <code>location</code> (rounded to about a kilometre, with your speed) and <code>nav</code> (directions from the phone). People see this list before installing.</span></div>
+      <div class="row"><span><code>network</code></span><span>The websites it reads from, by name, like <code>api.open-meteo.com</code>. Nothing else is reachable.</span></div>
+      <div class="row"><span><code>image</code></span><span>Its picture: png, jpg or webp, up to 200 KB, ideally 400 × 240.</span></div>
+      <div class="row"><span><code>entry</code></span><span>The page, if it isn't <code>index.html</code>.</span></div>
+    </div>
+  </section>
+
+  <section id="studio" class="gstep">
+    <h2><span class="num">01</span>The fastest way: the Add-on Studio</h2>
+    <div class="two align">
+      <div>
+        <p>The <a href="studio.html">Add-on Studio</a> runs in your browser, with nothing to install.</p>
+        <ol class="steps-list">
+          <li><b>Build</b> it from tiles: a clock, your speed, the weather, what's playing, the next turn, the arrival time, a timer, a counter, a note, or a number from a website. Pick a colour and a background. No code.</li>
+          <li><b>Or write it</b> in Code mode, from scratch or from a template.</li>
+          <li><b>Try it</b> on a Car Thing screen with a working knob and sample data, run the same way the Car Thing runs it.</li>
+          <li><b>Describe it, take its picture, download it</b>, and send it in with a form.</li>
+        </ol>
+        <p class="note-doc">Your work is kept in that browser as you go, so you can come back to it.</p>
+      </div>
+      <a href="studio.html"><img class="shot-doc" src="screenshots/studio.png" alt="The Add-on Studio: tiles on the left, a Car Thing screen showing them on the right" loading="lazy"></a>
+    </div>
+  </section>
+
+  <section id="templates" class="gstep">
+    <h2><span class="num">02</span>Start from a template</h2>
+    <p>Five starting points, each a working add-on with comments in the code. Use them in the Studio's Code mode, or in the repo:</p>
+    <div class="code small">git clone https://github.com/picovrfbt/WispOS
+cd WispOS/addons
+node new.mjs trip-stats --template gauge --name "Trip stats" --author "Your name"</div>
+    <div class="template-row">
+      <figure><img src="screenshots/template-blank.png" alt="The blank template: a title and a big number" loading="lazy"><figcaption><b>blank</b> The least an add-on needs: the knob, a press, saving a value</figcaption></figure>
+      <figure><img src="screenshots/template-gauge.png" alt="The gauge template: a big speed with a bar and three small numbers" loading="lazy"><figcaption><b>gauge</b> One big number, a bar, and three small ones</figcaption></figure>
+      <figure><img src="screenshots/template-list.png" alt="The list template: stops on the left, the chosen one in full on the right" loading="lazy"><figcaption><b>list</b> Rows the knob scrolls, the one under it in full</figcaption></figure>
+      <figure><img src="screenshots/template-tiles.png" alt="The tiles template: weather, the song, the time and the wind" loading="lazy"><figcaption><b>tiles</b> A dashboard, with data from the Car Thing and a website</figcaption></figure>
+      <figure><img src="screenshots/template-ambient.png" alt="The ambient template: soft colour behind the song's name" loading="lazy"><figcaption><b>ambient</b> Slow colour and the song that's playing</figcaption></figure>
+    </div>
+    <p>Each comes with <code>style.css</code>, Wisp's style kit: the colours and type of the Car Thing's own screens, and ready-made pieces (<code>.card</code>, <code>.row</code>, <code>.chip</code>, <code>.big</code>, <code>.eyebrow</code>, <code>.grid-2</code>, <code>.grid-3</code>; add <code>.on</code> to whatever the knob is on). Change <code>--accent</code> to make it yours.</p>
+  </section>
+
+  <section id="try" class="gstep">
+    <h2><span class="num">03</span>Try it on your computer</h2>
+    <p>In the Studio, it's always running. In the repo:</p>
+    <div class="code small">node preview.mjs trip-stats --serve</div>
+    <p>That opens it at <code>http://127.0.0.1:4848</code> on a Car Thing screen, run the way the Car Thing runs it: in a sandbox, with the same rules and the real bridge, against sample data (a song, a drive in Long Beach with directions, the weather). The arrow keys or the mouse wheel turn the knob, <b>Enter</b> presses it, <b>R</b> reloads after you edit. A panel shows everything it asks the Car Thing and the answer, including what it isn't allowed. Needs <a href="https://nodejs.org">Node</a> 22 or newer.</p>
+  </section>
+
+  <section id="sdk" class="gstep">
+    <h2><span class="num">04</span>Talking to the Car Thing</h2>
+    <p>Load the bridge first, then use <code>Wisp</code>:</p>
+    <div class="code small">&lt;script src="/addons/sdk.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  Wisp.on('knob', ({ delta }) =&gt; { <span class="c">/* +1 clockwise, -1 back */</span> })
+  Wisp.on('press', () =&gt; { <span class="c">/* the knob was pressed */</span> })
+&lt;/script&gt;</div>
+    <div class="table">
+      <div class="row head"><span>Call</span><span>What it gives you</span></div>
+      <div class="row"><span><code>Wisp.on('knob', fn)</code></span><span><code>{ delta }</code>: +1 clockwise, −1 the other way.</span></div>
+      <div class="row"><span><code>Wisp.on('press', fn)</code></span><span>The knob was pressed. (Back always closes the add-on.)</span></div>
+      <div class="row"><span><code>Wisp.on('nowplaying', fn)</code></span><span>The song changed: <code>{ name, artist, album, image, playing }</code>. Needs <code>now_playing</code>.</span></div>
+      <div class="row"><span><code>await Wisp.nowPlaying()</code></span><span>What's playing now. Needs <code>now_playing</code>.</span></div>
+      <div class="row"><span><code>await Wisp.weather()</code></span><span><code>{ temp, unit, summary }</code>, in the unit the person chose. Needs <code>weather</code>.</span></div>
+      <div class="row"><span><code>await Wisp.location()</code></span><span><code>{ lat, lng, speed_mph }</code> to about a kilometre, or <code>null</code> with no phone. Needs <code>location</code>.</span></div>
+      <div class="row"><span><code>await Wisp.nav()</code></span><span><code>{ active, distance, instruction, arrival }</code> from Google Maps on the phone. Needs <code>nav</code>.</span></div>
+      <div class="row"><span><code>await Wisp.timezoneOffset()</code></span><span>Minutes from UTC where the person is. The Car Thing's own clock runs on UTC, so use this for local times.</span></div>
+      <div class="row"><span><code>await Wisp.fetch(url)</code></span><span><code>{ status, body }</code> from a site in <code>network</code>, over https, up to 256 KB. The Car Thing fetches it for you.</span></div>
+      <div class="row"><span><code>await Wisp.storage.get(key)</code><br><code>await Wisp.storage.set(key, value)</code></span><span>Small values kept on the Car Thing for this add-on, 16 KB in all. Gone if it's removed.</span></div>
+      <div class="row"><span><code>Wisp.close()</code></span><span>Back to Home.</span></div>
+    </div>
+    <p class="note-doc">Every call can fail (no phone, no signal, not allowed), so give each one a <code>.catch</code> and show something sensible.</p>
+  </section>
+
+  <section id="design" class="gstep">
+    <h2><span class="num">05</span>Designing for the dash</h2>
+    <ul class="needs">
+      <li><b>Readable in a glance.</b> The screen is about 4 inches, an arm's length away, while you drive. Use big type: 22 px for text, 40 px and up for the thing that matters. One main thing per screen.</li>
+      <li><b>The knob is the mouse.</b> Show clearly what it's on (the kit's <code>.on</code>), and make a press do the obvious thing. Back always leaves.</li>
+      <li><b>Dark, with one colour.</b> A dark background and a single accent, like Wisp's own screens, so it's easy on the eyes at night.</li>
+      <li><b>Calm.</b> No flashing, nothing that moves fast or pulls the eye. Slow motion is fine, and should stop for people who ask their system for less motion (<code>prefers-reduced-motion</code>).</li>
+      <li><b>Light.</b> The Car Thing has a small processor and very little memory. Plain HTML, CSS and a little script; no frameworks needed. Prefer gradients to <code>filter: blur()</code>, and refresh data every few seconds, not constantly.</li>
+      <li><b>Kind when things are missing.</b> No phone, no signal, nothing playing: say so plainly instead of showing a blank screen.</li>
+      <li><b>Not a substitute for the road.</b> Nothing that needs reading paragraphs or many presses while driving. Games are for passengers; say so in the description.</li>
+    </ul>
+  </section>
+
+  <section id="picture" class="gstep">
+    <h2><span class="num">06</span>Its picture</h2>
+    <p>Every add-on has one; it's the first thing people see. The Studio takes it with one button. In the repo:</p>
+    <div class="code small">node preview.mjs trip-stats
+<span class="c"># or mid-use, with something saved:</span>
+node preview.mjs trip-stats --storage '{"trip":{"miles":84.3}}'</div>
+    <p>That saves a 400 × 240 screenshot as <code>preview.png</code> (it needs Chrome or Edge). You can also use your own picture: any png, jpg or webp up to 200 KB, named in <code>"image"</code>.</p>
+  </section>
+
+  <section id="share" class="gstep">
+    <h2><span class="num">07</span>Send it in</h2>
+    <div class="two">
+      <div class="panel-doc">
+        <h3>From the Studio, no git</h3>
+        <ol class="steps-list">
+          <li>Download it from the Studio as a .zip.</li>
+          <li>Open the <a href="https://github.com/picovrfbt/WispOS/issues/new?template=addon.yml">add-on form</a> on GitHub (a free account) and drop the zip in.</li>
+        </ol>
+      </div>
+      <div class="panel-doc">
+        <h3>As a pull request</h3>
+        <ol class="steps-list">
+          <li>Put the folder in <code>addons/</code> and run <code>python pack.py</code>. It checks the rules, zips it into <code>dist/</code> with its picture, and updates <code>catalog.json</code> with their checksums.</li>
+          <li>Open a pull request with the folder, <code>dist/</code> and <code>catalog.json</code>.</li>
+        </ol>
+      </div>
+    </div>
+    <p>Every add-on is reviewed before it's in the catalog. What's checked:</p>
+    <ul class="needs">
+      <li>It does what its description says, and its picture shows it.</li>
+      <li>It asks only for the permissions and sites it uses.</li>
+      <li>It's readable at a glance and calm to look at while driving.</li>
+      <li>It's yours to share, under the project's <a href="https://github.com/picovrfbt/WispOS/blob/main/LICENSE">Apache 2.0 licence</a>.</li>
+    </ul>
+    <p>Once it's merged, it's in everyone's <b>Get add-ons</b>. To update it, raise its <code>version</code> and send it in again.</p>
+  </section>
+
+  <section id="sideload" class="gstep">
+    <h2><span class="num">08</span>On your own Car Thing</h2>
+    <p>To use one before it's in the catalog, or one just for you, copy its folder onto the Car Thing over SSH. With the Car Thing connected and online:</p>
+    <div class="code small">scp -r trip-stats root@&lt;the Car Thing's address&gt;:/var/local/wisp/addons/</div>
+    <p>Then open <b>Home → Add-ons</b>: it's listed with the installed ones.</p>
+  </section>
+
+  <section id="rules" class="gstep">
+    <h2><span class="num">?</span>The rules it runs under</h2>
+    <div class="table">
+      <div class="row head"><span>Rule</span><span>Why</span></div>
+      <div class="row"><span>It runs in a sandbox, with no access to Wisp's settings, sign-ins, controls or API</span><span>So an add-on can only show things, never change them.</span></div>
+      <div class="row"><span>No requests of its own: images, scripts and styles come from its folder or <code>data:</code> addresses; data comes through <code>Wisp.fetch</code></span><span>So it reaches only the sites it lists.</span></div>
+      <div class="row"><span>Only https, only listed sites, public addresses, 256 KB a page, 8 seconds</span><span>Nothing on the person's own network, nothing huge.</span></div>
+      <div class="row"><span>64 files and 2 MB zipped at most; its picture 200 KB</span><span>The Car Thing has little room.</span></div>
+      <div class="row"><span>It only runs while it's open</span><span>So it costs nothing the rest of the time.</span></div>
+    </div>
+    <p>Questions or ideas for what the bridge should offer? <a href="https://github.com/picovrfbt/WispOS/issues/new/choose">Open an issue</a>.</p>
+  </section>
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="./"><img src="logo.svg" alt="">Wisp</a>
+    <nav>
+      <a href="guide.html">Set up</a>
+      <a href="use.html">How to use</a>
+      <a href="studio.html">Add-on Studio</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="https://github.com/picovrfbt/WispOS">GitHub</a>
+    </nav>
+    <p class="legal">Wisp is not affiliated with, endorsed by or sponsored by Spotify, Google or YouTube. Spotify and Car Thing are trademarks of Spotify AB.</p>
+  </div>
+</footer>
+</body>
+</html>

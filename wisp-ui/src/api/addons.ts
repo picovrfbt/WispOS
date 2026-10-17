@@ -11,6 +11,8 @@ export interface AddonManifest {
   entry?: string
   permissions?: AddonPermission[]
   network?: string[]
+  /** its picture, inside its folder */
+  image?: string
 }
 
 export type AddonPermission = 'now_playing' | 'weather' | 'location' | 'nav'
@@ -20,6 +22,18 @@ export interface AddonCatalogEntry extends AddonManifest {
   zip: string
   sha256: string
   size: number
+  /** its picture beside the zip, shown before installing */
+  image_url?: string
+}
+
+/** an installed add-on's picture, or a catalog one's (checked by the Car Thing) */
+export function addonImageSrc(
+  a: AddonManifest | AddonCatalogEntry,
+  fromCatalog: boolean,
+): string | null {
+  if (fromCatalog)
+    return 'image_url' in a && a.image_url ? `${API_BASE}/addons/catalog/${a.id}/image` : null
+  return a.image ? `${API_BASE}/addons/files/${a.id}/${a.image}` : null
 }
 
 export async function fetchAddons(signal?: AbortSignal): Promise<AddonManifest[]> {
@@ -58,7 +72,10 @@ export async function removeAddon(id: string): Promise<void> {
 }
 
 /** a page from one of the add-on's own sites, fetched by the Car Thing */
-export async function addonFetch(id: string, url: string): Promise<{ status: number; body: string }> {
+export async function addonFetch(
+  id: string,
+  url: string,
+): Promise<{ status: number; body: string }> {
   const res = await post('/addons/fetch', { id, url })
   const body = (await readJson(res)) as { status?: number; body?: string; error?: string }
   if (!res.ok) throw new Error(body.error ?? `fetch: ${res.status}`)

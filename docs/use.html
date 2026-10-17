@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to use Wisp</title>
+<meta name="description" content="How to use everything in Wisp on the Spotify Car Thing: the knob and buttons, your music, voice, directions, Drive Mode, calls, add-ons, settings and the Wisp app.">
+<meta name="theme-color" content="#08080a">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="./"><img src="logo.svg" alt="">Wisp</a>
+    <nav>
+      <a href="./#features">Features</a>
+      <a href="use.html" aria-current="page">How to use</a>
+      <a href="addons.html">Add-ons</a>
+      <a href="guide.html">Set up</a>
+      <a href="https://github.com/picovrfbt/WispOS">Source</a>
+    </nav>
+  </div>
+</header>
+
+<main class="doc guide use">
+<div class="wrap">
+  <p class="eyebrow">How to use</p>
+  <h1>Everything Wisp does, and how.</h1>
+  <p class="lead-doc">Wisp 1.0 on the Car Thing, part by part. Not set up yet? Start with the <a href="guide.html">setup guide</a>.</p>
+
+  <nav class="toc" aria-label="On this page">
+    <a href="#controls"><span>01</span>The knob and buttons</a>
+    <a href="#music"><span>02</span>Your music</a>
+    <a href="#player"><span>03</span>The player</a>
+    <a href="#voice"><span>04</span>Talking to Wisp</a>
+    <a href="#directions"><span>05</span>Directions</a>
+    <a href="#drive"><span>06</span>Drive Mode</a>
+    <a href="#calls"><span>07</span>Calls and the phone</a>
+    <a href="#addons"><span>08</span>Add-ons</a>
+    <a href="#settings"><span>09</span>Settings and updates</a>
+    <a href="#app"><span>10</span>The Wisp app</a>
+  </nav>
+
+  <section id="controls" class="gstep">
+    <h2><span class="num">01</span>The knob and buttons</h2>
+    <div class="table">
+      <div class="row head"><span>Control</span><span>What it does</span></div>
+      <div class="row"><span><b>Turn the knob</b></span><span>Moves through whatever's on screen. On the player and while driving, it's the volume.</span></div>
+      <div class="row"><span><b>Press the knob</b></span><span>Picks what it's on. On the player, play and pause.</span></div>
+      <div class="row"><span><b>Back</b> (on the front, beside the knob)</span><span>One step back.</span></div>
+      <div class="row"><span><b>The top-right button</b></span><span>Press for the power menu: sleep, restart and more. Press twice for the clock and weather screensaver.</span></div>
+      <div class="row"><span><b>Buttons 1 to 4</b> (along the top)</span><span>Your shortcuts: a playlist, the map, Home, the voice, or whatever you set in Settings → Top buttons. Hold one to save what's playing to it.</span></div>
+      <div class="row"><span><b>The screen</b></span><span>Touch works too, for the moments it's quicker.</span></div>
+    </div>
+  </section>
+
+  <section id="music" class="gstep">
+    <h2><span class="num">02</span>Your music</h2>
+    <div class="two align">
+      <div>
+        <p><b>Home</b> is the bar along the bottom: Recents, Liked Songs, DJ, your playlists, albums and artists, and doorways to the map, Drive Mode, Add-ons and Settings. Turn to move along it, press to open, press again to play.</p>
+        <ul class="needs">
+          <li><b>Spotify</b> plays on the Car Thing itself once you've signed in: play anything on your account from any device and it shows up.</li>
+          <li><b>YouTube Music and SoundCloud</b> play through your phone, with their libraries on the Car Thing. Sign in from the Wisp app (YouTube Music with a code at google.com/device).</li>
+          <li><b>Anything else</b> playing on your phone (a podcast app, VLC) shows on the player with its controls.</li>
+        </ul>
+      </div>
+      <img class="shot-doc" src="screenshots/home-library.png" alt="Home: the bar of Recents, Liked Songs, playlists and more" loading="lazy">
+    </div>
+    <div class="use-row">
+      <figure><img src="screenshots/home-recents.png" alt="" loading="lazy"><figcaption>Recents</figcaption></figure>
+      <figure><img src="screenshots/home-playlist.png" alt="" loading="lazy"><figcaption>A playlist, ready to play or shuffle</figcaption></figure>
+      <figure><img src="screenshots/soundcloud.png" alt="" loading="lazy"><figcaption>SoundCloud through the phone</figcaption></figure>
+    </div>
+  </section>
+
+  <section id="player" class="gstep">
+    <h2><span class="num">03</span>The player</h2>
+    <div class="two align">
+      <div>
+        <p>The cover, the song and synced lyrics beside it. The knob is the volume and a press plays or pauses.</p>
+        <p><b>Tap More</b> on the player for its menu: like, shuffle, repeat, Up next, the visualizer, lyrics on or off, and where it's playing.</p>
+        <p class="note-doc">Lyrics follow the song line by line, for Spotify and what else your phone plays. If they're early or late, Settings → Lyric sync nudges them.</p>
+      </div>
+      <img class="shot-doc" src="screenshots/player-lyrics.png" alt="The player with synced lyrics beside the cover" loading="lazy">
+    </div>
+    <div class="use-row">
+      <figure><img src="screenshots/player-menu.png" alt="" loading="lazy"><figcaption>The player's menu</figcaption></figure>
+      <figure><img src="screenshots/player-queue.png" alt="" loading="lazy"><figcaption>Up next</figcaption></figure>
+      <figure><img src="screenshots/visualizer-full.png" alt="" loading="lazy"><figcaption>The full-screen visualizer: turn for another style</figcaption></figure>
+    </div>
+  </section>
+
+  <section id="voice" class="gstep">
+    <h2><span class="num">04</span>Talking to Wisp</h2>
+    <p>Say <b>"Okay Wisp"</b>, or press the voice button, then ask the way you'd ask a person. The words show along the bottom, and Wisp answers on screen and out loud (Settings → Wisp's voice).</p>
+    <div class="table">
+      <div class="row head"><span>Try</span><span>What happens</span></div>
+      <div class="row"><span>"Play my road trip playlist" · "I wanna hear Daft Punk"</span><span>Plays it, from your library first.</span></div>
+      <div class="row"><span>"Play the album" · "no, the other one"</span><span>Follows on from what you just asked.</span></div>
+      <div class="row"><span>"Queue Midnight City" · "like this" · "add this to my gym playlist"</span><span>Up next, Liked Songs, a playlist.</span></div>
+      <div class="row"><span>"Who sings this?" · "what's the weather?"</span><span>Answers.</span></div>
+      <div class="row"><span>"Take me to the beach" · "when do we get there?" · "stop navigation"</span><span>Directions (see below).</span></div>
+      <div class="row"><span>"Call Mom"</span><span>Calls through your phone (allow "Call by voice" in the Wisp app).</span></div>
+      <div class="row"><span>"I'm getting sleepy" · "dim the screen" · "start Drive Mode"</span><span>Music to wake you, the screen, Drive Mode.</span></div>
+    </div>
+    <p class="note-doc">Everyday requests are understood on the Car Thing itself. With the Wisp app, a language model on your phone handles looser ones: Gemini Nano where your phone has it, or a free open model you can download (Wisp offers it once, and it's in the app under Options → Wisp's thinking).</p>
+  </section>
+
+  <section id="directions" class="gstep">
+    <h2><span class="num">05</span>Directions</h2>
+    <p>Two ways, picked in Settings → Navigation → <b>Directions by</b>:</p>
+    <ul class="needs">
+      <li><b>Google Maps</b>: start directions on your phone and the turns show on the Car Thing's map, with your route.</li>
+      <li><b>Wisp</b>: the Car Thing finds the place, plans the route and says the turns itself, from OpenStreetMap. Your phone just shares where you are.</li>
+    </ul>
+    <div class="steps-grid">
+      <figure><img src="screenshots/nav-where.png" alt="Where to? with nearby kinds of place and recent places" loading="lazy"><figcaption><b>1. Where to?</b> Open the map from Home (or button 2) with nothing navigating. Turn to gas, food, coffee, parking, charging or groceries, or a recent place, and press. Anywhere by name: "Okay Wisp, take me to…".</figcaption></figure>
+      <figure><img src="screenshots/nav-results.png" alt="Gas stations nearby, nearest first" loading="lazy"><figcaption><b>2. Pick a place.</b> The nearest first, with how far. Press for the ways there.</figcaption></figure>
+      <figure><img src="screenshots/nav-routes.jpg" alt="Two routes to Long Beach Airport on the map" loading="lazy"><figcaption><b>3. Pick a route.</b> Up to three, each with its time, miles and main road; turning shows each one on the map. Avoid highways or tolls if you'd like, then <b>Start</b>, or <b>Google Maps</b> to drive it there with live traffic.</figcaption></figure>
+      <figure><img src="screenshots/nav-driving.jpg" alt="Driving: the next turn, the one after, the speed and the time left" loading="lazy"><figcaption><b>4. Drive.</b> The next turn, the one after it, your speed, and the time, miles and arrival. The knob stays the volume. Wisp finds a new way if you leave the route.</figcaption></figure>
+      <figure><img src="screenshots/nav-sound.jpg" alt="The spoken directions menu: every turn, just the turns, muted" loading="lazy"><figcaption><b>Sound.</b> Tap the speaker: every turn with a heads-up, just the turns, or muted. <b>Stop</b> ends the trip, as does "stop navigation".</figcaption></figure>
+      <figure><img src="screenshots/nav.jpg" alt="Google Maps directions on the Car Thing's map" loading="lazy"><figcaption><b>With Google Maps</b>, its turns and arrows show here the same way. Share a destination to <b>Route on Car Thing</b> to see the whole route.</figcaption></figure>
+    </div>
+  </section>
+
+  <section id="drive" class="gstep">
+    <h2><span class="num">06</span>Drive Mode <span class="beta">beta</span></h2>
+    <div class="two align">
+      <div>
+        <p>Music that follows the drive: it opens up as you pull away, settles when you coast and goes quiet at a stop. Open it from Home, or say "start Drive Mode", and turn the knob to pick a sound: Ethereal, Cinematic or Lo-fi.</p>
+        <p class="note-doc">It plays from your phone, which downloads each sound once (from the Wisp app's Drive Mode page).</p>
+      </div>
+      <img class="shot-doc" src="screenshots/drive.png" alt="Drive Mode" loading="lazy">
+    </div>
+  </section>
+
+  <section id="calls" class="gstep">
+    <h2><span class="num">07</span>Calls and the phone</h2>
+    <div class="two align">
+      <div>
+        <ul class="needs">
+          <li><b>Calls:</b> who's calling, over whatever's on screen. Turn to Answer or Decline and press. Back hides it and leaves the phone ringing. The car's hands-free does the talking.</li>
+          <li><b>Notifications</b> slide in at the top (Settings → Phone → Notifications).</li>
+          <li><b>Your phone's battery</b> shows when it isn't charging, and warns you when it's low.</li>
+        </ul>
+      </div>
+      <img class="shot-doc" src="screenshots/call.png" alt="An incoming call with Answer and Decline" loading="lazy">
+    </div>
+  </section>
+
+  <section id="addons" class="gstep">
+    <h2><span class="num">08</span>Add-ons</h2>
+    <p><b>Home → Add-ons</b> lists yours; press one to open it full screen, where the knob works it and back leaves. <b>Get add-ons</b> is the community's catalog: each with its picture, who made it, what it does and what it uses. Press to install, press again to remove.</p>
+    <div class="use-row two-up">
+      <figure><img src="screenshots/addons-list.png" alt="Your add-ons with their pictures" loading="lazy"><figcaption>Your add-ons</figcaption></figure>
+      <figure><img src="screenshots/addons-catalog.png" alt="Get add-ons: the list and the one under the knob in full" loading="lazy"><figcaption>Get add-ons</figcaption></figure>
+    </div>
+    <p>To start: a forecast, a big clock, trip gauges, an odometer, a parking timer, sun and moon times, world clocks and a license plate game. Make your own in the <a href="studio.html">Add-on Studio</a>; <a href="addons.html">here's how</a>.</p>
+  </section>
+
+  <section id="settings" class="gstep">
+    <h2><span class="num">09</span>Settings and updates</h2>
+    <div class="two align">
+      <div>
+        <p><b>Home → Settings</b>: brightness and auto brightness, night mode at sunset, accent colour, performance mode, lyrics, volume per turn, the top buttons, Wisp's voice, navigation, notifications and more. Your phone keeps a copy, so a reset or reflash doesn't lose them.</p>
+        <p><b>Updates</b> come over the air: Settings → Software update, or automatically if you allow it. When nothing's playing, the <b>screensaver</b> shows the clock and the weather.</p>
+      </div>
+      <img class="shot-doc" src="screenshots/settings.png" alt="Settings" loading="lazy">
+    </div>
+    <div class="use-row">
+      <figure><img src="screenshots/screensaver.png" alt="" loading="lazy"><figcaption>The screensaver</figcaption></figure>
+      <figure><img src="screenshots/power-menu.png" alt="" loading="lazy"><figcaption>The power menu (the top-right button)</figcaption></figure>
+      <figure><img src="screenshots/update.png" alt="" loading="lazy"><figcaption>An update</figcaption></figure>
+    </div>
+  </section>
+
+  <section id="app" class="gstep">
+    <h2><span class="num">10</span>The Wisp app</h2>
+    <div class="two align">
+      <div>
+        <p>On your Android phone, the Wisp app is what brings directions, calls, notifications, YouTube Music and SoundCloud, Drive Mode, the phone's battery and Wisp's spoken voice to the Car Thing. Its setup list shows what's left to allow, and each step says what it's for.</p>
+        <ul class="needs">
+          <li><b>Car Thing settings</b> from your phone, changed on the Car Thing right away.</li>
+          <li><b>Wisp's thinking:</b> which language model helps the voice (Gemini Nano, or the open model).</li>
+          <li><b>Music services:</b> sign in to YouTube Music and SoundCloud.</li>
+        </ul>
+      </div>
+      <div class="phone small-phone"><img src="screenshots/app-top.png" alt="The Wisp app" loading="lazy"></div>
+    </div>
+  </section>
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="./"><img src="logo.svg" alt="">Wisp</a>
+    <nav>
+      <a href="guide.html">Set up</a>
+      <a href="use.html">How to use</a>
+      <a href="addons.html">Make an add-on</a>
+      <a href="studio.html">Add-on Studio</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="https://github.com/picovrfbt/WispOS">GitHub</a>
+    </nav>
+    <p class="legal">Wisp is not affiliated with, endorsed by or sponsored by Spotify, Google or YouTube. Spotify and Car Thing are trademarks of Spotify AB.</p>
+  </div>
+</footer>
+</body>
+</html>

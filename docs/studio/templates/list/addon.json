@@ -1,0 +1,8 @@
+{
+  "id": "my-list",
+  "name": "My list",
+  "version": "1.0.0",
+  "author": "Your name",
+  "description": "A list you scroll with the knob; press one to see more.",
+  "image": "preview.png"
+}

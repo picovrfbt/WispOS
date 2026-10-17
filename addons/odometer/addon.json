@@ -1,0 +1,11 @@
+{
+  "id": "odometer",
+  "name": "Odometer",
+  "version": "1.0.0",
+  "author": "Wisp",
+  "description": "This drive's distance, time moving, average and top speed. Press twice to start a new drive.",
+  "permissions": [
+    "location"
+  ],
+  "image": "preview.png"
+}

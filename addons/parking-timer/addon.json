@@ -1,0 +1,8 @@
+{
+  "id": "parking-timer",
+  "name": "Parking timer",
+  "version": "1.0.0",
+  "author": "Wisp",
+  "description": "Turn to set the meter's time, press to start. It keeps counting even when you close it.",
+  "image": "preview.png"
+}

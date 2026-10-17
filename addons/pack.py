@@ -5,6 +5,10 @@ SHA-256, which the Car Thing checks).
 
     python pack.py
 
+Every add-on needs a picture (addon.json "image"): a screenshot of it, made
+with `node preview.mjs <id>`, or one of your own. It's shown in the catalog
+before anyone installs, so it's copied beside the zip with its own checksum.
+
 Run it after adding or changing an add-on, and commit dist/ and catalog.json
 with it. The zips are built the same way every time (fixed dates, sorted
 names), so an unchanged add-on gives an unchanged zip.
@@ -14,17 +18,24 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import sys
 import zipfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DIST = os.path.join(HERE, "dist")
+# the website's Add-on Studio keeps copies of the templates, the style kit and
+# the bridge; they're refreshed from here so they never drift
+STUDIO = os.path.join(HERE, "..", "docs", "studio")
+SDK = os.path.join(HERE, "..", "wisp-daemon", "daemon", "addon_sdk.js")
 
 ID = re.compile(r"^[a-z0-9][a-z0-9-]{1,39}$")
 PATH = re.compile(r"^[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*$")
 PERMISSIONS = {"now_playing", "weather", "location", "nav"}
 MAX_ZIP = 2 << 20
 MAX_FILES = 64
+MAX_IMAGE = 200 << 10
+IMAGE_TYPES = (".png", ".jpg", ".jpeg", ".webp")
 
 
 def check(folder, m):
@@ -44,6 +55,15 @@ def check(folder, m):
     for h in m.get("network", []):
         if not re.match(r"^[a-z0-9.-]+\.[a-z]{2,}$", h) or h.endswith(".local"):
             problems.append(f"site {h!r} must be a public host name")
+    image = m.get("image", "")
+    if not image:
+        problems.append("image is required: run `node preview.mjs " + folder + "` for a screenshot, or add your own")
+    elif not PATH.match(image) or not image.lower().endswith(IMAGE_TYPES):
+        problems.append(f"image {image!r} must be a png, jpg or webp in the folder")
+    elif not os.path.isfile(os.path.join(HERE, folder, image)):
+        problems.append(f"image {image!r} is missing")
+    elif os.path.getsize(os.path.join(HERE, folder, image)) > MAX_IMAGE:
+        problems.append(f"image {image!r} is over 200 KB")
     entry = m.get("entry", "index.html")
     if not PATH.match(entry) or not os.path.isfile(os.path.join(HERE, folder, entry)):
         problems.append(f"entry {entry!r} is missing")
@@ -78,6 +98,13 @@ def pack(folder):
         "sha256": hashlib.sha256(data).hexdigest(),
         "size": len(data),
     })
+    # the picture, beside the zip, for the catalog to show before installing
+    ext = os.path.splitext(m["image"])[1].lower()
+    pic = open(os.path.join(HERE, folder, m["image"]), "rb").read()
+    pic_name = f"{m['id']}-{m['version']}{ext}"
+    with open(os.path.join(DIST, pic_name), "wb") as f:
+        f.write(pic)
+    entry.update({"image_url": f"dist/{pic_name}", "image_sha256": hashlib.sha256(pic).hexdigest()})
     return entry
 
 
@@ -102,6 +129,20 @@ def main():
         f.write("\n")
     for e in catalog:
         print(f"{e['id']} {e['version']}: {e['size']} bytes")
+    sync_studio()
+
+
+def sync_studio():
+    if not os.path.isdir(STUDIO):
+        return
+    templates = os.path.join(HERE, "templates")
+    shutil.copyfile(os.path.join(templates, "kit.css"), os.path.join(STUDIO, "kit.css"))
+    if os.path.isfile(SDK):
+        shutil.copyfile(SDK, os.path.join(STUDIO, "sdk.js"))
+    out = os.path.join(STUDIO, "templates")
+    shutil.rmtree(out, ignore_errors=True)
+    shutil.copytree(templates, out, ignore=shutil.ignore_patterns("kit.css"))
+    print("studio: templates, style kit and bridge refreshed")
 
 
 if __name__ == "__main__":

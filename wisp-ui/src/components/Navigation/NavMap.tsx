@@ -22,6 +22,12 @@ interface Props {
   location: NavLocation | undefined
   /** the route line, [lat, lng] pairs from start to end */
   route?: [number, number][] | null
+  /** the route planner: the other ways there, drawn grey under the route */
+  alternatives?: [number, number][][]
+  /** the route planner: where it goes, with a pin */
+  dest?: [number, number] | null
+  /** the route planner: the whole trip in view, instead of following the car */
+  overview?: boolean
 }
 
 // the route as Google Maps draws it: blue, with a dark edge that holds it off the darkened map
@@ -43,11 +49,16 @@ const ROUTE_LINE: L.PolylineOptions = {
 }
 
 /** north-up map that follows the phone, with an arrow turned to its heading */
-function NavMapImpl({ location, route }: Props) {
+const ALT_LINE: L.PolylineOptions = { ...ROUTE_LINE, color: '#6b7380', weight: 6 }
+const DEST_HTML =
+  '<svg viewBox="0 0 24 24" width="30" height="30"><circle cx="12" cy="12" r="8" fill="#e5484d" stroke="#fff" stroke-width="3.5"/></svg>'
+
+function NavMapImpl({ location, route, alternatives, dest, overview = false }: Props) {
   const elRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
   const puckRef = useRef<L.Marker | null>(null)
   const routeRef = useRef<{ edge: L.Polyline; line: L.Polyline } | null>(null)
+  const extrasRef = useRef<L.Layer[]>([])
 
   useEffect(() => {
     if (!elRef.current) return
@@ -88,7 +99,10 @@ function NavMapImpl({ location, route }: Props) {
       routeRef.current = null
       return
     }
-    const ahead = remainingRoute(route, location ? [location.lat, location.lng] : null)
+    // the planner shows it all; driving drops what's behind
+    const ahead = overview
+      ? route
+      : remainingRoute(route, location ? [location.lat, location.lng] : null)
     if (!routeRef.current) {
       routeRef.current = {
         edge: L.polyline(ahead, ROUTE_EDGE).addTo(map),
@@ -98,7 +112,37 @@ function NavMapImpl({ location, route }: Props) {
       routeRef.current.edge.setLatLngs(ahead)
       routeRef.current.line.setLatLngs(ahead)
     }
-  }, [route, location])
+  }, [route, location, overview])
+
+  // the planner's other routes and pin, and the whole trip in view
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    extrasRef.current.forEach((l) => l.remove())
+    extrasRef.current = []
+    if (!overview) return
+    for (const alt of alternatives ?? []) {
+      if (alt.length > 1) extrasRef.current.push(L.polyline(alt, ALT_LINE).addTo(map))
+    }
+    routeRef.current?.edge.bringToFront()
+    routeRef.current?.line.bringToFront()
+    if (dest) {
+      const icon = L.divIcon({ html: DEST_HTML, className: styles.puckIcon, iconSize: [30, 30] })
+      extrasRef.current.push(
+        L.marker(dest, { icon, interactive: false, keyboard: false }).addTo(map),
+      )
+    }
+    const all = [...(route ?? []), ...(alternatives ?? []).flat()]
+    if (location) all.push([location.lat, location.lng])
+    if (all.length > 1)
+      map.fitBounds(L.latLngBounds(all), {
+        paddingTopLeft: [350, 40],
+        paddingBottomRight: [40, 40],
+        animate: false,
+      })
+    // fits once per plan; the car moving doesn't refit it
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [overview, route, alternatives, dest])
 
   useEffect(() => {
     const map = mapRef.current
@@ -110,14 +154,14 @@ function NavMapImpl({ location, route }: Props) {
         interactive: false,
         keyboard: false,
       }).addTo(map)
-      map.setView(at, zoomForSpeed(location.speed), { animate: false })
+      if (!overview) map.setView(at, zoomForSpeed(location.speed), { animate: false })
     } else {
       puckRef.current.setLatLng(at)
-      map.setView(at, zoomForSpeed(location.speed), { animate: true })
+      if (!overview) map.setView(at, zoomForSpeed(location.speed), { animate: true })
     }
     const arrow = puckRef.current.getElement()?.querySelector<HTMLElement>('.nav-puck')
     if (arrow) arrow.style.transform = `rotate(${location.bearing}deg)`
-  }, [location])
+  }, [location, overview])
 
   return <div className={styles.map} ref={elRef} data-testid="nav-map" />
 }

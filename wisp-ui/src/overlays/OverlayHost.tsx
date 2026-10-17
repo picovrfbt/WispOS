@@ -4,6 +4,7 @@ import { DebugScreen } from '@/components/DebugScreen'
 import { DevicePicker } from '@/components/DevicePicker'
 import { AddonsScreen } from '@/components/Addons'
 import { DriveMode } from '@/components/DriveMode'
+import { ModelOffer } from '@/components/ModelOffer'
 import { FullVisualizer } from '@/components/Visualizer'
 import { Home, type NowPlayingCard } from '@/components/Home'
 import { NavBanner, NavScreen } from '@/components/Navigation'
@@ -167,6 +168,8 @@ export function OverlayHost({
           onClose={() => overlays.close('viz')}
         />
       </Leaving>
+      {/* once, ever: the phone's model, offered after a miss */}
+      <ModelOffer />
       {/* a call on the phone, over everything */}
       <CallCard />
       <Leaving open={overlays.isOpen('screensaver')}>

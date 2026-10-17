@@ -227,8 +227,10 @@ func (s *ConcreteApiServer) registerPhoneMediaRoutes(m *http.ServeMux) {
 	}
 	s.registerDriveRoutes(m, handler)
 	s.registerCallRoutes(m, handler)
+	s.registerThinkRoutes(m, handler)
 	s.registerBatteryRoutes(m, handler)
 	s.registerRouteRoutes(m, handler)
+	s.registerOwnNavRoutes(m, handler)
 	s.registerVizRoutes(m, handler)
 	m.HandleFunc("GET /phone/media", func(w http.ResponseWriter, r *http.Request) {
 		h := handler()

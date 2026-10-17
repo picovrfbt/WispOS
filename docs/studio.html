@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Add-on Studio</title>
+<meta name="description" content="Make an add-on for Wisp in your browser: pick widgets or write code, try it on a Car Thing screen with a working knob, and download it ready to share.">
+<meta name="theme-color" content="#08080a">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="site.css">
+<link rel="stylesheet" href="studio/studio.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="./"><img src="logo.svg" alt="">Wisp</a>
+    <nav>
+      <a href="./#addons">Add-ons</a>
+      <a href="addons.html">Make one</a>
+      <a href="studio.html" aria-current="page">Studio</a>
+      <a href="use.html">How to use</a>
+      <a href="guide.html">Set up</a>
+      <a href="https://github.com/picovrfbt/WispOS">Source</a>
+    </nav>
+  </div>
+</header>
+
+<main class="studio">
+<div class="wrap">
+  <p class="eyebrow">Add-on Studio</p>
+  <h1>Make an add-on in your browser.</h1>
+  <p class="lead-doc">Pick what your add-on shows, or write it yourself, and try it on a Car Thing screen with a working knob. When it's right, download it and send it in. Nothing to install; your work is kept in this browser as you go.</p>
+
+  <div class="studio-grid">
+    <!-- 1: what it is -->
+    <section class="spanel" aria-labelledby="h-make">
+      <div class="shead"><span class="snum">1</span><h2 id="h-make">Make it</h2></div>
+      <div class="tabs" role="tablist">
+        <button role="tab" id="tab-build" aria-selected="true">Build <span>no code</span></button>
+        <button role="tab" id="tab-code" aria-selected="false">Code <span>HTML</span></button>
+      </div>
+
+      <div id="build-pane">
+        <label class="field"><span>Title on screen <i>(leave empty for none)</i></span><input id="b-title" maxlength="40"></label>
+        <div class="field"><span>Tiles <i>(the knob moves between them; a press starts a timer or counts)</i></span>
+          <ol id="b-tiles" class="tile-list"></ol>
+          <div class="add-row">
+            <select id="b-add" aria-label="Add a tile">
+              <option value="">+ Add a tile…</option>
+              <option value="clock">Clock</option>
+              <option value="speed">Speed</option>
+              <option value="weather">Weather</option>
+              <option value="song">What's playing</option>
+              <option value="turn">Next turn</option>
+              <option value="arrival">Arrival time</option>
+              <option value="timer">Timer</option>
+              <option value="counter">Counter</option>
+              <option value="note">Note</option>
+              <option value="web">Number from a website</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><span>Accent</span><div class="swatches" id="b-accent"></div></div>
+        <div class="field"><span>Background</span>
+          <div class="seg" id="b-bg">
+            <button data-v="plain">Plain</button><button data-v="glow">Glow</button><button data-v="deep">Deep</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="code-pane" hidden>
+        <div class="add-row">
+          <select id="c-template" aria-label="Start from a template">
+            <option value="">Start from a template…</option>
+            <option value="blank">Blank: the knob, a press, saving a value</option>
+            <option value="gauge">Gauge: one big number and three small</option>
+            <option value="list">List: rows the knob scrolls</option>
+            <option value="tiles">Tiles: a dashboard</option>
+            <option value="ambient">Ambient: slow colour and the song</option>
+          </select>
+        </div>
+        <div class="filetabs" role="tablist">
+          <button role="tab" data-file="index.html" aria-selected="true">index.html</button>
+          <button role="tab" data-file="style.css" aria-selected="false">style.css</button>
+        </div>
+        <textarea id="c-editor" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="The add-on's code"></textarea>
+        <p class="hint">The screen updates as you type. <a href="addons.html#sdk">What <code>Wisp.</code> can do</a> · <a href="addons.html#design">Designing for the dash</a></p>
+      </div>
+    </section>
+
+    <!-- the screen -->
+    <section class="spanel screen-panel" aria-label="Try it">
+      <div class="st-device"><div class="st-screen" id="screen-box"><iframe id="frame" sandbox="allow-scripts" title="Your add-on"></iframe>
+        <div class="st-closed" id="closed" hidden><div><b>It closed itself</b> (Wisp.close).<br>On the Car Thing that's back to Home.<br><button class="sbtn" id="reopen">Open it again</button></div></div></div>
+              </div>
+      <div class="knob-row">
+        <button class="sbtn" id="k-back" title="Turn the knob back (←)">⟲ Turn</button>
+        <button class="sbtn primary" id="k-press" title="Press the knob (Enter)">Press</button>
+        <button class="sbtn" id="k-fwd" title="Turn the knob (→)">Turn ⟳</button>
+        <button class="sbtn" id="k-song" title="The song changes">Next song</button>
+        <button class="sbtn" id="k-reload" title="Start it again">Restart</button>
+      </div>
+      <div class="sample">
+        <label><input type="checkbox" id="s-phone" checked> Phone connected</label>
+        <label><input type="checkbox" id="s-playing" checked> Something playing</label>
+        <span class="faint">Sample: Midnight City by M83 · 68°F · 38 mph in Long Beach · 600 ft, turn left</span>
+      </div>
+      <details class="log-box"><summary>What it asked the Car Thing</summary><div id="log"></div></details>
+    </section>
+
+    <!-- 2: details -->
+    <section class="spanel" aria-labelledby="h-details">
+      <div class="shead"><span class="snum">2</span><h2 id="h-details">Describe it</h2></div>
+      <div class="two-fields">
+        <label class="field"><span>Name</span><input id="d-name" maxlength="40" placeholder="Trip stats"></label>
+        <label class="field"><span>Your name</span><input id="d-author" maxlength="60" placeholder="How you'd like to be credited"></label>
+      </div>
+      <label class="field"><span>One line on what it does <i id="d-desc-count">0 / 200</i></span><textarea id="d-desc" maxlength="200" rows="2" placeholder="Your speed and the next turn, big and at a glance."></textarea></label>
+      <div class="two-fields">
+        <label class="field"><span>Id <i>(its folder name)</i></span><input id="d-id" maxlength="40" placeholder="trip-stats"></label>
+        <label class="field"><span>Version</span><input id="d-version" maxlength="20" value="1.0.0"></label>
+      </div>
+      <div class="field"><span>It may use <i id="perm-note">(set by your tiles)</i></span>
+        <div class="checks" id="d-perms">
+          <label><input type="checkbox" value="now_playing"> What's playing</label>
+          <label><input type="checkbox" value="weather"> The weather</label>
+          <label><input type="checkbox" value="location"> Rough location and speed</label>
+          <label><input type="checkbox" value="nav"> Directions</label>
+        </div>
+      </div>
+      <label class="field"><span>Sites it reads from <i>(one per line, like api.open-meteo.com)</i></span><textarea id="d-sites" rows="2" spellcheck="false"></textarea></label>
+    </section>
+
+    <!-- 3: picture -->
+    <section class="spanel" aria-labelledby="h-pic">
+      <div class="shead"><span class="snum">3</span><h2 id="h-pic">Its picture</h2></div>
+      <p class="hint">Shown in the catalog with its name, your name and the description, before anyone installs it.</p>
+      <div class="pic" id="pic-box"><span class="faint">No picture yet</span></div>
+      <div class="knob-row">
+        <button class="sbtn primary" id="p-take">Take a picture of the screen</button>
+        <label class="sbtn file">Upload your own<input type="file" id="p-upload" accept="image/png,image/jpeg,image/webp"></label>
+      </div>
+      <p class="hint" id="p-note"></p>
+    </section>
+
+    <!-- 4: download and send -->
+    <section class="spanel wide" aria-labelledby="h-send">
+      <div class="shead"><span class="snum">4</span><h2 id="h-send">Download and send it in</h2></div>
+      <ul class="checklist" id="checks"></ul>
+      <div class="knob-row">
+        <button class="sbtn primary big" id="dl">Download the add-on (.zip)</button>
+        <a class="sbtn" id="send" href="https://github.com/picovrfbt/WispOS/issues/new?template=addon.yml" target="_blank" rel="noopener">Send it in on GitHub</a>
+        <button class="sbtn" id="startover">Start over</button>
+      </div>
+      <ol class="steps-list">
+        <li><b>Download it</b>, then <b>Send it in</b>: the form takes the zip as an attachment (you need a free GitHub account). Every add-on is reviewed before it's added to the catalog.</li>
+        <li><b>Or open a pull request yourself:</b> unzip it into <code>addons/</code>, run <code>python pack.py</code>, and include the folder, <code>dist/</code> and <code>catalog.json</code>. <a href="addons.html#share">How</a>.</li>
+        <li><b>Try it on your own Car Thing first</b> (optional): copy the folder to <code>/var/local/wisp/addons/</code> over SSH and open Home → Add-ons. <a href="addons.html#sideload">How</a>.</li>
+      </ol>
+    </section>
+  </div>
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="./"><img src="logo.svg" alt="">Wisp</a>
+    <nav>
+      <a href="guide.html">Set up</a>
+      <a href="use.html">How to use</a>
+      <a href="addons.html">Make an add-on</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="https://github.com/picovrfbt/WispOS">GitHub</a>
+    </nav>
+    <p class="legal">Wisp is not affiliated with, endorsed by or sponsored by Spotify, Google or YouTube. Spotify and Car Thing are trademarks of Spotify AB.</p>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="studio/studio.js" type="module"></script>
+</body>
+</html>

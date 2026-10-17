@@ -1,0 +1,8 @@
+{
+  "id": "plate-spotter",
+  "name": "Plate spotter",
+  "version": "1.0.0",
+  "author": "Wisp",
+  "description": "The license plate game for passengers: turn to a state, press when you spot it. Kept for the whole trip.",
+  "image": "preview.png"
+}

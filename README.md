@@ -24,6 +24,7 @@
 <p align="center">
   <a href="https://picovrfbt.github.io/WispOS/"><b>Website</b></a> ·
   <a href="https://picovrfbt.github.io/WispOS/guide.html"><b>Setup guide</b></a> ·
+  <a href="https://picovrfbt.github.io/WispOS/use.html"><b>How to use</b></a> ·
   <a href="#-what-it-does">What it does</a> ·
   <a href="#-on-your-dash">On your dash</a> ·
   <a href="#-a-tour">A tour</a> ·
@@ -184,7 +185,7 @@ Screens from the Car Thing at its real size (800 × 480). The songs, covers and 
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/screenshots/nav.png" alt="Turn-by-turn directions on the map"></td>
+    <td width="50%"><img src="docs/screenshots/nav.jpg" alt="Turn-by-turn directions on the map"></td>
     <td width="50%"><img src="docs/screenshots/drive.png" alt="Drive Mode at 45 mph"></td>
   </tr>
   <tr>

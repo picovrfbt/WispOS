@@ -342,6 +342,9 @@ func (v *voiceService) TriggerVoice(ctx context.Context, transcript, clipPath st
 			}
 			v.app.log.Infof("voice: transcript=%q -> abstain (%s, best=%q score=%.3f)", transcript, dec.Kind, dec.Name, dec.Score)
 			v.flash(gen, "error", msg)
+			if dec.Kind != kindQueue && dec.Kind != kindRandom {
+				v.offerModelLater()
+			}
 			return "", fmt.Errorf("voice: abstained on %q", transcript)
 		case "local":
 			// in library phonetic match

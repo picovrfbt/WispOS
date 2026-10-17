@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -26,6 +28,8 @@ type ThinkStatus struct {
 	State string `json:"state"`
 	// which model: "nano", "open"
 	Model string `json:"model,omitempty"`
+	// no Gemini Nano on the phone and nothing downloaded: the app's model, in MB
+	OfferMB int `json:"offer_mb,omitempty"`
 }
 
 // thinkContext is what the model is told about the moment
@@ -157,6 +161,65 @@ var commandLeads = map[string]bool{
 func looksLikeCommand(t string) bool {
 	f := strings.Fields(t)
 	return len(f) > 0 && commandLeads[f[0]]
+}
+
+// modelOfferPath marks that the "get the model" pop-up was shown: it's offered once, ever
+var modelOfferPath = sysPath("/var/local/wisp/model_offer_shown", "/var/local/mira/model_offer_shown")
+
+// ApiEventTypeModelOffer puts up the pop-up offering the phone's model download
+const ApiEventTypeModelOffer ApiEventType = "voice/model_offer"
+
+// ModelOffer is the pop-up's details
+type ModelOffer struct {
+	SizeMB int `json:"size_mb"`
+}
+
+// modelOffer is the one-time offer after a miss, when the phone could have a
+// model but doesn't; false otherwise (and from then on)
+func (v *voiceService) modelOffer() (ModelOffer, bool) {
+	if v.app.nav == nil {
+		return ModelOffer{}, false
+	}
+	t := v.app.nav.ThinkStatus()
+	if t.State != "unavailable" || t.OfferMB <= 0 {
+		return ModelOffer{}, false
+	}
+	if _, err := os.Stat(modelOfferPath); err == nil {
+		return ModelOffer{}, false
+	}
+	if err := os.WriteFile(modelOfferPath, []byte("shown\n"), 0o644); err != nil {
+		// can't remember it, so don't offer: better never than every time
+		return ModelOffer{}, false
+	}
+	return ModelOffer{SizeMB: t.OfferMB}, true
+}
+
+// offerModelLater puts the pop-up up once the "didn't catch that" caption has had its moment
+func (v *voiceService) offerModelLater() {
+	o, ok := v.modelOffer()
+	if !ok {
+		return
+	}
+	time.AfterFunc(2500*time.Millisecond, func() {
+		v.app.server.Emit(&ApiEvent{Type: ApiEventTypeModelOffer, Data: o})
+	})
+}
+
+// ModelDownload asks the phone app to download its model
+func (n *navRelay) ModelDownload(ctx context.Context) error {
+	return n.sendSimple(ctx, map[string]string{"type": "think_download"})
+}
+
+// POST /voice/model_download: the pop-up's Download; 503 with no phone to ask
+func (s *ConcreteApiServer) registerThinkRoutes(m *http.ServeMux, handler func() NavHandler) {
+	m.HandleFunc("POST /voice/model_download", func(w http.ResponseWriter, r *http.Request) {
+		h := handler()
+		if h == nil || h.ModelDownload(r.Context()) != nil {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	})
 }
 
 // phoneCanThink: the phone's model is there to ask

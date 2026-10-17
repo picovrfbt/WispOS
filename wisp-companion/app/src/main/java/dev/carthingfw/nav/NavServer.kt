@@ -141,6 +141,8 @@ class NavServer private constructor(private val app: Context) :
         if (type == "place_call") VoiceActions.call(app, conn, org.json.JSONObject(message).optString("who"))
         // what Wisp's own rules didn't understand, for the phone's model
         if (type == "think") WispThink.handle(conn, org.json.JSONObject(message))
+        // Download, pressed on the Car Thing's "smarter voice" pop-up
+        if (type == "think_download") WispThink.downloadFromCar()
         // a Wisp update, downloaded here and handed over the tether
         if (type == "update_fetch") {
             if (ClientFilter.allowed(remote, allowLan = Prefs.allowLan(app))) {

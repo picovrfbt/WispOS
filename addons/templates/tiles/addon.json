@@ -1,0 +1,15 @@
+{
+  "id": "my-tiles",
+  "name": "My tiles",
+  "version": "1.0.0",
+  "author": "Your name",
+  "description": "A dashboard of tiles: the weather, what's playing and a site's data.",
+  "permissions": [
+    "weather",
+    "now_playing"
+  ],
+  "network": [
+    "api.open-meteo.com"
+  ],
+  "image": "preview.png"
+}

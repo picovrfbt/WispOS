@@ -45,6 +45,8 @@ const (
 	addonFetchMax    = 256 << 10
 	addonFetchTime   = 8 * time.Second
 	addonCatalogTTL  = 10 * time.Minute
+	// an add-on's picture, in the catalog and the list
+	addonMaxImage = 200 << 10
 )
 
 var addonIDPattern = regexp.MustCompile(`^[a-z0-9][a-z0-9-]{1,39}$`)
@@ -66,6 +68,8 @@ type AddonManifest struct {
 	Permissions []string `json:"permissions,omitempty"`
 	// the sites it may fetch from, through Wisp ("api.open-meteo.com")
 	Network []string `json:"network,omitempty"`
+	// its picture, inside the folder: a screenshot or one the author chose (png, jpg or webp)
+	Image string `json:"image,omitempty"`
 }
 
 func (m *AddonManifest) validate() error {
@@ -83,6 +87,9 @@ func (m *AddonManifest) validate() error {
 	}
 	if !addonPathPattern.MatchString(m.Entry) || strings.Contains(m.Entry, "..") {
 		return fmt.Errorf("add-on entry %q isn't a plain path", m.Entry)
+	}
+	if m.Image != "" && (!addonPathPattern.MatchString(m.Image) || strings.Contains(m.Image, "..") || !addonImageType(m.Image)) {
+		return fmt.Errorf("add-on image %q isn't a png, jpg or webp in its folder", m.Image)
 	}
 	for _, p := range m.Permissions {
 		if !addonPermissions[p] {
@@ -118,6 +125,47 @@ type AddonCatalogEntry struct {
 	Zip    string `json:"zip"`
 	SHA256 string `json:"sha256"`
 	Size   int64  `json:"size"`
+	// its picture beside the zip, to show before installing, and that file's checksum
+	ImageURL    string `json:"image_url,omitempty"`
+	ImageSHA256 string `json:"image_sha256,omitempty"`
+}
+
+func addonImageType(p string) bool {
+	switch strings.ToLower(path.Ext(p)) {
+	case ".png", ".jpg", ".jpeg", ".webp":
+		return true
+	}
+	return false
+}
+
+// CatalogImage is a catalog add-on's picture, checked against its checksum
+func (s *addonStore) CatalogImage(ctx context.Context, id string) ([]byte, string, error) {
+	cat, err := s.Catalog(ctx)
+	if err != nil {
+		return nil, "", err
+	}
+	for _, e := range cat {
+		if e.ID != id {
+			continue
+		}
+		if e.ImageURL == "" || len(e.ImageSHA256) != 64 || !addonImageType(e.ImageURL) {
+			return nil, "", errors.New("no picture")
+		}
+		u, err := resolveAddonZip(s.catalogURL(), e.ImageURL)
+		if err != nil {
+			return nil, "", err
+		}
+		b, err := s.get(ctx, u, addonMaxImage)
+		if err != nil {
+			return nil, "", err
+		}
+		sum := sha256.Sum256(b)
+		if !strings.EqualFold(hex.EncodeToString(sum[:]), e.ImageSHA256) {
+			return nil, "", errors.New("the picture didn't match its checksum")
+		}
+		return b, addonContentType(e.ImageURL), nil
+	}
+	return nil, "", errors.New("that add-on isn't in the catalog")
 }
 
 type addonStore struct {
@@ -516,6 +564,23 @@ func (s *ConcreteApiServer) registerAddonRoutes(m *http.ServeMux, store func() *
 			return
 		}
 		writeJSON(w, map[string]any{"addons": c})
+	})
+	// a catalog add-on's picture; versioned in the catalog, so the screen may keep it a day
+	m.HandleFunc("GET /addons/catalog/{id}/image", func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+		if !addonIDPattern.MatchString(id) {
+			http.NotFound(w, r)
+			return
+		}
+		b, ctype, err := store().CatalogImage(r.Context(), id)
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
+		w.Header().Set("Content-Type", ctype)
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("Cache-Control", "max-age=86400")
+		_, _ = w.Write(b)
 	})
 	m.HandleFunc("POST /addons/install", func(w http.ResponseWriter, r *http.Request) {
 		var body struct {

@@ -1,6 +1,11 @@
 package daemon
 
-import "testing"
+import (
+	"path/filepath"
+	"testing"
+
+	"github.com/coder/websocket"
+)
 
 func TestThinkActionValid(t *testing.T) {
 	good := []thinkAction{
@@ -55,4 +60,33 @@ func TestThinkDelivery(t *testing.T) {
 	}
 	// an answer for nobody is dropped quietly
 	n.deliverThink(42, thinkAction{Action: "next"})
+}
+
+func TestModelOfferOnce(t *testing.T) {
+	old := modelOfferPath
+	modelOfferPath = filepath.Join(t.TempDir(), "model_offer_shown")
+	defer func() { modelOfferPath = old }()
+
+	n := &navRelay{}
+	v := &voiceService{app: &App{nav: n}}
+	// no phone: no offer
+	if _, ok := v.modelOffer(); ok {
+		t.Fatal("offer without a phone")
+	}
+	n.conn = &websocket.Conn{}
+	// a phone with a model, or one still checking: no offer
+	for _, s := range []ThinkStatus{{State: "ready", Model: "nano"}, {State: "downloading", Model: "nano"}, {State: "unavailable"}} {
+		n.applyThinkStatus(s)
+		if _, ok := v.modelOffer(); ok {
+			t.Fatalf("offer with %+v", s)
+		}
+	}
+	// no Nano and nothing downloaded: once, then never again
+	n.applyThinkStatus(ThinkStatus{State: "unavailable", OfferMB: 345})
+	if o, ok := v.modelOffer(); !ok || o.SizeMB != 345 {
+		t.Fatalf("expected the offer, got %+v %v", o, ok)
+	}
+	if _, ok := v.modelOffer(); ok {
+		t.Fatal("offered twice")
+	}
 }

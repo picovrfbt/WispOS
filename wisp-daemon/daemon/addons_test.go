@@ -56,6 +56,8 @@ func TestAddonManifestRules(t *testing.T) {
 		{ID: "x1", Name: "x", Network: []string{"localhost"}},
 		{ID: "x1", Name: "x", Network: []string{"router.local"}},
 		{ID: "x1", Name: "x", Network: []string{"example.com:8080"}},
+		{ID: "x1", Name: "x", Image: "../up.png"},
+		{ID: "x1", Name: "x", Image: "preview.svg"},
 	}
 	for _, m := range bad {
 		if m.validate() == nil {
@@ -255,5 +257,40 @@ func TestAddonFilesCarryThePolicy(t *testing.T) {
 	mux.ServeHTTP(w, httptest.NewRequest("GET", "/addons/sdk.js", nil))
 	if w.Code != 200 || !strings.Contains(w.Body.String(), "window.Wisp") {
 		t.Errorf("sdk: %d", w.Code)
+	}
+}
+
+func TestAddonCatalogImageChecksTheChecksum(t *testing.T) {
+	pic := []byte("\x89PNG picture")
+	sum := sha256.Sum256(pic)
+	for _, c := range []struct {
+		sha string
+		ok  bool
+	}{{hex.EncodeToString(sum[:]), true}, {strings.Repeat("0", 64), false}} {
+		m := AddonManifest{ID: "clock", Name: "Big clock", Version: "1", Image: "preview.png"}
+		srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if strings.HasSuffix(r.URL.Path, "catalog.json") {
+				_ = json.NewEncoder(w).Encode(map[string]any{"addons": []AddonCatalogEntry{{
+					AddonManifest: m, Zip: "dist/clock-1.zip", SHA256: strings.Repeat("a", 64),
+					ImageURL: "dist/clock-1.png", ImageSHA256: c.sha,
+				}}})
+				return
+			}
+			_, _ = w.Write(pic)
+		}))
+		s := newAddonStore(t.TempDir(), func() string { return "x/y" }, quietLog{})
+		s.client = srv.Client()
+		s.catalogFrom = srv.URL + "/addons/catalog.json"
+		b, ctype, err := s.CatalogImage(t.Context(), "clock")
+		if c.ok && (err != nil || string(b) != string(pic) || ctype != "image/png") {
+			t.Errorf("good picture: %v %q", err, ctype)
+		}
+		if !c.ok && err == nil {
+			t.Error("a picture that doesn't match its checksum should be refused")
+		}
+		if _, _, err := s.CatalogImage(t.Context(), "nope"); err == nil {
+			t.Error("an add-on not in the catalog has no picture")
+		}
+		srv.Close()
 	}
 }

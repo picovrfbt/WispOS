@@ -4,5 +4,9 @@
   "version": "1.0.0",
   "author": "Wisp",
   "description": "Your speed, the next turn and when you'll arrive, big and at a glance.",
-  "permissions": ["location", "nav"]
+  "permissions": [
+    "location",
+    "nav"
+  ],
+  "image": "preview.png"
 }
