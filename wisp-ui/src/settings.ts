@@ -25,6 +25,10 @@ export interface Settings {
   autoInstallUpdates: boolean
   /** what happens when directions end at the destination, beyond the arrival card */
   arrivalAction: ArrivalAction
+  /** who gives directions asked for by voice: Google Maps on the phone, or Wisp itself (own_nav.go) */
+  navEngine: 'google' | 'wisp'
+  /** Wisp's directions out loud: every turn with a heads-up, just the turns, or none */
+  navVoice: NavVoice
   /** the colour of toggles, sliders and focus */
   accentTheme: AccentTheme
   /** updates install behind whatever is on screen, rather than taking the Car Thing over */
@@ -57,6 +61,7 @@ export const VOICE_SPEED_MIN = 0.5
 export const VOICE_SPEED_MAX = 2
 
 export type ArrivalAction = 'none' | 'pause'
+export type NavVoice = 'all' | 'turns' | 'off'
 
 export type NightMode = 'off' | 'on' | 'auto'
 const NIGHT_MODES: readonly NightMode[] = ['off', 'on', 'auto']
@@ -88,6 +93,8 @@ const DEFAULTS: Settings = {
   phoneNotifications: false,
   autoInstallUpdates: false,
   arrivalAction: 'none',
+  navEngine: 'google',
+  navVoice: 'all',
   accentTheme: 'green',
   updateInBackground: false,
   wispVoice: 'off',
@@ -140,6 +147,9 @@ function coerce(partial: Partial<Settings> | null | undefined): Settings {
     phoneNotifications: partial?.phoneNotifications === true,
     autoInstallUpdates: partial?.autoInstallUpdates === true,
     arrivalAction: partial?.arrivalAction === 'pause' ? 'pause' : 'none',
+    navEngine: partial?.navEngine === 'wisp' ? 'wisp' : 'google',
+    navVoice:
+      partial?.navVoice === 'turns' || partial?.navVoice === 'off' ? partial.navVoice : 'all',
     accentTheme: ACCENT_ORDER.includes(partial?.accentTheme as AccentTheme)
       ? (partial?.accentTheme as AccentTheme)
       : DEFAULTS.accentTheme,

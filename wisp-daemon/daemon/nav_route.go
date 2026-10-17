@@ -39,6 +39,9 @@ func (n *navRelay) Route() NavRoute {
 
 // applyRoute takes the phone's route, or clears it on a kind of "none"
 func (n *navRelay) applyRoute(data []byte) {
+	if n.own != nil && n.own.Active() {
+		return
+	}
 	var m navRouteMessage
 	if json.Unmarshal(data, &m) != nil {
 		return

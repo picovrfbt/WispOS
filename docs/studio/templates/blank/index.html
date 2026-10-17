@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>My add-on</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  /* your own styles go here; style.css is Wisp's kit */
+  .count { margin: auto 0; }
+</style>
+</head>
+<body>
+<!--
+  Blank: the least an add-on needs. The knob changes a number, a press resets
+  it, and the number is saved so it's still there next time.
+
+  Start here when the other templates are more than you need.
+-->
+<main class="screen">
+  <p class="eyebrow">My add-on</p>
+  <h1 class="title">Hello from the dash</h1>
+  <div class="big count" id="count">0</div>
+  <p class="muted">Turn the knob to count · press to reset</p>
+</main>
+
+<!-- the bridge to the Car Thing: always first -->
+<script src="/addons/sdk.js"></script>
+<script>
+  var count = 0
+  var el = document.getElementById('count')
+
+  function draw() {
+    el.textContent = count
+  }
+
+  // +1 clockwise, -1 the other way
+  Wisp.on('knob', function (e) {
+    count += e.delta
+    draw()
+    Wisp.storage.set('count', count)
+  })
+
+  Wisp.on('press', function () {
+    count = 0
+    draw()
+    Wisp.storage.set('count', count)
+  })
+
+  // pick up where it was left
+  Wisp.storage.get('count').then(function (saved) {
+    if (typeof saved === 'number') count = saved
+    draw()
+  })
+</script>
+</body>
+</html>

@@ -22,6 +22,7 @@ import java.util.concurrent.Executors
  * The model is Gemini Nano through Android's AICore where the phone has it
  * (nothing to download, nothing sent online). Other phones can download an
  * open model (OpenModel, about 345 MB) from the app, after a size warning.
+ * Phones with Nano can still choose the open model; Nano stays the default.
  * The Car Thing is told "think_status" so it only asks when there's a model.
  */
 object WispThink {
@@ -40,6 +41,8 @@ object WispThink {
     // Gemini Nano isn't on this phone, so the open model is the way
     @Volatile var nanoMissing = false
         private set
+    @Volatile private var nanoDownloading = false
+    val nanoHere get() = nano != null || nanoDownloading
 
     @Volatile private var started = false
 
@@ -53,9 +56,13 @@ object WispThink {
                 val m = Generation.getClient()
                 when (runBlocking { m.checkStatus() }) {
                     FeatureStatus.AVAILABLE -> nanoReady(m)
-                    FeatureStatus.DOWNLOADING -> set("downloading", "nano")
+                    FeatureStatus.DOWNLOADING -> {
+                        nanoDownloading = true
+                        pick()
+                    }
                     FeatureStatus.DOWNLOADABLE -> {
-                        set("downloading", "nano")
+                        nanoDownloading = true
+                        pick()
                         runBlocking {
                             m.download().collect { s ->
                                 when (s) {
@@ -86,18 +93,49 @@ object WispThink {
         } catch (e: Throwable) {
             Log.d(TAG, "warmup skipped: ${e.message}")
         }
-        set("ready", "nano")
+        nanoDownloading = false
+        pick()
     }
 
     private fun noNano() {
         nanoMissing = true
-        if (OpenModel.downloaded(app)) set("ready", "open") else set("unavailable", "")
+        nanoDownloading = false
+        pick()
+    }
+
+    /** "think_download": Download pressed on the Car Thing's pop-up */
+    fun downloadFromCar() {
+        if (!::app.isInitialized || !nanoMissing || OpenModel.downloaded(app) || OpenModel.progress >= 0) return
+        set("downloading", "open")
+        Thread {
+            val ok = OpenModel.download(app) {}
+            Log.i(TAG, "model download from the Car Thing: ${if (ok) "done" else "failed"}")
+            pick()
+        }.start()
     }
 
     /** after the open model is downloaded or deleted in the app */
-    fun openModelChanged() {
-        if (!nanoMissing) return
-        if (OpenModel.downloaded(app)) set("ready", "open") else set("unavailable", "")
+    fun openModelChanged() = pick()
+
+    /** the open model over Gemini Nano, on a phone that has both */
+    fun setPreferOpen(ctx: Context, on: Boolean) {
+        Prefs.setThinkPreferOpen(ctx, on)
+        if (!on) OpenModel.unload()
+        pick()
+    }
+
+    // automatic: Gemini Nano where the phone has it, else the open model if downloaded,
+    // unless you picked the open model (and it's there)
+    @Synchronized private fun pick() {
+        if (!::app.isInitialized) return
+        val open = OpenModel.downloaded(app)
+        when {
+            open && Prefs.thinkPreferOpen(app) -> set("ready", "open")
+            nano != null -> set("ready", "nano")
+            nanoDownloading -> set("downloading", "nano")
+            open -> set("ready", "open")
+            else -> set("unavailable", "")
+        }
     }
 
     private fun set(s: String, m: String) {
@@ -107,7 +145,9 @@ object WispThink {
         NavStore.publish(statusJson())
     }
 
-    fun statusJson(): String = JSONObject().put("type", "think_status").put("state", state).put("model", model).toString()
+    fun statusJson(): String = JSONObject().put("type", "think_status").put("state", state).put("model", model)
+        // no Gemini Nano and nothing downloaded: the Car Thing may offer the download, once
+        .put("offer_mb", if (nanoMissing && state == "unavailable") (OpenModel.SIZE_BYTES + 500_000) / 1_000_000 else 0).toString()
 
     /** "think": one request from the Car Thing, answered with "think_reply" */
     fun handle(conn: WebSocket, msg: JSONObject) {

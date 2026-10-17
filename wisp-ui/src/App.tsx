@@ -198,6 +198,9 @@ export default function App() {
 }
 
 function AppContent() {
+  // with nothing navigating, the map screen is "Where to?", which takes the knob itself
+  const navLive = useNav()
+  const planning = navLive.connected && !navLive.active
   const auth = useAuth()
   const {
     status: realStatus,
@@ -551,6 +554,7 @@ function AppContent() {
     // the phone media screen runs the knob itself (the phone's volume, play/pause)
     // Settings and Up next take the knob themselves, as do the screens below
     navigating:
+      ((overlays.isOpen('nav') || forced === 'nav-live') && planning) ||
       overlays.isOpen('home') ||
       overlays.isOpen('settings') ||
       overlays.isOpen('queue') ||
@@ -679,6 +683,16 @@ function AppContent() {
     return (
       <div className={styles.app}>
         <AddonsScreen onClose={() => setForced(null)} />
+      </div>
+    )
+  }
+  if (forced === 'nav-live') {
+    return (
+      <div className={styles.app}>
+        <NavScreen
+          onClose={() => setForced(null)}
+          nowPlaying={{ title: mockStatus.track_name, artist: mockStatus.track_artist }}
+        />
       </div>
     )
   }

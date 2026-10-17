@@ -74,6 +74,13 @@ type NavState struct {
 	SubText string `json:"sub_text,omitempty"`
 	// the maneuver arrow, a data:image/png;base64 URL
 	Icon     string       `json:"icon,omitempty"`
+	// Wisp's own directions (own_nav.go): the turn's shape for its arrow
+	// ("left", "slight-right", "uturn", "roundabout", "arrive", …) and the
+	// turn after ("Pine Ave" and its shape)
+	Own          bool   `json:"own,omitempty"`
+	Maneuver     string `json:"maneuver,omitempty"`
+	Then         string `json:"then,omitempty"`
+	ThenManeuver string `json:"then_maneuver,omitempty"`
 	Location *NavLocation `json:"location,omitempty"`
 	// the phone's offset from UTC in minutes, from its hello; the Car Thing
 	// itself runs on UTC. kept after the phone goes, the last one known
@@ -129,6 +136,8 @@ type navRelay struct {
 
 	// the route line the phone worked out (nav_route.go)
 	route NavRoute
+	// Wisp's own directions (own_nav.go); while they run, the phone's are set aside
+	own *ownNav
 
 	// the companion app's GitHub repo/token for updates (updater.go)
 	onUpdateAuth func(repo, token string)
@@ -203,6 +212,8 @@ type NavHandler interface {
 	// calls, answered and ended from the Car Thing (phone_call.go)
 	Call() PhoneCall
 	CallControl(ctx context.Context, action string) error
+	// the phone's model, downloaded when the Car Thing's pop-up says so (phone_think.go)
+	ModelDownload(ctx context.Context) error
 	// the phone's battery (phone_battery.go)
 	Battery() PhoneBattery
 	// the visualizer (phone_viz.go)
@@ -240,7 +251,9 @@ func (n *navRelay) WakeSpotifyQuiet(ctx context.Context) error {
 }
 
 func newNavRelay(cfg NavConfig, log librespot.Logger, emit func(*ApiEvent), gateway func() string) *navRelay {
-	return &navRelay{cfg: cfg, log: log, emit: emit, gateway: gateway}
+	n := &navRelay{cfg: cfg, log: log, emit: emit, gateway: gateway}
+	n.own = newOwnNav(n)
+	return n
 }
 
 func (n *navRelay) Status() NavState {
@@ -541,6 +554,9 @@ func (n *navRelay) apply(msg navMessage) {
 			}
 		}
 	case "nav":
+		if n.own != nil && n.own.Active() {
+			return
+		}
 		if !msg.Active {
 			n.update(func(s *NavState) {
 				s.Active, s.Title, s.Text, s.SubText, s.Icon = false, "", "", "", ""
@@ -575,6 +591,9 @@ func (n *navRelay) apply(msg navMessage) {
 		if n.emit != nil {
 			n.emit(&ApiEvent{Type: ApiEventTypeNavLocation, Data: loc})
 		}
+		if n.own != nil {
+			n.own.onFix(*loc)
+		}
 	}
 }
 
@@ -607,6 +626,10 @@ func (n *navRelay) disconnected() {
 		})
 		if stillGone {
 			n.clearMedia()
+			// no phone, no position: Wisp's directions end too
+			if n.own != nil {
+				n.own.Stop()
+			}
 		}
 	})
 }

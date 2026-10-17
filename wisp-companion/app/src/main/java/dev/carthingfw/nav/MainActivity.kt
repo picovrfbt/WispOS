@@ -298,6 +298,11 @@ class MainActivity : WispActivity() {
             { !VoiceActions.allowed(this) }) {
             requestPermissions(arrayOf(Manifest.permission.READ_CONTACTS, Manifest.permission.CALL_PHONE), 9)
         }
+        // phones without Gemini Nano: the open model, offered once with its size up front
+        step(R.drawable.ic_w_pulse, "smarter voice", "Smarter voice", "Understands more of how you talk · ${OpenModel.sizeMb()}", "Get",
+            { WispThink.nanoMissing && !OpenModel.downloaded(this) && OpenModel.progress < 0 && !Prefs.thinkOfferSkipped(this) }) {
+            confirmModelDownload(null, fromSetup = true)
+        }
         // the visualizer reads the phone's sound output; Android files that under the microphone
         step(R.drawable.ic_w_bars, "visualizer", "Visualizer", "Reads the phone's sound, not the mic", "Allow",
             { !PhoneViz.allowed(this) }) { requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), 5) }
@@ -582,23 +587,54 @@ class MainActivity : WispActivity() {
             background = round(GREEN, dp(16))
         }
         val buttonParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(52)).apply { topMargin = dp(18) }
+        val open = OpenModel.downloaded(this)
+        // a quieter second choice: switching models, on a phone with Gemini Nano
+        fun outline(label: String, onTap: () -> Unit) = text(label, 15f, semibold, WHITE).apply {
+            gravity = Gravity.CENTER
+            background = GradientDrawable().apply {
+                cornerRadius = dp(16).toFloat()
+                setStroke(dp(1), SECONDARY)
+            }
+            setOnClickListener { onTap() }
+        }
         when {
-            WispThink.model == "nano" -> note.text = "Wisp understands looser requests and answers questions with Gemini Nano, " +
-                "Google's model built into this phone. It runs on the phone; nothing you say is sent online."
-            OpenModel.downloaded(this) -> {
+            WispThink.model == "nano" -> {
+                note.text = "Wisp understands looser requests and answers questions with Gemini Nano, " +
+                    "Google's model built into this phone. It runs on the phone; nothing you say is sent online.\n\n" +
+                    "You can use ${OpenModel.NAME}, an open model, instead" +
+                    (if (open) "; it's already downloaded." else " (a ${OpenModel.sizeMb()} download).")
+                body.addView(outline("Use ${OpenModel.NAME} instead") {
+                    if (open) {
+                        WispThink.setPreferOpen(this, true)
+                        d.dismiss()
+                        refreshThink()
+                    } else {
+                        confirmModelDownload(d, preferOpen = true)
+                    }
+                }, buttonParams)
+            }
+            open -> {
                 note.text = "Wisp uses ${OpenModel.NAME}, an open model downloaded to this phone (${OpenModel.sizeMb()}). " +
-                    "It runs on the phone; nothing you say is sent online. It only takes up memory while you're talking to Wisp."
+                    "It runs on the phone; nothing you say is sent online. It only takes up memory while you're talking to Wisp." +
+                    if (WispThink.nanoHere) "\n\nThis phone also has Gemini Nano, which is usually quicker." else ""
+                if (WispThink.nanoHere) {
+                    body.addView(outline("Switch to Gemini Nano") {
+                        WispThink.setPreferOpen(this, false)
+                        d.dismiss()
+                        refreshThink()
+                    }, buttonParams)
+                }
                 button.text = "Delete the model"
                 button.setTextColor(Color.WHITE)
                 button.background = round(Color.rgb(0xD9, 0x3B, 0x3B), dp(16))
                 button.setOnClickListener {
                     OpenModel.delete(this)
-                    WispThink.openModelChanged()
+                    WispThink.setPreferOpen(this, false)
                     Toast.makeText(this, "Deleted ${OpenModel.sizeMb()}", Toast.LENGTH_SHORT).show()
                     d.dismiss()
                     refreshThink()
                 }
-                body.addView(button, buttonParams)
+                body.addView(button, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(52)).apply { topMargin = dp(10) })
             }
             else -> {
                 note.text = "This phone doesn't have Gemini Nano. Without a model, the Car Thing still understands " +
@@ -617,7 +653,7 @@ class MainActivity : WispActivity() {
     }
 
     // a large download: said plainly before it starts
-    private fun confirmModelDownload(sheet: android.app.Dialog) {
+    private fun confirmModelDownload(sheet: android.app.Dialog?, preferOpen: Boolean = false, fromSetup: Boolean = false) {
         android.app.AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
             .setTitle("Large download: ${OpenModel.sizeMb()}")
             .setMessage(
@@ -626,12 +662,20 @@ class MainActivity : WispActivity() {
                     "You can delete it here at any time.",
             )
             .setPositiveButton("Download") { _, _ ->
-                sheet.dismiss()
+                sheet?.dismiss()
+                refresh()
                 Thread {
-                    val ok = OpenModel.download(this) { runOnUiThread { refreshThink() } }
+                    var first = true
+                    val ok = OpenModel.download(this) {
+                        runOnUiThread {
+                            // the first percent takes the setup step off the list
+                            if (first) refresh() else refreshThink()
+                            first = false
+                        }
+                    }
                     runOnUiThread {
-                        WispThink.openModelChanged()
-                        refreshThink()
+                        if (ok && preferOpen) WispThink.setPreferOpen(this, true) else WispThink.openModelChanged()
+                        refresh()
                         Toast.makeText(
                             this,
                             if (ok) "${OpenModel.NAME} is ready" else "The download didn't finish; try again on Wi-Fi",
@@ -640,7 +684,13 @@ class MainActivity : WispActivity() {
                     }
                 }.start()
             }
-            .setNegativeButton("Not now", null)
+            .setNegativeButton(if (fromSetup) "Skip" else "Not now") { _, _ ->
+                // skipped in setup: off the list, still in Options → Wisp's thinking
+                if (fromSetup) {
+                    Prefs.setThinkOfferSkipped(this)
+                    refresh()
+                }
+            }
             .show()
     }
 

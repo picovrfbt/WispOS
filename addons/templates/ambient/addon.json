@@ -1,0 +1,11 @@
+{
+  "id": "my-ambient",
+  "name": "My ambient screen",
+  "version": "1.0.0",
+  "author": "Your name",
+  "description": "Slow colour and the song that's playing, for a calm dash.",
+  "permissions": [
+    "now_playing"
+  ],
+  "image": "preview.png"
+}

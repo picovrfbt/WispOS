@@ -38,17 +38,31 @@
   color: $text-tertiary;
 }
 
+.body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
 .list {
   flex: 1;
+  min-width: 0;
   overflow: hidden;
   padding: 4px 20px 24px;
+}
+
+// the catalog: the list beside the one under the knob
+.listNarrow {
+  flex: none;
+  width: 340px;
+  padding-right: 8px;
 }
 
 .row {
   display: flex;
   align-items: center;
   gap: 18px;
-  height: 84px;
+  height: 92px;
   padding: 0 16px;
   border-radius: $r-xl;
   transition: background $dur-fast $ease-standard;
@@ -59,20 +73,43 @@
   box-shadow: inset 0 0 0 2px $accent-dim;
 }
 
-.badge {
+.rowCompact {
+  height: 72px;
+  gap: 14px;
+  padding: 0 12px;
+}
+
+// an add-on's picture: 5 by 3, like the screen it's of
+.thumb {
   flex: none;
   @include flex-center;
-  width: 56px;
-  height: 56px;
-  border-radius: $r-lg;
+  width: 100px;
+  height: 60px;
+  border-radius: $r-md;
+  overflow: hidden;
   background: $surface-elev;
   color: $accent;
   font-size: 26px;
   font-weight: $fw-bold;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
 }
 
-.badgeAdd {
+.thumbSmall {
+  width: 80px;
+  height: 48px;
+  font-size: 22px;
+}
+
+.thumbAdd {
   background: transparent;
+  box-shadow: none;
   border: 2px dashed rgba(255, 255, 255, 0.22);
   color: $text-secondary;
 }
@@ -82,13 +119,21 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .rowTitle {
   font-size: 22px;
   font-weight: $fw-semibold;
   color: $text-primary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rowAuthor {
+  font-size: $fs-md;
+  color: $text-tertiary;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -115,6 +160,78 @@
 .chipOn {
   background: $accent;
   color: #000;
+}
+
+.details {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 32px 22px 12px;
+
+  > * {
+    flex-shrink: 0;
+  }
+}
+
+.shot {
+  @include flex-center;
+  flex: none;
+  width: 280px;
+  height: 168px;
+  border-radius: $r-xl;
+  overflow: hidden;
+  background: $surface-elev;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.shotLetter {
+  font-size: 64px;
+  font-weight: $fw-bold;
+  color: $accent;
+}
+
+.detailName {
+  margin-top: 14px;
+  font-size: 26px;
+  font-weight: $fw-bold;
+  letter-spacing: -0.01em;
+  color: $text-primary;
+}
+
+.detailAuthor {
+  margin-top: 2px;
+  font-size: $fs-md;
+  color: $text-tertiary;
+}
+
+.detailText {
+  margin: 8px 0 0;
+  font-size: $fs-lg;
+  line-height: 1.35;
+  color: $text-secondary;
+  @include truncate(2);
+}
+
+.detailUses {
+  margin-top: 6px;
+  font-size: $fs-md;
+  color: $text-tertiary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.details .chip {
+  align-self: flex-start;
+  margin-top: auto;
 }
 
 .empty {

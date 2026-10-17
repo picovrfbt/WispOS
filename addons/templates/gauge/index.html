@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>My gauge</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .top { display: flex; align-items: baseline; gap: 14px; }
+  .unit { font-size: 30px; font-weight: 600; color: var(--fg-3); }
+  .stats { margin-top: auto; }
+  .stats .v { margin-top: 6px; font-size: 34px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .bar { height: 10px; margin-top: 18px; border-radius: 999px; background: var(--panel-on); overflow: hidden; }
+  .bar > div { height: 100%; width: 0; background: var(--accent); border-radius: inherit; transition: width .4s; }
+</style>
+</head>
+<body>
+<!--
+  Gauge: one number you read at a glance, a bar, and smaller numbers under it.
+  This one shows your speed (the "location" permission) and keeps the top
+  speed and how long you've been driving. Swap in whatever you measure.
+-->
+<main class="screen">
+  <p class="eyebrow">Speed</p>
+  <div class="top"><div class="big" id="speed">–</div><div class="unit">mph</div></div>
+  <div class="bar"><div id="bar"></div></div>
+  <div class="stats grid-3">
+    <div class="card"><div class="eyebrow">Top</div><div class="v" id="top">0</div></div>
+    <div class="card"><div class="eyebrow">Moving</div><div class="v" id="moving">0m</div></div>
+    <div class="card"><div class="eyebrow">Updated</div><div class="v" id="ago">–</div></div>
+  </div>
+</main>
+
+<script src="/addons/sdk.js"></script>
+<script>
+  var topSpeed = 0
+  var movingS = 0
+  var last = 0
+  var $ = function (id) { return document.getElementById(id) }
+
+  function tick() {
+    // { lat, lng, speed_mph }, or null with no phone connected
+    Wisp.location().then(function (loc) {
+      if (!loc) { $('speed').textContent = '–'; return }
+      var now = Date.now()
+      var speed = loc.speed_mph || 0
+      if (last && speed > 2) movingS += (now - last) / 1000
+      last = now
+      topSpeed = Math.max(topSpeed, speed)
+      $('speed').textContent = Math.round(speed)
+      $('bar').style.width = Math.min(100, speed / 80 * 100) + '%'
+      $('top').textContent = Math.round(topSpeed)
+      $('moving').textContent = Math.round(movingS / 60) + 'm'
+      $('ago').textContent = 'now'
+    }).catch(function () {})
+  }
+
+  tick()
+  setInterval(tick, 2000)
+</script>
+</body>
+</html>

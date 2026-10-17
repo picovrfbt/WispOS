@@ -294,6 +294,8 @@ export function SettingsPanel({ active, phoneVolume = false, onOpenBluetooth }: 
       <div className={styles.sectionHead}>
         <div className={styles.section}>Navigation</div>
       </div>
+      <NavEngineRow />
+      <NavVoiceRow />
       <ArrivalRow />
 
       {/* the four buttons along the top of the Car Thing */}
@@ -433,6 +435,46 @@ function AccentRow() {
       </span>
       <span className={styles.label}>Accent colour</span>
       <span className={styles.value}>{ACCENT_LABEL[accentTheme]}</span>
+    </button>
+  )
+}
+
+// who gives directions you ask for by voice: Google Maps on the phone, or Wisp
+// itself (from OpenStreetMap, with the turns on the Car Thing)
+function NavEngineRow() {
+  const { navEngine } = useSettings()
+  const wisp = navEngine === 'wisp'
+  return (
+    <button
+      type="button"
+      className={styles.buttonRow}
+      onClick={() => updateSettings({ navEngine: wisp ? 'google' : 'wisp' })}
+    >
+      <span className={`${styles.chip} ${wisp ? styles.chipOn : ''}`} aria-hidden>
+        <FlagIcon />
+      </span>
+      <span className={styles.label}>Directions by</span>
+      <span className={styles.value}>{wisp ? 'Wisp' : 'Google Maps'}</span>
+    </button>
+  )
+}
+
+// Wisp's directions out loud, as on the map screen's sound menu
+const NAV_VOICE_NEXT = { all: 'turns', turns: 'off', off: 'all' } as const
+const NAV_VOICE_LABEL = { all: 'Every turn', turns: 'Just the turns', off: 'Muted' } as const
+function NavVoiceRow() {
+  const { navVoice } = useSettings()
+  return (
+    <button
+      type="button"
+      className={styles.buttonRow}
+      onClick={() => updateSettings({ navVoice: NAV_VOICE_NEXT[navVoice] })}
+    >
+      <span className={`${styles.chip} ${navVoice !== 'off' ? styles.chipOn : ''}`} aria-hidden>
+        <SpeakerIcon />
+      </span>
+      <span className={styles.label}>Spoken directions</span>
+      <span className={styles.value}>{NAV_VOICE_LABEL[navVoice]}</span>
     </button>
   )
 }

@@ -1,0 +1,14 @@
+{
+  "id": "sun-moon",
+  "name": "Sun & moon",
+  "version": "1.0.0",
+  "author": "Wisp",
+  "description": "Sunrise, sunset and the daylight you have left where you are, with tonight's moon.",
+  "permissions": [
+    "location"
+  ],
+  "network": [
+    "api.open-meteo.com"
+  ],
+  "image": "preview.png"
+}

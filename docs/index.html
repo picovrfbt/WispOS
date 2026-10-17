@@ -20,12 +20,13 @@
 <header class="top">
   <div class="wrap">
     <a class="brand" href="./"><img src="logo.svg" alt="">Wisp</a>
-    <a class="pill" href="https://github.com/picovrfbt/WispOS/releases/latest"><span class="dot"></span>Latest release ›</a>
+    <a class="pill" href="https://github.com/picovrfbt/WispOS/releases/latest"><span class="dot"></span>Wisp 1.0 is here ›</a>
     <nav>
       <a href="#features">Features</a>
       <a href="#voice">Voice</a>
+      <a href="#directions">Directions</a>
       <a href="#addons">Add-ons</a>
-      <a href="#app">The app</a>
+      <a href="use.html">How to use</a>
       <a href="guide.html">Set up</a>
       <a href="https://github.com/picovrfbt/WispOS">Source</a>
     </nav>
@@ -62,8 +63,8 @@
       </article>
 
       <article class="card third t-blue">
-        <div class="shot"><img src="screenshots/nav.png" alt="Turn-by-turn directions on a live map" loading="lazy"></div>
-        <div class="text"><span class="tag">Directions</span><h3>Maps on the dash</h3><p>Turn-by-turn from Google Maps on your phone, on a live map with your route.</p></div>
+        <div class="shot"><img src="screenshots/nav-driving.jpg" alt="Turn-by-turn directions on a live map" loading="lazy"></div>
+        <div class="text"><span class="tag">Directions</span><h3>Maps on the dash</h3><p>Wisp's own turn-by-turn with spoken turns, or Google Maps from your phone, on a live map with your route.</p></div>
       </article>
       <article class="card third t-green">
         <div class="voice"><div><div class="q">“Okay Wisp, <span>play my road trip playlist</span>”</div><div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div>
@@ -118,6 +119,20 @@
   </div>
 </section>
 
+<section id="directions">
+  <div class="wrap">
+    <p class="eyebrow">Directions</p>
+    <h2>Where to? Ask the dash.</h2>
+    <p class="sub">Pick gas, food, coffee, parking, charging or groceries nearby, or a recent place, or just say "Okay Wisp, take me to the beach". Wisp shows up to three routes with their times and roads, avoids highways or tolls if you like, then talks you through every turn. Or hand the trip to Google Maps for live traffic.</p>
+    <div class="use-row">
+      <figure><img src="screenshots/nav-where.png" alt="Where to? with nearby kinds of place and recent places" loading="lazy"><figcaption><b>Where to?</b> Nearby and recent, on the knob</figcaption></figure>
+      <figure><img src="screenshots/nav-routes.jpg" alt="Two routes on the map" loading="lazy"><figcaption><b>Pick a route</b> Times, miles and the main road</figcaption></figure>
+      <figure><img src="screenshots/nav-sound.jpg" alt="Driving with the spoken directions menu" loading="lazy"><figcaption><b>Drive</b> Every turn, just the turns, or muted</figcaption></figure>
+    </div>
+    <div class="cta-row addon-cta"><a class="btn" href="use.html#directions">How directions work</a></div>
+  </div>
+</section>
+
 <section id="addons">
   <div class="wrap">
     <p class="eyebrow">Add-ons</p>
@@ -125,14 +140,18 @@
     <p class="sub">Add-ons are small pages the community makes for the Car Thing's screen: a forecast, a big clock, trip gauges, and whatever comes next. Install them from Home → Add-ons; they open full screen and work with the knob.</p>
     <div class="addon-row">
       <figure><img src="screenshots/addon-forecast.png" alt="The Forecast add-on" loading="lazy"><figcaption><b>Forecast</b> The next 12 hours where you are</figcaption></figure>
-      <figure><img src="screenshots/addon-trip.png" alt="The Trip add-on" loading="lazy"><figcaption><b>Trip</b> Speed, the next turn and your arrival</figcaption></figure>
-      <figure><img src="screenshots/addon-clock-digital.png" alt="The Big clock add-on" loading="lazy"><figcaption><b>Big clock</b> Readable from across the car</figcaption></figure>
+      <figure><img src="screenshots/addons-catalog.png" alt="Get add-ons: each with its picture, author and description" loading="lazy"><figcaption><b>Get add-ons</b> Its picture, who made it and what it does</figcaption></figure>
+      <figure><img src="screenshots/addons-list.png" alt="Your add-ons" loading="lazy"><figcaption><b>Yours</b> Eight to start, and the community's</figcaption></figure>
     </div>
     <div class="addon-facts">
       <div><h3>Reviewed</h3><p>Every add-on in the catalog comes through a pull request, and the Car Thing checks each download against its checksum.</p></div>
       <div><h3>Sandboxed</h3><p>An add-on can't touch your sign-ins, settings or controls. It sees only what it asks for, like the weather, and you see that list before installing.</p></div>
       <div><h3>Light</h3><p>Add-ons only run while they're open, so they don't slow the Car Thing down.</p></div>
-      <div><h3>Easy to make</h3><p>Plain HTML and a little script. <a href="https://github.com/picovrfbt/WispOS/tree/main/addons">Start with the guide</a>.</p></div>
+      <div><h3>Anyone can make one</h3><p>Build one from tiles in the <a href="studio.html">Add-on Studio</a>, no code needed, or start from a template. <a href="addons.html">How add-ons work</a>.</p></div>
+    </div>
+    <div class="cta-row addon-cta">
+      <a class="btn primary" href="studio.html">Make one in the Add-on Studio</a>
+      <a class="btn" href="addons.html">Read the guide</a>
     </div>
   </div>
 </section>
@@ -150,7 +169,11 @@
       <figure><img src="screenshots/player-menu.png" alt="" loading="lazy"><figcaption>The player's menu</figcaption></figure>
       <figure><img src="screenshots/player-visualizer.png" alt="" loading="lazy"><figcaption>A visualizer behind the cover</figcaption></figure>
       <figure><img src="screenshots/visualizer-full.png" alt="" loading="lazy"><figcaption>Full-screen visualizer</figcaption></figure>
-      <figure><img src="screenshots/nav.png" alt="" loading="lazy"><figcaption>Directions with the route</figcaption></figure>
+      <figure><img src="screenshots/nav.jpg" alt="" loading="lazy"><figcaption>Google Maps' directions with the route</figcaption></figure>
+      <figure><img src="screenshots/nav-where.png" alt="" loading="lazy"><figcaption>Where to?</figcaption></figure>
+      <figure><img src="screenshots/nav-results.png" alt="" loading="lazy"><figcaption>Gas nearby</figcaption></figure>
+      <figure><img src="screenshots/nav-routes.jpg" alt="" loading="lazy"><figcaption>Routes to pick from</figcaption></figure>
+      <figure><img src="screenshots/nav-driving.jpg" alt="" loading="lazy"><figcaption>Wisp's turn-by-turn</figcaption></figure>
       <figure><img src="screenshots/drive-sounds.png" alt="" loading="lazy"><figcaption>Drive Mode's sounds</figcaption></figure>
       <figure><img src="screenshots/drive.png" alt="" loading="lazy"><figcaption>Drive Mode</figcaption></figure>
       <figure><img src="screenshots/call.png" alt="" loading="lazy"><figcaption>A call</figcaption></figure>
@@ -216,6 +239,9 @@ cd WispOS/wisp-ui && npm ci && npm run dev   <span class="g">✓ ready</span></d
     <a class="brand" href="./"><img src="logo.svg" alt="">Wisp</a>
     <nav>
       <a href="guide.html">Set up</a>
+      <a href="use.html">How to use</a>
+      <a href="addons.html">Make an add-on</a>
+      <a href="studio.html">Add-on Studio</a>
       <a href="privacy.html">Privacy</a>
       <a href="terms.html">Terms</a>
       <a href="https://github.com/picovrfbt/WispOS">GitHub</a>

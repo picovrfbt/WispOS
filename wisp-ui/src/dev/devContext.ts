@@ -24,6 +24,7 @@ export type DevForcedScreen =
   | 'phone-local'
   | 'home-services'
   | 'nav'
+  | 'nav-live'
   | 'power-menu'
   | 'bluetooth-menu'
   | 'settings'

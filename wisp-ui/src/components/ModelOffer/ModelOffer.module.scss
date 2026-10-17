@@ -1,0 +1,80 @@
+// over everything, the screen dimmed behind, like a ringing call
+.overlay {
+  @include absolute-fill;
+  @include flex-center;
+  z-index: $z-pairing;
+  background: rgba(6, 6, 8, 0.94);
+  animation: offerIn $dur-slow $ease-standard both;
+}
+
+@keyframes offerIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.card {
+  @include column;
+  align-items: center;
+  max-width: 700px;
+  padding: $s-7 $s-8;
+  text-align: center;
+}
+
+.eyebrow {
+  font-size: 15px;
+  font-weight: $fw-bold;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: $text-secondary;
+}
+
+.title {
+  margin-top: $s-2;
+  font-size: 36px;
+  font-weight: $fw-bold;
+  letter-spacing: -0.02em;
+  color: $text-primary;
+}
+
+.body {
+  margin: $s-3 0 0;
+  font-size: 20px;
+  line-height: 1.4;
+  color: $text-secondary;
+}
+
+.buttons {
+  display: flex;
+  margin-top: 32px;
+  @include flex-gap-x(20px);
+}
+
+.button {
+  min-width: 200px;
+  height: 64px;
+  padding: 0 28px;
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 22px;
+  font-weight: $fw-bold;
+  transition: transform $dur-fast $ease-standard;
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.primary {
+  background: #1ed760;
+  color: #000;
+}
+
+.focus {
+  border-color: #fff;
+}

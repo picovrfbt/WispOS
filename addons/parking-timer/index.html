@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Parking timer</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #0d0f12; color: #fff; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; overflow: hidden; }
+  body { display: flex; align-items: center; justify-content: center; gap: 56px; padding: 0 48px; }
+  .ring { position: relative; width: 340px; height: 340px; flex: none; }
+  .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring circle { fill: none; stroke-width: 18; }
+  .track { stroke: rgba(255,255,255,.08); }
+  .bar { stroke: #1ed760; stroke-linecap: round; transition: stroke-dashoffset .4s, stroke .3s; }
+  .soon .bar { stroke: #f5a524; }
+  .done .bar { stroke: #e5484d; }
+  .mid { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .time { font-size: 84px; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1; }
+  .unit { margin-top: 8px; font-size: 20px; color: rgba(255,255,255,.6); }
+  .side { max-width: 300px; }
+  .label { font-size: 15px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.55); }
+  .big { margin-top: 8px; font-size: 40px; font-weight: 700; letter-spacing: -0.01em; }
+  .hint { margin-top: 18px; font-size: 20px; line-height: 1.4; color: rgba(255,255,255,.65); }
+  .done .big { color: #ff7a7e; }
+</style>
+</head>
+<body>
+<div class="ring"><svg viewBox="0 0 200 200"><circle class="track" cx="100" cy="100" r="88"/><circle class="bar" id="bar" cx="100" cy="100" r="88"/></svg>
+  <div class="mid"><div class="time" id="time">1:00</div><div class="unit" id="unit">hours</div></div></div>
+<div class="side"><div class="label" id="label">Set the meter</div><div class="big" id="big">1 hour</div><div class="hint" id="hint">Turn to change · press to start</div></div>
+<script src="/addons/sdk.js"></script>
+<script>
+  var C = 2 * Math.PI * 88
+  var bar = document.getElementById('bar')
+  bar.style.strokeDasharray = C
+  var setMin = 60
+  var endsAt = 0 // ms, 0 when not running
+  var total = 0
+  var offset = 0 // minutes from UTC where you are
+
+  function clock(ms) {
+    var d = new Date(ms + offset * 60000)
+    var h = d.getUTCHours(), m = d.getUTCMinutes()
+    return (h % 12 || 12) + ':' + (m < 10 ? '0' : '') + m + (h < 12 ? ' AM' : ' PM')
+  }
+  function words(min) {
+    if (min < 60) return min + ' minutes'
+    var h = Math.floor(min / 60), m = min % 60
+    return h + (h === 1 ? ' hour' : ' hours') + (m ? ' ' + m + ' min' : '')
+  }
+  function draw() {
+    var cls = '', t, u, frac
+    if (!endsAt) {
+      t = Math.floor(setMin / 60) + ':' + (setMin % 60 < 10 ? '0' : '') + (setMin % 60)
+      u = 'hours'
+      frac = setMin / 240
+      label.textContent = 'Set the meter'
+      big.textContent = words(setMin)
+      hint.textContent = 'Turn to change · press to start'
+    } else {
+      var left = Math.max(0, endsAt - Date.now())
+      var s = Math.ceil(left / 1000)
+      if (s >= 3600) { t = Math.floor(s / 3600) + ':' + pad(Math.floor(s / 60) % 60); u = 'hours left' }
+      else { t = Math.floor(s / 60) + ':' + pad(s % 60); u = 'minutes left' }
+      frac = total ? left / total : 0
+      if (!left) cls = 'done'
+      else if (left < 10 * 60000) cls = 'soon'
+      label.textContent = left ? 'Meter ends at' : 'Time\'s up'
+      big.textContent = left ? clock(endsAt) : 'Back to the car'
+      hint.textContent = 'Press to stop'
+    }
+    document.body.className = cls
+    time.textContent = t
+    unit.textContent = u
+    bar.style.strokeDashoffset = C * (1 - Math.max(0, Math.min(1, frac)))
+  }
+  function pad(n) { return (n < 10 ? '0' : '') + n }
+  function save() { Wisp.storage.set('timer', endsAt ? { endsAt: endsAt, total: total } : null).catch(function () {}) }
+
+  Wisp.on('knob', function (e) {
+    if (endsAt) return
+    setMin = Math.max(5, Math.min(240, setMin + e.delta * 5))
+    draw()
+  })
+  Wisp.on('press', function () {
+    if (endsAt) { endsAt = 0; total = 0 }
+    else { total = setMin * 60000; endsAt = Date.now() + total }
+    save()
+    draw()
+  })
+
+  var label = document.getElementById('label'), big = document.getElementById('big'), hint = document.getElementById('hint')
+  var time = document.getElementById('time'), unit = document.getElementById('unit')
+  Promise.all([
+    Wisp.timezoneOffset().catch(function () { return 0 }),
+    Wisp.storage.get('timer').catch(function () { return null }),
+  ]).then(function (r) {
+    offset = r[0] || 0
+    if (r[1] && r[1].endsAt > Date.now() - 3600000) { endsAt = r[1].endsAt; total = r[1].total }
+    draw()
+  })
+  draw()
+  setInterval(draw, 1000)
+</script>
+</body>
+</html>

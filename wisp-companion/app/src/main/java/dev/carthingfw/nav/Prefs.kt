@@ -116,6 +116,22 @@ object Prefs {
     }
 
     /** let the PC simulator connect over Wi-Fi as well as the Bluetooth tether */
+    // Wisp's thinking: the open model even when Gemini Nano is here
+    fun thinkPreferOpen(ctx: Context): Boolean =
+        ctx.getSharedPreferences(FILE, Context.MODE_PRIVATE).getBoolean("think_prefer_open", false)
+
+    fun setThinkPreferOpen(ctx: Context, on: Boolean) {
+        ctx.getSharedPreferences(FILE, Context.MODE_PRIVATE).edit().putBoolean("think_prefer_open", on).apply()
+    }
+
+    // the "Smarter voice" setup step, skipped (the download stays in Wisp's thinking)
+    fun thinkOfferSkipped(ctx: Context): Boolean =
+        ctx.getSharedPreferences(FILE, Context.MODE_PRIVATE).getBoolean("think_offer_skipped", false)
+
+    fun setThinkOfferSkipped(ctx: Context) {
+        ctx.getSharedPreferences(FILE, Context.MODE_PRIVATE).edit().putBoolean("think_offer_skipped", true).apply()
+    }
+
     fun allowLan(ctx: Context): Boolean =
         ctx.getSharedPreferences(FILE, Context.MODE_PRIVATE).getBoolean(ALLOW_LAN, false)
 

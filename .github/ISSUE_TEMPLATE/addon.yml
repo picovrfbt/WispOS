@@ -1,0 +1,36 @@
+name: Add-on
+description: Send in an add-on for the catalog (made in the Add-on Studio or by hand)
+title: "Add-on: "
+labels: ["add-on"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for making something for Wisp. Drag your add-on's **.zip** into the box below (the Add-on Studio's download, or your folder zipped). It's reviewed before it goes in the catalog: it should do what its description says, ask only for what it uses, and be readable at a glance from the driver's seat. The guide: https://picovrfbt.github.io/WispOS/addons.html
+  - type: textarea
+    id: zip
+    attributes:
+      label: The add-on
+      description: Drop the .zip here. It has addon.json, index.html, style.css and its picture.
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What it does
+      description: A sentence or two, and how the knob and a press work in it.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before sending
+      options:
+        - label: I made it, or I have the right to share everything in it
+          required: true
+        - label: It asks only for the permissions and sites it uses
+          required: true
+        - label: I tried it in the Add-on Studio or with `node addons/preview.mjs --serve`
+          required: true
+        - label: It's fine to share it under the project's licence
+          required: true

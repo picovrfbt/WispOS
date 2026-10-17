@@ -196,6 +196,7 @@ func New(opts *Options) (*App, error) {
 	// turn-by-turn relay from the phone; dialled once Run starts
 	if app.cfg.Nav.Enabled {
 		app.nav = newNavRelay(app.cfg.Nav, app.log, app.server.Emit, bluetooth.PanGateway)
+		app.nav.own.voice = func() string { return navVoiceFromSettings(app.GetSettings()) }
 		app.server.SetNavHandler(app.nav)
 		app.nav.SetNotificationsWanted(phoneNotificationsFromSettings(app.state.Settings))
 		app.nav.SetVoiceWanted(wispVoiceFromSettings(app.state.Settings))

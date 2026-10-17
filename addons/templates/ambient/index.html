@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>My ambient screen</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  /* two soft glows drifting; the knob changes their colours. Gradients, not
+     blur filters: the Car Thing's graphics chip draws these for almost nothing */
+  body { --a: #1ed760; --b: #3b6cff; }
+  .sky { position: fixed; inset: 0; overflow: hidden; }
+  .sky i { position: absolute; width: 90%; height: 130%; border-radius: 50%; opacity: .5; }
+  .sky i:first-child { left: -25%; top: -45%; background: radial-gradient(closest-side, var(--a), transparent); animation: drift 26s ease-in-out infinite alternate; }
+  .sky i:last-child { right: -25%; bottom: -55%; background: radial-gradient(closest-side, var(--b), transparent); animation: drift 34s ease-in-out infinite alternate-reverse; }
+  @keyframes drift { to { transform: translate(12%, 10%); } }
+  @media (prefers-reduced-motion: reduce) { .sky i { animation: none; } }
+  .screen { position: relative; justify-content: flex-end; }
+  .song { font-size: 52px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.05; }
+  .artist { margin-top: 8px; font-size: 26px; color: var(--fg-2); }
+  .hint { position: absolute; top: 28px; right: 34px; }
+</style>
+</head>
+<body>
+<!--
+  Ambient: something to leave on. Slow colour behind the song that's playing
+  ("now_playing"). The knob picks a palette, saved for next time.
+
+  Keep animations slow and few: the Car Thing's processor is small, and
+  nothing on the dash should pull your eye while you drive.
+-->
+<div class="sky" aria-hidden="true"><i></i><i></i></div>
+<main class="screen">
+  <span class="chip hint" id="palette">Spotify</span>
+  <div class="song" id="song">Nothing playing</div>
+  <div class="artist" id="artist">Play something on Wisp</div>
+</main>
+
+<script src="/addons/sdk.js"></script>
+<script>
+  var palettes = [
+    ['Spotify', '#1ed760', '#3b6cff'],
+    ['Sunset', '#ff7a45', '#c2367a'],
+    ['Ocean', '#20c4d8', '#2b4bd6'],
+    ['Forest', '#5fbf5a', '#1f6e5a'],
+    ['Night', '#6a4bff', '#11204a'],
+  ]
+  var p = 0
+
+  function paint() {
+    document.body.style.setProperty('--a', palettes[p][1])
+    document.body.style.setProperty('--b', palettes[p][2])
+    document.getElementById('palette').textContent = palettes[p][0]
+  }
+  function showSong(np) {
+    if (!np || !np.name) return
+    document.getElementById('song').textContent = np.name
+    document.getElementById('artist').textContent = np.artist || ''
+  }
+
+  Wisp.on('knob', function (e) {
+    p = (p + e.delta + palettes.length) % palettes.length
+    paint()
+    Wisp.storage.set('palette', p)
+  })
+  Wisp.on('nowplaying', showSong)
+
+  Wisp.storage.get('palette').then(function (saved) {
+    if (typeof saved === 'number' && palettes[saved]) p = saved
+    paint()
+  })
+  Wisp.nowPlaying().then(showSong).catch(function () {})
+</script>
+</body>
+</html>

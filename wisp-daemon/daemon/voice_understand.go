@@ -145,6 +145,7 @@ const (
 	doAutoBright = "auto_brightness"
 	doLyrics     = "lyrics"
 	doNavigate   = "navigate"
+	doNavStop    = "nav_stop"
 	doCall       = "call"
 	doMood       = "mood"
 )
@@ -185,6 +186,7 @@ var understandRules = []struct {
 	{regexp.MustCompile(`^(?:(?:make (?:it|the screen) )?(?:dimmer|darker)|dim(?: the screen| it)?|turn (?:down )?the brightness(?: down)?|less brightness|the screen is too bright|too bright|lower (?:the )?brightness|decrease (?:the )?brightness)$`), doDimmer, 0},
 	{regexp.MustCompile(`^(?:turn |switch )?auto(?:matic)? brightness (on|off)$|^(?:turn|switch) (on|off) auto(?:matic)? brightness$`), doAutoBright, -1},
 	{regexp.MustCompile(`^(?:(show|turn on) (?:the )?lyrics|(hide|turn off) (?:the )?lyrics|lyrics (on|off))$`), doLyrics, -1},
+	{regexp.MustCompile(`^(?:stop|end|cancel|quit|exit) (?:the )?(?:navigation|navigating|directions|route|trip)$|^(?:stop|cancel) navigat(?:ion|ing)$`), doNavStop, 0},
 	{regexp.MustCompile(`^(?:take me|navigate|drive me|get me|give me directions|directions|show me the way|how do i get|route me) (?:to |back to )?(.+)$|^go (?:to |back to )(.+)$|^(?:go|head|let'?s go) (home)$`), doNavigate, -2},
 	{regexp.MustCompile(`^(?:call|phone|dial|ring) (.+?)(?: up| on (?:the )?phone)?$|^give (.+?) a (?:call|ring)$`), doCall, -2},
 }
@@ -299,6 +301,12 @@ func (v *voiceService) handleUnderstood(ctx context.Context, gen uint64, u under
 		return v.setSettings(gen, map[string]any{"showLyrics": on}, msg)
 	case doNavigate:
 		return v.navigateTo(ctx, gen, u.arg)
+	case doNavStop:
+		if v.app.nav != nil && v.app.nav.own.Active() {
+			v.app.nav.own.Stop()
+			return v.answer(gen, "Directions stopped")
+		}
+		return v.answer(gen, "Wisp isn't giving directions right now")
 	case doCall:
 		return v.callContact(ctx, gen, u.arg)
 	case doMood:
@@ -595,6 +603,18 @@ func (v *voiceService) stepBrightness(gen uint64, up bool) (string, error) {
 func (v *voiceService) navigateTo(ctx context.Context, gen uint64, where string) (string, error) {
 	if v.app.nav == nil {
 		return v.fail(gen, "Directions need the Wisp app on your phone")
+	}
+	// Wisp's own directions when Settings says so; "home" is only the phone's to know
+	if ownNavFromSettings(v.app.GetSettings()) && !strings.EqualFold(strings.TrimSpace(where), "home") {
+		v.emit("thinking", "")
+		name, err := v.app.nav.own.Start(ctx, where)
+		switch {
+		case err == nil:
+			return v.answer(gen, "Directions to "+name)
+		case errors.Is(err, ErrOwnNavNotFound):
+			return v.fail(gen, "I couldn't find "+where)
+		}
+		v.app.log.Warnf("voice: Wisp's directions failed, asking the phone: %v", err)
 	}
 	if err := v.app.nav.Navigate(ctx, where); err != nil {
 		return v.fail(gen, "Directions need the Wisp app on your phone")

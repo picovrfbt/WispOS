@@ -37,8 +37,12 @@ object OpenModel {
     @Volatile var progress = -1
         private set
 
-    /** downloads and checks the model; false if it failed (and nothing's kept) */
+    private val busy = java.util.concurrent.atomic.AtomicBoolean(false)
+
+    /** downloads and checks the model; false if it failed (and nothing's kept), or one's already going */
     fun download(ctx: Context, onPercent: (Int) -> Unit): Boolean {
+        if (!busy.compareAndSet(false, true)) return false
+        progress = 0
         val dest = file(ctx)
         dest.parentFile?.mkdirs()
         val part = File(dest.path + ".part")
@@ -79,6 +83,7 @@ object OpenModel {
             return false
         } finally {
             progress = -1
+            busy.set(false)
         }
     }
 

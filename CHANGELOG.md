@@ -3,15 +3,22 @@
 What changed in each Wisp release, newest first. Each version is on the
 [releases page](https://github.com/picovrfbt/WispOS/releases) with its downloads.
 
-## v0.3.1 (2026-10-16)
+## v1.0.0 (2026-10-17)
 
-Wisp is open source, on its own modern system, with a smarter voice, community add-ons and new Drive Mode music.
+Wisp 1.0: open source, on its own modern system, with its own directions, a smarter voice, community add-ons and new Drive Mode music.
+
+- **Wisp's own directions.** Settings → Navigation → Directions by: Wisp. The map screen with nothing navigating is now **Where to?**: gas, food, coffee, parking, EV charging and groceries nearby, and your recent places, or "Okay Wisp, take me to…" for anywhere. Up to three routes with their times and roads, avoid highways or tolls, then **Start** for turn-by-turn on the Car Thing (spoken through Wisp's voice, rerouting when you leave the route) or **Google Maps** to drive it there with live traffic. From OpenStreetMap: no account, no key. Spoken directions: every turn, just the turns, or muted (the speaker on the map, or Settings).
+- **A new map screen.** A big turn card with the turn after it, your speed, and the time, miles and arrival along the bottom, for Wisp's directions and Google Maps' alike.
+- **Add-ons, grown up.** Each now has a picture, shown with its name, author and description; the catalog shows the one under the knob in full. Eight to start: Forecast, Big clock, Trip, Odometer, Parking timer, Sun & moon, World clocks and Plate spotter.
+- **Make your own add-on** in the [Add-on Studio](https://picovrfbt.github.io/WispOS/studio.html) in your browser, no code needed, or from five templates; the [guide](https://picovrfbt.github.io/WispOS/addons.html) covers the rest.
+- **Choose the phone's model.** On phones with Gemini Nano, the Wisp app can use the open model instead; phones without Nano are offered it once, on the Car Thing or in setup.
+- **A how-to for everything** on the [website](https://picovrfbt.github.io/WispOS/use.html).
 
 - **Open source.** Everything is public at [picovrfbt/WispOS](https://github.com/picovrfbt/WispOS), with a website at [picovrfbt.github.io/WispOS](https://picovrfbt.github.io/WispOS/). Updates need no GitHub token any more; the Wisp app forgets the one it kept.
 - **Wisp OS.** Wisp now runs on its own system: a current Linux kernel, the screen drawn by the GPU in a modern Chromium, and Wisp's own boot logo and start-up animation. Flash it once over USB; updates come over the air from then on.
 - **A lighter on-device voice.** A smaller speech model (about half the memory, about three times faster) that steps aside when memory runs short and comes back when there's room.
 - **A smarter voice.** Ask the way you'd ask a person: "I wanna hear Daft Punk", "who sings this?", "play the album", "no, the other one", "when do we get there?", "take me home", "call Mom", "dim the screen". Answers show on the Car Thing and are spoken through your phone. Everyday requests are understood on the Car Thing; with the Wisp app, a language model on your phone handles anything looser: Gemini Nano where the phone has it, or an open model (Qwen3 0.6B, about 345 MB) you can download from Options → Wisp's thinking.
-- **Add-ons.** Small pages from the community, from Home → Add-ons: a forecast, a big clock and trip gauges to start. Each is reviewed before it's listed, checked when it downloads, and sandboxed so it sees only what it asks for.
+- **Add-ons.** Small pages from the community, from Home → Add-ons. Each is reviewed before it's listed, checked when it downloads, and sandboxed so it sees only what it asks for.
 - **Call by voice** needs a new, optional setup step in the Wisp app.
 - **The knob turns the right way** on Wisp OS.
 - **YouTube Music signs in with a code** at google.com/device, through YouTube's official API: your playlists (private ones too) and the music you've liked. Google no longer allows signing in inside apps. SoundCloud signs in with your email and password.

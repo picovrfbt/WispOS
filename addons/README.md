@@ -5,14 +5,47 @@ Add-ons are small pages that open full-screen on the Car Thing, from
 on your dash. People install them from **Home → Add-ons → Get add-ons**, which
 lists what's in [`catalog.json`](catalog.json) here.
 
+**The full guide is on the website: [Make an add-on](https://picovrfbt.github.io/WispOS/addons.html).**
+The quickest way, with no code and nothing to install, is the
+[Add-on Studio](https://picovrfbt.github.io/WispOS/studio.html): build one from
+tiles or write it, try it on a Car Thing screen with a working knob, and
+download it ready to send in.
+
 ## Make one
 
-An add-on is a folder with two files:
+Start from a template:
+
+```
+node new.mjs trip-stats --template gauge --name "Trip stats" --author "Your name"
+```
+
+| Template | |
+| --- | --- |
+| `blank` | The least an add-on needs: the knob, a press, saving a value |
+| `gauge` | One big number, a bar and three small ones (your speed) |
+| `list` | Rows the knob scrolls, the one under it shown in full |
+| `tiles` | A dashboard: the weather, the song, the time, a site's data |
+| `ambient` | Slow colour and the song that's playing |
+
+Each comes with `style.css`, Wisp's style kit (`templates/kit.css`): the look
+of the Car Thing's own screens and ready-made pieces (`.card`, `.row`, `.chip`,
+`.big`, `.eyebrow`, `.grid-2`, `.grid-3`, and `.on` for what the knob is on).
+
+Then try it as you edit, on a Car Thing screen in your browser, run the way the
+Car Thing runs it (sandboxed, the real bridge, sample data; the arrow keys turn
+the knob, Enter presses):
+
+```
+node preview.mjs trip-stats --serve
+```
+
+An add-on is a folder with three files:
 
 ```
 addons/my-addon/
   addon.json    what it is and what it may use
   index.html    the page (800 × 480, dark, the knob to move)
+  preview.png   its picture, shown in the list and the catalog
 ```
 
 `addon.json`:
@@ -25,7 +58,8 @@ addons/my-addon/
   "author": "Your name",
   "description": "One line on what it shows.",
   "permissions": ["weather"],
-  "network": ["api.example.com"]
+  "network": ["api.example.com"],
+  "image": "preview.png"
 }
 ```
 
@@ -35,6 +69,15 @@ addons/my-addon/
 | `permissions` | Any of `now_playing`, `weather`, `location` (rounded to about a kilometre), `nav` (Google Maps directions from the phone). Ask only for what you use; people see the list before installing. |
 | `network` | The sites it fetches from, by name. Nothing else is reachable. |
 | `entry` | The page, if it isn't `index.html` |
+| `image` | Its picture: a png, jpg or webp in the folder, up to 200 KB, ideally 400 × 240 (the screen's shape). People see it, with the name, author and description, before installing. |
+
+### Its picture
+
+Run `node preview.mjs my-addon` for a screenshot: it opens the add-on at the
+Car Thing's size with sample data (a song, a drive in Long Beach, directions,
+the weather) and saves `preview.png`. Add `--storage '{"key": value}'` to show
+it mid-use, or `--wait 5` if it takes a while to load. Or make your own picture
+and name it in `image`.
 
 In the page, load the bridge and use it:
 
@@ -70,9 +113,13 @@ In the page, load the bridge and use it:
 
 ## Share it
 
+Made it in the Studio? Download it and drop the zip into the
+[add-on form](https://github.com/picovrfbt/WispOS/issues/new?template=addon.yml).
+Otherwise:
+
 1. Add your folder here and run `python pack.py`. It checks the rules above,
-   zips each add-on into `dist/` and updates `catalog.json` with each zip's
-   checksum.
+   zips each add-on into `dist/`, puts its picture beside the zip, and updates
+   `catalog.json` with both checksums.
 2. Open a pull request with the folder, `dist/` and `catalog.json`.
 
 Every add-on is reviewed before it's merged, and the Car Thing only installs
@@ -91,3 +138,8 @@ and open Home → Add-ons; it's listed alongside the installed ones.
 | [Forecast](forecast) | Your location and the weather unit; [Open-Meteo](https://open-meteo.com) for the hours ahead |
 | [Big clock](big-clock) | Nothing (your time zone) |
 | [Trip](trip) | Your location (speed) and directions |
+| [Odometer](odometer) | Your location (speed) |
+| [Parking timer](parking-timer) | Nothing (your time zone) |
+| [Sun & moon](sun-moon) | Your location; [Open-Meteo](https://open-meteo.com) for sunrise and sunset |
+| [World clocks](world-clocks) | Nothing (your time zone) |
+| [Plate spotter](plate-spotter) | Nothing |

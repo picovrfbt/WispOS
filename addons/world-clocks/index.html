@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>World clocks</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #0d0f12; color: #fff; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; overflow: hidden; }
+  body { padding: 24px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 14px; }
+  .clock { padding: 22px 26px; border-radius: 22px; background: rgba(255,255,255,.05); border: 2px solid transparent; display: flex; flex-direction: column; transition: border-color .15s, background .15s; }
+  .clock.on { border-color: rgba(255,255,255,.7); background: rgba(255,255,255,.09); }
+  .city { font-size: 22px; font-weight: 600; }
+  .here .city { color: #1ed760; }
+  .t { margin-top: auto; font-size: 64px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .t small { font-size: 22px; font-weight: 600; color: rgba(255,255,255,.55); margin-left: 6px; letter-spacing: 0; }
+  .d { margin-top: 6px; font-size: 17px; color: rgba(255,255,255,.55); }
+</style>
+</head>
+<body>
+<script src="/addons/sdk.js"></script>
+<script>
+  var CITIES = [
+    ['London', 'Europe/London'], ['Paris', 'Europe/Paris'], ['Berlin', 'Europe/Berlin'], ['New York', 'America/New_York'],
+    ['Chicago', 'America/Chicago'], ['Denver', 'America/Denver'], ['Los Angeles', 'America/Los_Angeles'],
+    ['Honolulu', 'Pacific/Honolulu'], ['Mexico City', 'America/Mexico_City'], ['São Paulo', 'America/Sao_Paulo'],
+    ['Dubai', 'Asia/Dubai'], ['Mumbai', 'Asia/Kolkata'], ['Singapore', 'Asia/Singapore'], ['Tokyo', 'Asia/Tokyo'],
+    ['Seoul', 'Asia/Seoul'], ['Sydney', 'Australia/Sydney'], ['Auckland', 'Pacific/Auckland'], ['Toronto', 'America/Toronto'],
+    ['Johannesburg', 'Africa/Johannesburg'], ['Cairo', 'Africa/Cairo'],
+  ]
+  var picks = [0, 13, 3] // London, Tokyo, New York
+  var focus = 0 // which of the three is being changed (1..3), 0 for none
+  var offset = 0
+
+  var hereDay = new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone: 'UTC' })
+  function cell(name, parts, cls) {
+    return '<div class="clock ' + cls + '"><div class="city">' + name + '</div><div class="t">' + parts.time + '<small>' + parts.ampm + '</small></div><div class="d">' + parts.day + '</div></div>'
+  }
+  function partsHere() {
+    var d = new Date(Date.now() + offset * 60000), h = d.getUTCHours(), m = d.getUTCMinutes()
+    return { time: (h % 12 || 12) + ':' + (m < 10 ? '0' : '') + m, ampm: h < 12 ? 'AM' : 'PM', day: 'Here · ' + hereDay.format(d) }
+  }
+  function partsIn(zone) {
+    var f = new Intl.DateTimeFormat('en-US', { timeZone: zone, hour: 'numeric', minute: '2-digit', weekday: 'short', hour12: true })
+    var p = {}
+    f.formatToParts(new Date()).forEach(function (x) { p[x.type] = x.value })
+    // how far ahead or behind you it is
+    var there = new Date(new Date().toLocaleString('en-US', { timeZone: zone }))
+    var utc = new Date(new Date().toLocaleString('en-US', { timeZone: 'UTC' }))
+    var diff = Math.round(((there - utc) / 60000 - offset) / 60 * 2) / 2
+    var rel = diff === 0 ? 'Same time' : (diff > 0 ? diff + 'h ahead' : -diff + 'h behind')
+    return { time: p.hour + ':' + p.minute, ampm: p.dayPeriod || '', day: p.weekday + ' · ' + rel }
+  }
+  function draw() {
+    var html = cell('Your time', partsHere(), 'here')
+    picks.forEach(function (c, i) { html += cell(CITIES[c][0], partsIn(CITIES[c][1]), focus === i + 1 ? 'on' : '') })
+    document.body.innerHTML = html
+  }
+
+  Wisp.on('press', function () { focus = (focus + 1) % 4; draw() })
+  Wisp.on('knob', function (e) {
+    if (!focus) { focus = 1 }
+    else picks[focus - 1] = (picks[focus - 1] + e.delta + CITIES.length) % CITIES.length
+    Wisp.storage.set('picks', picks).catch(function () {})
+    draw()
+  })
+  Promise.all([Wisp.timezoneOffset().catch(function () { return 0 }), Wisp.storage.get('picks').catch(function () { return null })]).then(function (r) {
+    offset = r[0] || 0
+    if (Array.isArray(r[1]) && r[1].length === 3) picks = r[1].map(function (n) { return Math.abs(n | 0) % CITIES.length })
+    draw()
+  })
+  draw()
+  setInterval(draw, 10000)
+</script>
+</body>
+</html>

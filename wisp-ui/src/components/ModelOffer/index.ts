@@ -1,0 +1,1 @@
+export { ModelOffer } from './ModelOffer'

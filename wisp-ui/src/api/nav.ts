@@ -28,6 +28,13 @@ export interface NavState {
   sub_text?: string
   /** maneuver arrow as a data:image/png URL */
   icon?: string
+  /** Wisp's own directions are running (not Google Maps') */
+  own?: boolean
+  /** Wisp's directions: the turn's shape, for its arrow */
+  maneuver?: Maneuver
+  /** Wisp's directions: the turn after this one ("Pine Ave") and its shape */
+  then?: string
+  then_maneuver?: Maneuver
   location?: NavLocation
   /** the phone's offset from UTC in minutes; the Car Thing's own clock is UTC */
   tz_offset_min?: number
@@ -74,4 +81,90 @@ export async function wakeSpotify(): Promise<boolean> {
   } catch {
     return false
   }
+}
+
+// ---------------------------------------------------------------- Wisp's own directions
+
+export type Maneuver =
+  | 'left'
+  | 'right'
+  | 'slight-left'
+  | 'slight-right'
+  | 'sharp-left'
+  | 'sharp-right'
+  | 'uturn'
+  | 'straight'
+  | 'roundabout'
+  | 'arrive'
+
+export type PlaceKind = 'gas' | 'food' | 'coffee' | 'parking' | 'charging' | 'groceries'
+
+/** somewhere to go (the daemon's NavPlace) */
+export interface NavPlace {
+  name: string
+  address?: string
+  lat: number
+  lng: number
+  distance_m?: number
+  open?: string
+}
+
+/** one way there, for the route planner */
+export interface PlanRoute {
+  duration_s: number
+  distance_m: number
+  via?: string
+  points: [number, number][]
+}
+
+async function navJson<T>(res: Response): Promise<T> {
+  const body = (await readJson(res).catch(() => ({}))) as T & { error?: string }
+  if (!res.ok) {
+    if (res.status === 503) throw new Error("Waiting for your phone's location")
+    if (res.status === 404) throw new Error('Nothing found nearby')
+    throw new Error(body.error ? "Couldn't reach the map service" : `nav: ${res.status}`)
+  }
+  return body
+}
+
+export async function searchPlaces(by: { q?: string; cat?: PlaceKind }): Promise<NavPlace[]> {
+  const q = by.cat ? `cat=${by.cat}` : `q=${encodeURIComponent(by.q ?? '')}`
+  const body = await navJson<{ places?: NavPlace[] }>(await fetch(`${API_BASE}/nav/search?${q}`))
+  return body.places ?? []
+}
+
+export async function fetchRecentPlaces(): Promise<NavPlace[]> {
+  try {
+    const body = await navJson<{ places?: NavPlace[] }>(await fetch(`${API_BASE}/nav/recents`))
+    return body.places ?? []
+  } catch {
+    return []
+  }
+}
+
+export async function planRoutes(
+  place: NavPlace,
+  avoid: { highways: boolean; tolls: boolean },
+): Promise<PlanRoute[]> {
+  const res = await fetch(`${API_BASE}/nav/plan`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...place, avoid_highways: avoid.highways, avoid_tolls: avoid.tolls }),
+  })
+  const body = await navJson<{ routes?: PlanRoute[] }>(res)
+  return body.routes ?? []
+}
+
+/** the planned route, with Wisp or handed to Google Maps on the phone */
+export async function startRoute(route: number, google: boolean): Promise<void> {
+  const res = await fetch(`${API_BASE}/nav/start`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ route, google }),
+  })
+  if (!res.ok) await navJson(res)
+}
+
+export async function stopNav(): Promise<void> {
+  await fetch(`${API_BASE}/nav/stop`, { method: 'POST' }).catch(() => {})
 }

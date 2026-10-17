@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>My tiles</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .tiles { flex: 1; margin-top: 16px; grid-template-rows: 1fr 1fr; }
+  .card { display: flex; flex-direction: column; }
+  .card .v { margin-top: auto; font-size: 44px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .card .s { margin-top: 4px; font-size: 17px; color: var(--fg-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wide { grid-column: span 2; }
+</style>
+</head>
+<body>
+<!--
+  Tiles: a dashboard. Each tile shows one thing; the knob moves between them
+  and a press does something with the one it's on (here: shows more).
+
+  It uses three ways of getting data:
+   - from the Car Thing:  Wisp.weather(), Wisp.nowPlaying()   ("permissions")
+   - from a site:         Wisp.fetch(url)                     ("network")
+   - your own:            the clock tile
+-->
+<main class="screen">
+  <h1 class="title">Dashboard</h1>
+  <div class="tiles grid-3">
+    <div class="card" data-tile><div class="eyebrow">Outside</div><div class="v" id="temp">–</div><div class="s" id="sky"></div></div>
+    <div class="card wide" data-tile><div class="eyebrow">Playing</div><div class="v" id="song" style="font-size:32px">Nothing yet</div><div class="s" id="artist"></div></div>
+    <div class="card" data-tile><div class="eyebrow">Time</div><div class="v" id="clock">–</div><div class="s">Here</div></div>
+    <div class="card wide" data-tile><div class="eyebrow">Wind (Open-Meteo)</div><div class="v" id="wind">–</div><div class="s" id="windmore">Press for gusts</div></div>
+  </div>
+</main>
+
+<script src="/addons/sdk.js"></script>
+<script>
+  var tiles = document.querySelectorAll('[data-tile]')
+  var focus = 0
+  var offset = 0 // minutes from UTC where you are; the Car Thing's own clock is UTC
+  var gusts = null
+  var $ = function (id) { return document.getElementById(id) }
+
+  function drawFocus() {
+    tiles.forEach(function (t, i) { t.classList.toggle('on', i === focus) })
+  }
+  function drawClock() {
+    var d = new Date(Date.now() + offset * 60000), h = d.getUTCHours(), m = d.getUTCMinutes()
+    $('clock').textContent = (h % 12 || 12) + ':' + (m < 10 ? '0' : '') + m
+  }
+
+  Wisp.on('knob', function (e) {
+    focus = (focus + e.delta + tiles.length) % tiles.length
+    drawFocus()
+  })
+  Wisp.on('press', function () {
+    if (focus === 3 && gusts !== null) $('windmore').textContent = 'Gusts to ' + gusts + ' mph'
+  })
+  // the song changed (needs "now_playing")
+  Wisp.on('nowplaying', showSong)
+
+  function showSong(np) {
+    if (!np || !np.name) return
+    $('song').textContent = np.name
+    $('artist').textContent = np.artist || ''
+  }
+
+  Wisp.timezoneOffset().then(function (m) { offset = m || 0; drawClock() })
+  Wisp.weather().then(function (w) {
+    if (!w) return
+    $('temp').textContent = Math.round(w.temp) + '°'
+    $('sky').textContent = w.summary || ''
+  }).catch(function () {})
+  Wisp.nowPlaying().then(showSong).catch(function () {})
+
+  // a site's data: only sites listed in "network", only https
+  Wisp.fetch('https://api.open-meteo.com/v1/forecast?latitude=34.05&longitude=-118.24&current=wind_speed_10m,wind_gusts_10m&wind_speed_unit=mph')
+    .then(function (res) {
+      var c = JSON.parse(res.body).current
+      $('wind').textContent = Math.round(c.wind_speed_10m) + ' mph'
+      gusts = Math.round(c.wind_gusts_10m)
+    })
+    .catch(function () { $('wind').textContent = 'Offline' })
+
+  drawFocus()
+  drawClock()
+  setInterval(drawClock, 10000)
+</script>
+</body>
+</html>

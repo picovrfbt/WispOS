@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sun &amp; moon</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #0b0d14; color: #fff; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; overflow: hidden; }
+  body { padding: 26px 36px; display: flex; flex-direction: column; background: radial-gradient(80% 70% at 50% 100%, #2a2140 0%, transparent 70%), #0b0d14; }
+  .sky { position: relative; height: 230px; }
+  .sky svg { width: 100%; height: 100%; overflow: visible; }
+  .row { margin-top: auto; display: flex; gap: 12px; }
+  .cell { flex: 1; padding: 16px 20px; border-radius: 18px; background: rgba(255,255,255,.05); }
+  .k { font-size: 15px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.55); }
+  .v { margin-top: 6px; font-size: 32px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .s { margin-top: 2px; font-size: 16px; color: rgba(255,255,255,.6); }
+  .msg { margin: auto; font-size: 24px; color: rgba(255,255,255,.7); text-align: center; max-width: 560px; line-height: 1.4; }
+</style>
+</head>
+<body>
+<div id="app" style="display:contents"><p class="msg">Looking at the sky…</p></div>
+<script src="/addons/sdk.js"></script>
+<script>
+  var app = document.getElementById('app')
+  var day = null // { rise, set } as local ms, and the offset
+
+  function hm(ms) {
+    var d = new Date(ms), h = d.getUTCHours(), m = d.getUTCMinutes()
+    return (h % 12 || 12) + ':' + (m < 10 ? '0' : '') + m + (h < 12 ? ' AM' : ' PM')
+  }
+  function span(ms) {
+    var m = Math.round(ms / 60000)
+    return Math.floor(m / 60) + 'h ' + (m % 60) + 'm'
+  }
+  // the moon's age in days since a known new moon, and how lit it is
+  function moon(now) {
+    var age = ((now - Date.UTC(2000, 0, 6, 18, 14)) / 86400000) % 29.530589
+    if (age < 0) age += 29.530589
+    var lit = (1 - Math.cos(2 * Math.PI * age / 29.530589)) / 2
+    var names = ['New moon', 'Waxing crescent', 'First quarter', 'Waxing gibbous', 'Full moon', 'Waning gibbous', 'Last quarter', 'Waning crescent']
+    return { name: names[Math.round(age / 29.530589 * 8) % 8], lit: lit, waxing: age < 14.765 }
+  }
+  function moonPath(lit, waxing) {
+    // the lit part of a disc of radius 22: an outer half and an inner ellipse
+    var r = 22, k = Math.abs(1 - 2 * lit) * r
+    var sweepOuter = waxing ? 1 : 0
+    var sweepInner = lit < 0.5 ? (waxing ? 0 : 1) : (waxing ? 1 : 0)
+    return 'M0,' + -r + ' A' + r + ',' + r + ' 0 0,' + sweepOuter + ' 0,' + r + ' A' + k + ',' + r + ' 0 0,' + sweepInner + ' 0,' + -r
+  }
+
+  function draw() {
+    if (!day) return
+    var now = Date.now() + day.offset
+    var len = day.set - day.rise
+    var t = (now - day.rise) / len
+    var up = t >= 0 && t <= 1
+    // the sun along an arc from the left horizon to the right
+    // on the dashed curve itself: x is even along it, y follows the curve
+    var W = 728, H = 220, c = Math.max(0, Math.min(1, t)), x = 40 + c * (W - 80)
+    var y = (1 - c) * (1 - c) * (H - 20) + 2 * (1 - c) * c * -(H - 100) + c * c * (H - 20)
+    var mo = moon(Date.now())
+    app.innerHTML =
+      '<div class="sky"><svg viewBox="0 0 ' + W + ' ' + H + '">' +
+      '<path d="M40,' + (H - 20) + ' Q' + W / 2 + ',' + (-(H - 100)) + ' ' + (W - 40) + ',' + (H - 20) + '" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2" stroke-dasharray="4 8"/>' +
+      '<line x1="0" y1="' + (H - 20) + '" x2="' + W + '" y2="' + (H - 20) + '" stroke="rgba(255,255,255,.14)" stroke-width="2"/>' +
+      (up ? '<circle cx="' + x + '" cy="' + y + '" r="26" fill="#ffc94a"/>' : '') +
+      '<g transform="translate(' + (W - 60) + ',44)"><circle r="22" fill="rgba(255,255,255,.08)"/><path d="' + moonPath(mo.lit, mo.waxing) + '" fill="#e8e6f0"/></g>' +
+      '</svg></div>' +
+      '<div class="row">' +
+      '<div class="cell"><div class="k">Sunrise</div><div class="v">' + hm(day.rise) + '</div></div>' +
+      '<div class="cell"><div class="k">Sunset</div><div class="v">' + hm(day.set) + '</div></div>' +
+      '<div class="cell"><div class="k">' + (up ? 'Daylight left' : now < day.rise ? 'Until sunrise' : 'After sunset') + '</div><div class="v">' +
+      (up ? span(day.set - now) : now < day.rise ? span(day.rise - now) : span(now - day.set)) + '</div></div>' +
+      '<div class="cell"><div class="k">Moon</div><div class="v">' + Math.round(mo.lit * 100) + '%</div><div class="s">' + mo.name + '</div></div>' +
+      '</div>'
+  }
+
+  Wisp.location().then(function (loc) {
+    if (!loc) {
+      app.innerHTML = '<p class="msg">This needs your phone\'s location. Connect the Wisp app and try again.</p>'
+      return
+    }
+    var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + loc.lat + '&longitude=' + loc.lng +
+      '&daily=sunrise,sunset&forecast_days=1&timezone=auto'
+    return Wisp.fetch(url).then(function (res) {
+      var d = JSON.parse(res.body)
+      // local times without a zone: read as UTC, compared with now plus the offset
+      day = {
+        rise: Date.parse(d.daily.sunrise[0] + 'Z'),
+        set: Date.parse(d.daily.sunset[0] + 'Z'),
+        offset: (d.utc_offset_seconds || 0) * 1000,
+      }
+      draw()
+      setInterval(draw, 30000)
+    })
+  }).catch(function () {
+    app.innerHTML = '<p class="msg">Couldn\'t reach the sky right now.</p>'
+  })
+</script>
+</body>
+</html>

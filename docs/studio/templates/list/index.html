@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>My list</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .split { flex: 1; min-height: 0; display: grid; grid-template-columns: 330px 1fr; gap: 24px; margin-top: 18px; }
+  .items { overflow: hidden; }
+  .row { margin-bottom: 6px; }
+  .row .n { width: 34px; font-size: 16px; font-weight: 700; color: var(--fg-3); }
+  .detail { display: flex; flex-direction: column; }
+  .detail h2 { margin: 6px 0 10px; font-size: 40px; letter-spacing: -0.02em; }
+  .detail p { margin: 0; font-size: 22px; line-height: 1.45; color: var(--fg-2); }
+  .detail .chip { align-self: flex-start; margin-top: auto; }
+</style>
+</head>
+<body>
+<!--
+  List: rows the knob moves through, with the one under it shown in full
+  beside them. A press marks it done here; make it do whatever fits.
+
+  The items are written below. To load them from a site instead, list the
+  site in addon.json's "network" and use Wisp.fetch (see the README).
+-->
+<main class="screen">
+  <h1 class="title">Road trip stops</h1>
+  <div class="split">
+    <div class="items" id="items"></div>
+    <div class="detail" id="detail"></div>
+  </div>
+</main>
+
+<script src="/addons/sdk.js"></script>
+<script>
+  var items = [
+    { name: 'Coffee in Barstow', text: 'Fill up and stretch. The diner by the station opens at 6.' },
+    { name: 'Calico Ghost Town', text: 'Twenty minutes off the highway. Worth it at sunset.' },
+    { name: 'Lunch in Baker', text: 'Last real food for a while: the alien jerky shop is next door.' },
+    { name: 'Seven Magic Mountains', text: 'Bright painted rocks just south of Las Vegas.' },
+    { name: 'Check in', text: 'The hotel holds the room until 10 PM.' },
+  ]
+  var done = {}
+  var focus = 0
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] })
+  }
+
+  function draw() {
+    // keep the focused row in view: four at a time around it
+    var start = Math.max(0, Math.min(items.length - 4, focus - 1))
+    document.getElementById('items').innerHTML = items.slice(start, start + 4).map(function (it, k) {
+      var i = start + k
+      return '<div class="row' + (i === focus ? ' on' : '') + '"><span class="n">' + (done[i] ? '✓' : i + 1) + '</span>' + esc(it.name) + '</div>'
+    }).join('')
+    var it = items[focus]
+    document.getElementById('detail').innerHTML =
+      '<p class="eyebrow">Stop ' + (focus + 1) + ' of ' + items.length + '</p>' +
+      '<h2>' + esc(it.name) + '</h2><p>' + esc(it.text) + '</p>' +
+      '<span class="chip' + (done[focus] ? ' on' : '') + '">' + (done[focus] ? 'Done' : 'Press when you\'re there') + '</span>'
+  }
+
+  Wisp.on('knob', function (e) {
+    focus = Math.max(0, Math.min(items.length - 1, focus + e.delta))
+    draw()
+  })
+  Wisp.on('press', function () {
+    done[focus] = !done[focus]
+    Wisp.storage.set('done', done)
+    draw()
+  })
+
+  Wisp.storage.get('done').then(function (saved) {
+    if (saved && typeof saved === 'object') done = saved
+    draw()
+  })
+  draw()
+</script>
+</body>
+</html>

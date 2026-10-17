@@ -6,9 +6,12 @@
       "version": "1.0.0",
       "author": "Wisp",
       "description": "A clock you can read from across the car. Press for analog or digital.",
+      "image": "preview.png",
       "zip": "dist/big-clock-1.0.0.zip",
-      "sha256": "2938131654d917a2ff6f6b209217a49fc3a20fe9cd51a9deae3ddf308027df23",
-      "size": 1884
+      "sha256": "8926537e63f7591dc6b46beea9c8b0c335c3696d35c1c9b720e8703d853ecdf4",
+      "size": 8910,
+      "image_url": "dist/big-clock-1.0.0.png",
+      "image_sha256": "3e865b199f0afe25ed2fcfb18a72afb5e1169c27e8475935ccec3cf79326b3a1"
     },
     {
       "id": "forecast",
@@ -23,9 +26,73 @@
       "network": [
         "api.open-meteo.com"
       ],
+      "image": "preview.png",
       "zip": "dist/forecast-1.0.1.zip",
-      "sha256": "4886f0fc5bddf628de75e76f25c8b6623d74174d0fc9d941cea7b17e1af91068",
-      "size": 2234
+      "sha256": "7fb1433c5fa6640f2c284ee37737ec24e864bd27e724eafc74acb0a44e36f61d",
+      "size": 28948,
+      "image_url": "dist/forecast-1.0.1.png",
+      "image_sha256": "c46df20411801ca8cf439c619ef5dd2de3945689d36870f21296480354d923c6"
+    },
+    {
+      "id": "odometer",
+      "name": "Odometer",
+      "version": "1.0.0",
+      "author": "Wisp",
+      "description": "This drive's distance, time moving, average and top speed. Press twice to start a new drive.",
+      "permissions": [
+        "location"
+      ],
+      "image": "preview.png",
+      "zip": "dist/odometer-1.0.0.zip",
+      "sha256": "d4cdb41b58dd247ef1b3cb280414bf0d84bb0669410798acbae73ceb3e9d84f6",
+      "size": 11755,
+      "image_url": "dist/odometer-1.0.0.png",
+      "image_sha256": "4440c8b67fb194ad0e53fc9500b32de961db27430bb63692c06a3e83a5319e49"
+    },
+    {
+      "id": "parking-timer",
+      "name": "Parking timer",
+      "version": "1.0.0",
+      "author": "Wisp",
+      "description": "Turn to set the meter's time, press to start. It keeps counting even when you close it.",
+      "image": "preview.png",
+      "zip": "dist/parking-timer-1.0.0.zip",
+      "sha256": "0a714a3dfa348f40504408ff7dd8e0dc8bbcc166a6719abd50806506996e019c",
+      "size": 12447,
+      "image_url": "dist/parking-timer-1.0.0.png",
+      "image_sha256": "6feab0838abcb997f9614d59e84afd0e60f685650ae99cb1e5cf13f2934c887f"
+    },
+    {
+      "id": "plate-spotter",
+      "name": "Plate spotter",
+      "version": "1.0.0",
+      "author": "Wisp",
+      "description": "The license plate game for passengers: turn to a state, press when you spot it. Kept for the whole trip.",
+      "image": "preview.png",
+      "zip": "dist/plate-spotter-1.0.0.zip",
+      "sha256": "9fb7a2a037214269f74da3edd97a376b07154d6fa560ede49d3f37881114eba7",
+      "size": 13601,
+      "image_url": "dist/plate-spotter-1.0.0.png",
+      "image_sha256": "eeba33b1bda336f10e97a3dba0b8c29f924b89caab004c08745c6511d3976e7f"
+    },
+    {
+      "id": "sun-moon",
+      "name": "Sun & moon",
+      "version": "1.0.0",
+      "author": "Wisp",
+      "description": "Sunrise, sunset and the daylight you have left where you are, with tonight's moon.",
+      "permissions": [
+        "location"
+      ],
+      "network": [
+        "api.open-meteo.com"
+      ],
+      "image": "preview.png",
+      "zip": "dist/sun-moon-1.0.0.zip",
+      "sha256": "37d089a871ac039bedd78b1697e0c61821bb0bcf80e4d274751cc2bc83741f5d",
+      "size": 29872,
+      "image_url": "dist/sun-moon-1.0.0.png",
+      "image_sha256": "bbfb4f484d3226fdcd28fcd57fda22590a3f95b832cfc0a0c9bc97b5be918524"
     },
     {
       "id": "trip",
@@ -37,9 +104,25 @@
         "location",
         "nav"
       ],
+      "image": "preview.png",
       "zip": "dist/trip-1.0.0.zip",
-      "sha256": "dd739c98ce0e57c4011e6f31ed5db2acac2854bf1f025f126c81e99c7c565060",
-      "size": 1644
+      "sha256": "3c91feed9343e6ed6006d3aad70f69c226e76a8d85e8bfdcf77a104948b9ac9f",
+      "size": 21364,
+      "image_url": "dist/trip-1.0.0.png",
+      "image_sha256": "d58cb166d032377b42213d89eece585307cb53b57947be6b874bdd5ade2698e4"
+    },
+    {
+      "id": "world-clocks",
+      "name": "World clocks",
+      "version": "1.0.0",
+      "author": "Wisp",
+      "description": "Your time and three cities you pick. Press to choose a clock, turn to change its city.",
+      "image": "preview.png",
+      "zip": "dist/world-clocks-1.0.0.zip",
+      "sha256": "952dba11f3375940ef4a33df721dcef5dba0d5602026713a7f11255498483ee1",
+      "size": 13178,
+      "image_url": "dist/world-clocks-1.0.0.png",
+      "image_sha256": "cbf437e8c01d13daff5d48342270dcff80d7f5c946a13710669ee341745f9bf6"
     }
   ]
 }
