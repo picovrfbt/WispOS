@@ -1,5 +1,5 @@
 /* Add-on Studio: on top of site.css */
-.studio { padding: 120px 0 40px; }
+.studio { padding: 48px 0 40px; }
 .studio h1 { margin: 6px 0 0; font-size: clamp(36px, 5.5vw, 58px); letter-spacing: -0.04em; line-height: 1.02; }
 
 .studio-grid {
