@@ -2,6 +2,7 @@ import { BluetoothMenu } from '@/components/BluetoothMenu'
 import { CallCard } from '@/components/CallCard'
 import { DebugScreen } from '@/components/DebugScreen'
 import { DevicePicker } from '@/components/DevicePicker'
+import { AddonsScreen } from '@/components/Addons'
 import { DriveMode } from '@/components/DriveMode'
 import { FullVisualizer } from '@/components/Visualizer'
 import { Home, type NowPlayingCard } from '@/components/Home'
@@ -75,6 +76,10 @@ export function OverlayHost({
             overlays.open('nav')
           }}
           onOpenSettings={() => overlays.open('settings')}
+          onOpenAddons={() => {
+            overlays.close('home')
+            overlays.open('addons')
+          }}
           onOpenDrive={() => {
             overlays.close('home')
             overlays.open('drive')
@@ -150,6 +155,9 @@ export function OverlayHost({
       </Leaving>
       <Leaving open={overlays.isOpen('drive')}>
         <DriveMode onClose={() => overlays.close('drive')} />
+      </Leaving>
+      <Leaving open={overlays.isOpen('addons')}>
+        <AddonsScreen onClose={() => overlays.close('addons')} />
       </Leaving>
       <Leaving open={overlays.isOpen('viz')}>
         <FullVisualizer

@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Set up Wisp</title>
+<meta name="description" content="Flash Wisp onto a Spotify Car Thing with Terbium, get it online, sign in to Spotify and add the Wisp app: step by step.">
+<meta name="theme-color" content="#08080a">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="./"><img src="logo.svg" alt="">Wisp</a>
+    <nav>
+      <a href="./#features">Features</a>
+      <a href="./#voice">Voice</a>
+      <a href="guide.html">Set up</a>
+      <a href="https://github.com/picovrfbt/WispOS">Source</a>
+    </nav>
+  </div>
+</header>
+
+<main class="doc guide">
+<div class="wrap">
+  <p class="eyebrow">Set up</p>
+  <h1>From the box to the dash.</h1>
+  <p class="lead-doc">About 20 minutes, most of it waiting. You only flash once: Wisp keeps itself up to date after that.</p>
+
+  <nav class="toc" aria-label="Steps">
+    <a href="#need"><span>00</span>What you need</a>
+    <a href="#flash"><span>01</span>Flash Wisp</a>
+    <a href="#online"><span>02</span>Get it online</a>
+    <a href="#spotify"><span>03</span>Sign in to Spotify</a>
+    <a href="#app"><span>04</span>Add the Wisp app</a>
+    <a href="#voice"><span>05</span>Talk to Wisp</a>
+    <a href="#help"><span>?</span>If something's not right</a>
+  </nav>
+
+  <section id="need" class="gstep">
+    <h2><span class="num">00</span>What you need</h2>
+    <ul class="needs">
+      <li><b>A Spotify Car Thing</b></li>
+      <li><b>A computer</b> (Windows, Mac or Linux) with <b>Chrome or Edge</b></li>
+      <li><b>A USB-C cable that carries data</b>, not just charge</li>
+      <li><b>A Spotify account</b></li>
+      <li><b>An Android phone</b> for the Wisp app, for directions, calls and more (Spotify on the Car Thing works without it)</li>
+    </ul>
+    <p class="callout">Flashing replaces the Car Thing's software. It's very hard to brick: if anything goes wrong, put it back in flash mode and start again.</p>
+  </section>
+
+  <section id="flash" class="gstep">
+    <h2><span class="num">01</span>Flash Wisp</h2>
+    <ol class="steps-list">
+      <li><b>Download Wisp.</b> From the <a href="https://github.com/picovrfbt/WispOS/releases/latest">latest release</a>, download <code>wisp-os-vX.Y.Z-flashthing.zip</code>. Leave it zipped.</li>
+      <li><b>On Windows only</b>, install the flasher's USB driver first. In PowerShell:
+        <div class="code small">irm https://driver.terbium.app/get | iex</div></li>
+      <li><b>Put the Car Thing in flash mode.</b> Hold <b>buttons 1 and 4</b>, the first and last along the top, while you plug it into the computer. A black screen means it's ready.
+        <figure class="buttons-fig" aria-label="Hold the first and fourth buttons on the top edge while plugging in">
+          <svg viewBox="0 0 620 230" role="img">
+            <defs>
+              <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a5a5e"/><stop offset="1" stop-color="#2a2a2d"/></linearGradient>
+              <radialGradient id="dial" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#6a6a6e"/><stop offset="1" stop-color="#47474b"/></radialGradient>
+            </defs>
+            <rect x="70" y="44" width="70" height="16" rx="7" class="btn-hi"/>
+            <rect x="170" y="44" width="70" height="16" rx="7" fill="#3a3a3e"/>
+            <rect x="270" y="44" width="70" height="16" rx="7" fill="#3a3a3e"/>
+            <rect x="370" y="44" width="70" height="16" rx="7" class="btn-hi"/>
+            <rect x="500" y="44" width="46" height="16" rx="7" fill="#3a3a3e"/>
+            <rect x="20" y="54" width="580" height="160" rx="34" fill="url(#rim)"/>
+            <rect x="27" y="61" width="566" height="146" rx="28" fill="#0c0c0e"/>
+            <rect x="46" y="76" width="410" height="116" rx="10" fill="#050506"/>
+            <circle cx="530" cy="122" r="58" fill="url(#dial)"/>
+            <text x="105" y="34" class="lbl">1</text>
+            <text x="405" y="34" class="lbl">4</text>
+          </svg>
+          <figcaption>Hold <b>1</b> and <b>4</b> while plugging in</figcaption>
+        </figure>
+      </li>
+      <li><b>Open <a href="https://terbium.app">Terbium</a></b> in Chrome or Edge and follow its steps to connect.</li>
+      <li>At <b>Choose your firmware</b>, pick <b>Local archive</b> and choose the zip.</li>
+      <li><b>Wait 5–10 minutes.</b> If it stops or stalls for several minutes, unplug and start again from flash mode.</li>
+      <li>When it's done, <b>unplug the Car Thing and plug it back in</b> (into the car, or any USB power).</li>
+    </ol>
+    <p class="note-doc">The first start takes a minute or two; you'll see Wisp's logo, then the circling light, then the question of how to get online.</p>
+  </section>
+
+  <section id="online" class="gstep">
+    <h2><span class="num">02</span>Get it online</h2>
+    <p>The Car Thing has no Wi-Fi, so it borrows your phone's or your computer's internet. The QR codes on its connect screens open these steps.</p>
+    <div class="two">
+      <div class="panel-doc">
+        <h3>From your phone, over Bluetooth <span class="pill-doc">Recommended</span></h3>
+        <ol class="steps-list">
+          <li>Turn on <b>Bluetooth tethering</b> on your phone first.
+            <ul><li><b>Android:</b> Settings → Connections → Mobile Hotspot and Tethering → Bluetooth tethering.</li>
+            <li><b>iPhone:</b> Settings → Personal Hotspot → Allow Others to Join.</li></ul></li>
+          <li>On the Car Thing, turn the knob to <b>Your phone</b> and press it.</li>
+          <li>Pick <b>Wisp</b> in your phone's Bluetooth list and check the codes on both screens match.</li>
+        </ol>
+      </div>
+      <div class="panel-doc">
+        <h3>From a computer, over USB</h3>
+        <ol class="steps-list">
+          <li>On the Car Thing, pick <b>A computer</b>.</li>
+          <li>Share the computer's internet with it:
+            <ul><li><b>Windows:</b> Win+R → <code>ncpa.cpl</code> → right-click your internet adapter → Properties → Sharing → tick <b>Allow other network users…</b> and pick the Car Thing's adapter (<i>UsbNcm Host Device</i>).</li>
+            <li><b>Mac:</b> System Settings → General → Sharing → Internet Sharing, to the Car Thing's USB interface.</li>
+            <li><b>Linux:</b> share the connection in NetworkManager to the Car Thing's <code>enx…</code> interface.</li></ul></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section id="spotify" class="gstep">
+    <h2><span class="num">03</span>Sign in to Spotify</h2>
+    <div class="two align">
+      <div>
+        <p>Scan the QR code on the Car Thing with your phone and sign in. Then play something anywhere on your Spotify account and it shows up on the dash.</p>
+        <p class="note-doc">Your library, lyrics and the knob all work from here, with or without the phone app.</p>
+      </div>
+      <img class="shot-doc" src="screenshots/auth.png" alt="The Car Thing showing a QR code to sign in to Spotify" loading="lazy">
+    </div>
+  </section>
+
+  <section id="app" class="gstep">
+    <h2><span class="num">04</span>Add the Wisp app</h2>
+    <div class="two align">
+      <div>
+        <ol class="steps-list">
+          <li>On your Android phone, download <code>wisp-companion-vX.Y.Z.apk</code> from the <a href="https://github.com/picovrfbt/WispOS/releases/latest">latest release</a> and install it (allow installs from your browser when Android asks).</li>
+          <li>Open it and follow the setup steps. Each one says what it's for, and you can skip any.</li>
+        </ol>
+        <p>That turns on directions from Google Maps, calls and notifications, YouTube Music and SoundCloud, Drive Mode, the phone's battery, Wisp's spoken voice and settings from your phone. The app and the Car Thing both update themselves from here on.</p>
+      </div>
+      <div class="phone small-phone"><img src="screenshots/app-top.png" alt="The Wisp app" loading="lazy"></div>
+    </div>
+  </section>
+
+  <section id="voice" class="gstep">
+    <h2><span class="num">05</span>Talk to Wisp</h2>
+    <p>Say <b>"Okay Wisp"</b> and what you want: <i>"play Midnight City"</i>, <i>"who sings this?"</i>, <i>"take me home"</i>, <i>"I'm getting sleepy"</i>. The Car Thing understands everyday requests on its own. With the Wisp app connected, it also asks a language model on your phone about anything looser:</p>
+    <ul class="needs">
+      <li><b>Phones with Gemini Nano</b> (recent Galaxy and Pixel phones) use it automatically: nothing to download.</li>
+      <li><b>Other phones</b> can download an open model in the app (Options → Wisp's thinking, about 345 MB; Wi-Fi recommended).</li>
+    </ul>
+    <p class="note-doc">Wisp's replies are spoken through your phone when Settings → Wisp's voice is on, and always shown on the Car Thing.</p>
+  </section>
+
+  <section id="help" class="gstep">
+    <h2><span class="num">?</span>If something's not right</h2>
+    <div class="table">
+      <div class="row head"><span>What you see</span><span>Try</span></div>
+      <div class="row"><span>Stuck starting up for over a minute</span><span>Unplug and plug the Car Thing back in, and check the phone's tethering or the computer's sharing is still on.</span></div>
+      <div class="row"><span>No pairing prompt on the phone</span><span>Turn Bluetooth tethering on <b>before</b> pairing, then try again.</span></div>
+      <div class="row"><span>Lost internet over USB after unplugging</span><span>Windows turns sharing off when the Car Thing restarts: tick it again in <code>ncpa.cpl</code>.</span></div>
+      <div class="row"><span>The app can't find the Car Thing</span><span>Make sure that phone is the one tethering it, and the app's setup steps are done.</span></div>
+      <div class="row"><span>Terbium can't see the Car Thing</span><span>Use a data cable, hold 1 and 4 <b>while</b> plugging in, and on Windows install the driver first.</span></div>
+    </div>
+    <p>Still stuck? <a href="https://github.com/picovrfbt/WispOS/issues/new/choose">Open an issue</a>.</p>
+  </section>
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="./"><img src="logo.svg" alt="">Wisp</a>
+    <nav>
+      <a href="guide.html">Set up</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="https://github.com/picovrfbt/WispOS">GitHub</a>
+    </nav>
+    <p class="legal">Wisp is not affiliated with, endorsed by or sponsored by Spotify, Google or YouTube. Spotify and Car Thing are trademarks of Spotify AB.</p>
+  </div>
+</footer>
+</body>
+</html>

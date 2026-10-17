@@ -1,3 +1,4 @@
+import { AddonsScreen } from '@/components/Addons'
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { NavContext, useNav } from '@/hooks/navContext'
 import type { NavState } from '@/api/nav'
@@ -554,7 +555,9 @@ function AppContent() {
       overlays.isOpen('settings') ||
       overlays.isOpen('queue') ||
       overlays.isOpen('drive') ||
+      overlays.isOpen('addons') ||
       overlays.isOpen('viz') ||
+      forced === 'addons' ||
       forced === 'home' ||
       forced === 'home-services' ||
       forced === 'phone-media' ||
@@ -669,6 +672,13 @@ function AppContent() {
       <div className={styles.app}>
         <BootSplash />
         {globalOverlays}
+      </div>
+    )
+  }
+  if (forced === 'addons') {
+    return (
+      <div className={styles.app}>
+        <AddonsScreen onClose={() => setForced(null)} />
       </div>
     )
   }

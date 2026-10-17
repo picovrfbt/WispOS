@@ -24,6 +24,13 @@ android {
     buildFeatures {
         buildConfig = true
     }
+    // every phone this app supports is 64-bit ARM: the voice and the language
+    // models' native code ship for that alone (about 50 MB lighter)
+    defaultConfig {
+        ndk {
+            abiFilters += "arm64-v8a"
+        }
+    }
 
     // Android only installs an update signed by the same key as the app already
     // there, so releases are always signed with Wisp's release key: on the
@@ -53,9 +60,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
 }
 
 dependencies {
@@ -67,6 +71,11 @@ dependencies {
     // The official 1.13.8 AAR with only the arm64 libraries kept (every phone
     // this app supports is 64-bit), which keeps the app about 35 MB lighter
     implementation(files("libs/sherpa-onnx-1.13.8-arm64.aar"))
+    // Wisp's thinking (WispThink.kt): Gemini Nano on the phone, through Android's AICore
+    implementation("com.google.mlkit:genai-prompt:1.0.0-beta4")
+    // ...and on phones without Gemini Nano, a downloaded open model (OpenModel.kt) through LiteRT-LM
+    implementation("com.google.ai.edge.litertlm:litertlm-android:0.18.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
     testImplementation("junit:junit:4.13.2")
     // Android's own org.json is a stub in plain JVM tests
     testImplementation("org.json:json:20240303")
@@ -78,3 +87,9 @@ fun wispSetting(name: String, env: String): String? =
 
 /** a Kotlin string literal for a BuildConfig field ("" when unset) */
 fun quoted(v: String?): String = "\"" + (v ?: "").replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
+}

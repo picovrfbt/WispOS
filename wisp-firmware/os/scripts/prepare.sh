@@ -87,6 +87,22 @@ cp "$MD"/encoder-epoch-99-avg-1.int8.onnx "$MD"/decoder-epoch-99-avg-1.int8.onnx
 # ONNX Runtime settings: the memory arena off, so the longest clip's working
 # memory isn't kept for good
 printf 'EnableCpuMemArena=0\n' > "$V/zipformer/ort.conf"
+
+# the meaning-matcher (voice-src/meaning): what a request means when Wisp's own
+# rules miss and no phone model is there. all-MiniLM-L6-v2 (Apache-2.0, 23 MB),
+# run on the ONNX Runtime above only while it's needed
+aarch64-linux-gnu-gcc -O2 -march=armv8-a+crypto+crc -mtune=cortex-a53 \
+  -I"$FW/voice-src/meaning" -o "$V/bin/wisp_meaning_server" "$FW/voice-src/meaning/wisp_meaning_server.c" \
+  -L"$VA/lib" -lonnxruntime -lm -Wl,--allow-shlib-undefined
+aarch64-linux-gnu-strip "$V/bin/wisp_meaning_server"
+MM="$FW/voice-models/all-MiniLM-L6-v2"
+if [ ! -f "$MM/model_quantized.onnx" ]; then
+  say "fetching the meaning model (all-MiniLM-L6-v2)"
+  mkdir -p "$MM"
+  curl -fsSL -o "$MM/model_quantized.onnx" "https://huggingface.co/Xenova/all-MiniLM-L6-v2/resolve/main/onnx/model_quantized.onnx"
+fi
+mkdir -p "$V/meaning"
+cp "$MM/model_quantized.onnx" "$FW/voice-src/meaning/vocab.txt" "$FW/voice-src/meaning/bank.bin" "$V/meaning/"
 # Wisp's wake listener: openWakeWord's listener plus the Voice button's listen-now signal
 [ -f "$FW/voice-bin/oww_wake" ] && install -m 0755 "$FW/voice-bin/oww_wake" "$V/bin/oww_wake"
 cp -a "$VA"/lib/. "$V/lib/"
@@ -122,6 +138,7 @@ voice:
   sherpa_enabled: true
   sherpa_bin: "wisp_asr_server"
   sherpa_model_dir: "/usr/share/wisp/voice/zipformer/sherpa-onnx-zipformer-small-en-2023-06-26"
+  meaning_dir: "/usr/share/wisp/voice/meaning"
   wake_model: "$WAKE_MODEL"
   wake_threshold: $WAKE_THRESHOLD
   wake_threshold_playing: $WAKE_THRESHOLD_PLAYING

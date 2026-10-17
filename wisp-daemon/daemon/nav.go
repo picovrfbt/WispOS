@@ -156,6 +156,10 @@ type navRelay struct {
 
 	// Drive Mode's last state from the phone (phone_drive.go)
 	driveState json.RawMessage
+	// the phone's language model and the thoughts waiting on it (phone_think.go)
+	think        ThinkStatus
+	thinkSeq     int
+	thinkWaiting map[int]chan thinkAction
 	// a call on the phone (phone_call.go)
 	call PhoneCall
 	// the phone's battery (phone_battery.go)
@@ -477,6 +481,38 @@ func (n *navRelay) session(ctx context.Context, url string) error {
 			n.applyDriveState(data)
 			continue
 		}
+		if msg.Type == "think_status" {
+			var t ThinkStatus
+			if err := json.Unmarshal(data, &t); err == nil {
+				n.applyThinkStatus(t)
+			}
+			continue
+		}
+		if msg.Type == "think_reply" {
+			var r struct {
+				ID int `json:"id"`
+				thinkAction
+			}
+			if err := json.Unmarshal(data, &r); err == nil {
+				n.deliverThink(r.ID, r.thinkAction)
+			}
+			continue
+		}
+		// how a voice request the phone carried out went ("Calling Mom")
+		if msg.Type == "voice_reply" {
+			var r struct {
+				Ok   bool   `json:"ok"`
+				Text string `json:"text"`
+			}
+			if err := json.Unmarshal(data, &r); err == nil && n.emit != nil && strings.TrimSpace(r.Text) != "" {
+				state := "answer"
+				if !r.Ok {
+					state = "error"
+				}
+				n.emit(&ApiEvent{Type: ApiEventTypeVoice, Data: ApiEventDataVoice{State: state, Text: clipRunes(r.Text, navMaxTextRunes)}})
+			}
+			continue
+		}
 		if msg.Type == "media" {
 			var media phoneMediaMessage
 			if err := json.Unmarshal(data, &media); err == nil {
@@ -552,6 +588,7 @@ func (n *navRelay) disconnected() {
 	n.clearBattery()
 	n.mu.Lock()
 	n.vizStatus = VizStatus{}
+	n.think = ThinkStatus{}
 	n.mu.Unlock()
 	n.mu.Lock()
 	defer n.mu.Unlock()
@@ -617,3 +654,11 @@ func (s *ConcreteApiServer) SetNavHandler(h NavHandler) {
 }
 
 func (s *StubApiServer) SetNavHandler(_ NavHandler) {}
+
+func (s *ConcreteApiServer) SetAddonStore(a *addonStore) {
+	s.navMu.Lock()
+	s.addonStore = a
+	s.navMu.Unlock()
+}
+
+func (s *StubApiServer) SetAddonStore(_ *addonStore) {}

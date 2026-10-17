@@ -37,6 +37,12 @@ type voiceService struct {
 	g2p      *g2p
 	resolver *cascadeResolver
 
+	// the last command, for follow-ups, and the weather for "what's the weather"
+	memory  voiceMemory
+	weather *weatherCache
+	// what a request means, when the rules miss and no phone model is there (voice_meaning.go)
+	meaning *meaningMatcher
+
 	// persistent gigaspeech-Zipformer ASR
 	sherpa *sherpaSidecar
 
@@ -72,7 +78,7 @@ const voiceVolumeStep int32 = MaxStateVolume / 10
 
 func newVoiceService(app *App) *voiceService {
 	ctx, cancel := context.WithCancel(context.Background())
-	v := &voiceService{app: app, cfg: app.cfg.Voice, ctx: ctx, cancel: cancel, wakeSignal: make(chan struct{}, 1)}
+	v := &voiceService{app: app, cfg: app.cfg.Voice, ctx: ctx, cancel: cancel, wakeSignal: make(chan struct{}, 1), weather: newWeatherCache()}
 	v.wakeEnabled.Store(true)
 	return v
 }
@@ -82,6 +88,9 @@ func (v *voiceService) Start() {
 		v.cfg.Wake, v.cfg.Cascade, v.cfg.CatalogSync, v.cfg.HashRotate, v.cfg.SherpaEnabled, v.cfg.BinDir, v.cfg.ModelDir)
 	if v.cfg.Cascade {
 		v.startCascade()
+	}
+	if v.cfg.MeaningDir != "" {
+		v.meaning = newMeaningMatcher(v.cfg.MeaningDir, filepath.Join(v.cfg.BinDir, "wisp_meaning_server"), v.loader(), v.cfg.LibDir)
 	}
 	if v.cfg.SherpaEnabled {
 		v.sherpa = newSherpaSidecar(v)
@@ -258,6 +267,32 @@ func (v *voiceService) TriggerVoice(ctx context.Context, transcript, clipPath st
 		return "", fmt.Errorf("voice: empty transcript")
 	}
 
+	// everyday phrasing as the commands below know them, then what Wisp answers
+	// or does itself: questions, follow-ups, Drive Mode, settings, directions, calls
+	heard := transcript
+	transcript = normalizeLoose(transcript)
+	if transcript != strings.ToLower(strings.TrimSpace(heard)) {
+		v.app.log.Infof("voice: %q reads as %q", heard, transcript)
+	}
+	if u, ok := understand(transcript); ok {
+		return v.handleUnderstood(ctx, gen, u)
+	}
+	// not a command Wisp's own rules know the shape of: the phone's model if it's
+	// there, else the meaning-matcher on the Car Thing
+	if !looksLikeCommand(transcript) {
+		if v.phoneCanThink() {
+			if out, err, ok := v.thinkOnPhone(ctx, gen, transcript); ok {
+				return out, err
+			}
+		}
+		if cmd := v.meaningOf(ctx, transcript); cmd != "" {
+			if u, ok := understand(normalizeLoose(cmd)); ok {
+				return v.handleUnderstood(ctx, gen, u)
+			}
+			transcript = normalizeLoose(cmd)
+		}
+	}
+
 	// "add this to my road trip playlist"
 	if name, ok := parseAddToPlaylist(transcript); ok {
 		v.app.log.Infof("voice: transcript=%q -> add to playlist %q", transcript, name)
@@ -284,6 +319,20 @@ func (v *voiceService) TriggerVoice(ctx context.Context, transcript, clipPath st
 			v.app.log.Infof("voice: transcript=%q -> queue %s (%s, score=%.3f)", transcript, voiceLabel(dec), dec.Uri, dec.Score)
 			return v.handleQueue(ctx, gen, dec.Uri, voiceLabel(dec))
 		case "abstain":
+			// the library matcher gave up: the phone's model, or the meaning-matcher,
+			// may still make sense of it
+			if v.phoneCanThink() {
+				if out, err, ok := v.thinkOnPhone(ctx, gen, transcript); ok {
+					return out, err
+				}
+			} else if cmd := v.meaningOf(ctx, transcript); cmd != "" {
+				if u, ok := understand(normalizeLoose(cmd)); ok {
+					return v.handleUnderstood(ctx, gen, u)
+				}
+				if action, ok := v.resolver.matchControl(ctx, strings.Fields(normalizeLoose(cmd))); ok {
+					return v.handleControl(ctx, gen, action)
+				}
+			}
 			// do nothing on purpose
 			msg := "Sorry, I didn’t catch that"
 			if dec.Kind == kindQueue {
@@ -302,6 +351,7 @@ func (v *voiceService) TriggerVoice(ctx context.Context, transcript, clipPath st
 			} else {
 				label := voiceLabel(dec)
 				v.app.log.Infof("voice: transcript=%q -> [%s] %s (%s, score=%.3f)", transcript, dec.Kind, label, dec.Uri, dec.Score)
+				v.memory.remember(voiceTurn{uri: dec.Uri, label: label})
 				return v.playUri(ctx, gen, dec.Uri, label)
 			}
 		default: // "search"
@@ -467,6 +517,19 @@ func (v *voiceService) searchRerankPlay(ctx context.Context, gen uint64, transcr
 		label = pick.Name + " - " + pick.Artist
 	}
 	v.app.log.Infof("voice: search re-rank -> %s (%s, score=%.3f, of %d results)", label, pick.Uri, score, len(tracks))
+	// the runners-up, for "no, the other one"
+	var others []voiceAlt
+	for _, t := range tracks {
+		if t.Uri == "" || t.Uri == pick.Uri || len(others) == 3 {
+			continue
+		}
+		l := t.Name
+		if t.Artist != "" {
+			l = t.Name + " - " + t.Artist
+		}
+		others = append(others, voiceAlt{uri: t.Uri, label: l})
+	}
+	v.memory.remember(voiceTurn{uri: pick.Uri, label: label, others: others})
 	return v.playUri(ctx, gen, pick.Uri, label)
 }
 

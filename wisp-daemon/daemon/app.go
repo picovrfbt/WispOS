@@ -185,6 +185,14 @@ func New(opts *Options) (*App, error) {
 	app.server.SetSettingsHandler(app)
 	app.server.SetDebugHandler(app)
 
+	// community add-ons, installed from the repo Wisp updates from
+	app.server.SetAddonStore(newAddonStore(addonsDir(), func() string {
+		if app.updates != nil {
+			return app.updates.repo()
+		}
+		return app.cfg.Update.Repo
+	}, app.log))
+
 	// turn-by-turn relay from the phone; dialled once Run starts
 	if app.cfg.Nav.Enabled {
 		app.nav = newNavRelay(app.cfg.Nav, app.log, app.server.Emit, bluetooth.PanGateway)

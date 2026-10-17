@@ -69,6 +69,8 @@ type ApiServer interface {
 
 	// /nav/* uses this, nil = 503
 	SetNavHandler(h NavHandler)
+	// the community add-ons (addons.go)
+	SetAddonStore(a *addonStore)
 
 	// /update/* uses this, nil = 503
 	SetUpdateHandler(h UpdateHandler)
@@ -176,6 +178,8 @@ type ConcreteApiServer struct {
 
 	navMu sync.RWMutex
 	navFn NavHandler
+	// add-ons, under navMu too
+	addonStore *addonStore
 
 	updateMu sync.RWMutex
 
@@ -998,6 +1002,11 @@ func (s *ConcreteApiServer) serve() {
 	s.registerCoverRoutes(m)
 	s.registerSavedDataRoutes(m)
 	s.registerWeatherRoutes(m)
+	s.registerAddonRoutes(m, func() *addonStore {
+		s.navMu.RLock()
+		defer s.navMu.RUnlock()
+		return s.addonStore
+	})
 	s.registerSunRoutes(m)
 	s.registerThermalRoutes(m)
 	m.HandleFunc("GET /nav/status", func(w http.ResponseWriter, r *http.Request) {
@@ -1455,9 +1464,9 @@ func (s *ConcreteApiServer) serve() {
 
 	var err error
 	if len(s.certFile) > 0 && len(s.keyFile) > 0 {
-		err = http.ServeTLS(s.listener, c.Handler(m), s.certFile, s.keyFile)
+		err = http.ServeTLS(s.listener, c.Handler(refuseSandboxed(m)), s.certFile, s.keyFile)
 	} else {
-		err = http.Serve(s.listener, c.Handler(m))
+		err = http.Serve(s.listener, c.Handler(refuseSandboxed(m)))
 	}
 
 	if s.close.Load() {

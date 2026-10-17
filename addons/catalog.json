@@ -1,0 +1,45 @@
+{
+  "addons": [
+    {
+      "id": "big-clock",
+      "name": "Big clock",
+      "version": "1.0.0",
+      "author": "Wisp",
+      "description": "A clock you can read from across the car. Press for analog or digital.",
+      "zip": "dist/big-clock-1.0.0.zip",
+      "sha256": "2938131654d917a2ff6f6b209217a49fc3a20fe9cd51a9deae3ddf308027df23",
+      "size": 1884
+    },
+    {
+      "id": "forecast",
+      "name": "Forecast",
+      "version": "1.0.1",
+      "author": "Wisp",
+      "description": "The next 12 hours where you are. Turn the knob to look ahead.",
+      "permissions": [
+        "location",
+        "weather"
+      ],
+      "network": [
+        "api.open-meteo.com"
+      ],
+      "zip": "dist/forecast-1.0.1.zip",
+      "sha256": "4886f0fc5bddf628de75e76f25c8b6623d74174d0fc9d941cea7b17e1af91068",
+      "size": 2234
+    },
+    {
+      "id": "trip",
+      "name": "Trip",
+      "version": "1.0.0",
+      "author": "Wisp",
+      "description": "Your speed, the next turn and when you'll arrive, big and at a glance.",
+      "permissions": [
+        "location",
+        "nav"
+      ],
+      "zip": "dist/trip-1.0.0.zip",
+      "sha256": "dd739c98ce0e57c4011e6f31ed5db2acac2854bf1f025f126c81e99c7c565060",
+      "size": 1644
+    }
+  ]
+}

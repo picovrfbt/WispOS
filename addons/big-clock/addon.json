@@ -1,0 +1,7 @@
+{
+  "id": "big-clock",
+  "name": "Big clock",
+  "version": "1.0.0",
+  "author": "Wisp",
+  "description": "A clock you can read from across the car. Press for analog or digital."
+}

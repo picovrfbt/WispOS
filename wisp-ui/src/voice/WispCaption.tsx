@@ -7,6 +7,8 @@ import styles from './WispCaption.module.scss'
 // how long a line stays up; "thinking" stays until the answer replaces it
 const SHOW_MS = 4500
 const THINKING_MS = 20000
+// time to read a reply to a question
+const ANSWER_MS = 7000
 
 // fun word bank for while it transcribes
 const THINKING_WORDS = [
@@ -83,6 +85,12 @@ export function WispCaption() {
         case 'done':
           show(text || 'Done', SHOW_MS)
           speak(text || 'Done', 'confirm')
+          break
+        case 'answer':
+          if (text) {
+            show(text, ANSWER_MS)
+            speak(text, 'confirm')
+          }
           break
         case 'error':
           show(text || "Sorry, I didn't catch that", SHOW_MS)

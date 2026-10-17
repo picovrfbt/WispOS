@@ -51,6 +51,8 @@ class NavServer private constructor(private val app: Context) :
         // what music apps are on this phone, for the Car Thing's Home
         if (MusicServices.services.isNotEmpty()) conn.send(MusicServices.json(app))
         conn.send(YtMusicLink.statusJson(app))
+        // whether this phone's language model is there for Wisp's voice
+        conn.send(WispThink.statusJson())
         // a reflashed Car Thing takes these back; one with its own keeps them
         Prefs.settingsBackup(app).takeIf { it.isNotEmpty() }?.let { saved ->
             try {
@@ -134,6 +136,11 @@ class NavServer private constructor(private val app: Context) :
         if (type == "call_control") PhoneCalls.control(app, org.json.JSONObject(message).optString("action"))
         // Drive Mode: music that follows the driving, played here
         if (type == "drive") DriveMode.handle(app, org.json.JSONObject(message))
+        // the Car Thing's voice: "take me home", "call Mom"
+        if (type == "navigate") VoiceActions.navigate(app, conn, org.json.JSONObject(message).optString("to"))
+        if (type == "place_call") VoiceActions.call(app, conn, org.json.JSONObject(message).optString("who"))
+        // what Wisp's own rules didn't understand, for the phone's model
+        if (type == "think") WispThink.handle(conn, org.json.JSONObject(message))
         // a Wisp update, downloaded here and handed over the tether
         if (type == "update_fetch") {
             if (ClientFilter.allowed(remote, allowLan = Prefs.allowLan(app))) {

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Forecast</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #0d0f12; color: #fff; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; overflow: hidden; }
+  body { display: flex; flex-direction: column; padding: 28px 34px; background: radial-gradient(70% 90% at 15% 0%, #16324a 0%, transparent 70%), #0d0f12; }
+  #app { flex: 1; display: flex; flex-direction: column; }
+  .now { display: flex; align-items: center; gap: 26px; }
+  .temp { font-size: 108px; font-weight: 700; letter-spacing: -0.04em; line-height: 1; }
+  .what { font-size: 30px; font-weight: 600; }
+  .where { font-size: 18px; color: rgba(255,255,255,.6); margin-top: 6px; }
+  .hours { margin-top: auto; display: flex; gap: 10px; }
+  .hour { flex: 1; text-align: center; padding: 14px 0 16px; border-radius: 18px; background: rgba(255,255,255,.05); transition: background .15s; }
+  .hour.on { background: rgba(255,255,255,.16); }
+  .hour .t { font-size: 17px; color: rgba(255,255,255,.65); }
+  .hour .i { font-size: 30px; margin: 6px 0; }
+  .hour .d { font-size: 22px; font-weight: 600; }
+  .hour .r { font-size: 14px; color: #7cc4ff; height: 18px; }
+  .msg { margin: auto; font-size: 24px; color: rgba(255,255,255,.7); text-align: center; max-width: 560px; line-height: 1.4; }
+</style>
+</head>
+<body>
+<div id="app"><p class="msg">Getting the forecast…</p></div>
+<script src="/addons/sdk.js"></script>
+<script>
+  // WMO weather codes, as a picture and a word
+  function look(code, day) {
+    if (code === 0) return [day ? '☀️' : '🌙', 'Clear']
+    if (code <= 2) return [day ? '🌤️' : '☁️', 'Partly cloudy']
+    if (code === 3) return ['☁️', 'Cloudy']
+    if (code <= 48) return ['🌫️', 'Fog']
+    if (code <= 57) return ['🌦️', 'Drizzle']
+    if (code <= 67) return ['🌧️', 'Rain']
+    if (code <= 77) return ['🌨️', 'Snow']
+    if (code <= 82) return ['🌧️', 'Showers']
+    if (code <= 86) return ['🌨️', 'Snow showers']
+    return ['⛈️', 'Storms']
+  }
+  var hours = []
+  var first = 0
+  var unit = 'F'
+  var app = document.getElementById('app')
+
+  function draw() {
+    if (!hours.length) return
+    var now = hours[0]
+    var shown = hours.slice(first, first + 6)
+    var l = look(now.code, now.day)
+    app.innerHTML =
+      '<div class="now"><div class="temp">' + now.temp + '°</div><div><div class="what">' + l[1] +
+      '</div><div class="where">Next 12 hours · turn the knob to look ahead</div></div></div>' +
+      '<div class="hours">' + shown.map(function (h, i) {
+        var hl = look(h.code, h.day)
+        return '<div class="hour' + (i === 0 ? ' on' : '') + '"><div class="t">' + h.label + '</div><div class="i">' + hl[0] +
+          '</div><div class="d">' + h.temp + '°</div><div class="r">' + (h.rain >= 20 ? h.rain + '%' : '') + '</div></div>'
+      }).join('') + '</div>'
+  }
+
+  Wisp.on('knob', function (e) {
+    first = Math.max(0, Math.min(hours.length - 6, first + e.delta))
+    draw()
+  })
+
+  Promise.all([Wisp.location(), Wisp.weather().catch(function () { return null })]).then(function (r) {
+    var loc = r[0]
+    if (r[1] && r[1].unit) unit = r[1].unit
+    if (!loc) {
+      app.innerHTML = '<p class="msg">The forecast needs your phone\'s location. Connect the Wisp app and try again.</p>'
+      return
+    }
+    var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + loc.lat + '&longitude=' + loc.lng +
+      '&hourly=temperature_2m,weather_code,precipitation_probability,is_day&forecast_hours=12&timezone=auto' +
+      (unit === 'F' ? '&temperature_unit=fahrenheit' : '')
+    return Wisp.fetch(url).then(function (res) {
+      var d = JSON.parse(res.body).hourly
+      hours = d.time.map(function (t, i) {
+        var h = new Date(t).getHours()
+        return {
+          label: i === 0 ? 'Now' : (h % 12 || 12) + (h < 12 ? ' AM' : ' PM'),
+          temp: Math.round(d.temperature_2m[i]),
+          code: d.weather_code[i],
+          rain: d.precipitation_probability ? d.precipitation_probability[i] : 0,
+          day: d.is_day ? d.is_day[i] === 1 : true,
+        }
+      })
+      draw()
+    })
+  }).catch(function () {
+    app.innerHTML = '<p class="msg">Couldn\'t get the forecast right now.</p>'
+  })
+</script>
+</body>
+</html>

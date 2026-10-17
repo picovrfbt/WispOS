@@ -1,0 +1,9 @@
+{
+  "id": "forecast",
+  "name": "Forecast",
+  "version": "1.0.1",
+  "author": "Wisp",
+  "description": "The next 12 hours where you are. Turn the knob to look ahead.",
+  "permissions": ["location", "weather"],
+  "network": ["api.open-meteo.com"]
+}
