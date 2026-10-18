@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.view.WindowManager
+import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
@@ -36,9 +37,11 @@ class MainActivity : Activity() {
         // a screen in the car stays on
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        // plain http, like the background program it talks to, so nothing on the
-        // page counts as insecure content
+        // served as http://127.0.0.1/, the same host as the background program
+        // (127.0.0.1:3678): a page from anywhere else may not talk to a program
+        // on the phone itself. Never fetched: the loader answers from the assets
         val assets = WebViewAssetLoader.Builder()
+            .setDomain(ASSET_HOST)
             .setHttpAllowed(true)
             .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
             .build()
@@ -47,13 +50,15 @@ class MainActivity : Activity() {
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
             settings.mediaPlaybackRequiresUserGesture = false
+            // what the screens can ask of the app (window.WispPhone)
+            addJavascriptInterface(Bridge(), "WispPhone")
             webViewClient = object : WebViewClient() {
                 override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? =
                     assets.shouldInterceptRequest(request.url)
 
                 // Spotify's sign-in and any other link: the phone's browser
                 override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-                    if (request.url.host == ASSET_HOST) return false
+                    if (request.url.host == ASSET_HOST && request.url.port == -1) return false
                     openOutside(request.url)
                     return true
                 }
@@ -95,6 +100,12 @@ class MainActivity : Activity() {
         }
     }
 
+    inner class Bridge {
+        /** the end of the background program's log, when it won't start */
+        @JavascriptInterface
+        fun daemonLog(): String = WispService.logTail(this@MainActivity)
+    }
+
     private fun openOutside(uri: Uri) {
         try {
             startActivity(Intent(Intent.ACTION_VIEW, uri))
@@ -104,6 +115,6 @@ class MainActivity : Activity() {
     }
 
     companion object {
-        private const val ASSET_HOST = WebViewAssetLoader.DEFAULT_DOMAIN
+        private const val ASSET_HOST = "127.0.0.1"
     }
 }
