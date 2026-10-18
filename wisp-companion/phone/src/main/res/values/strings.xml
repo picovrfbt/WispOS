@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Wisp Phone</string>
+    <string name="running_channel">Wisp running</string>
+    <string name="running_title">Wisp is on</string>
+    <string name="running_text">Tap to open Wisp</string>
+</resources>

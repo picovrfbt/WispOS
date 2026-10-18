@@ -1,0 +1,30 @@
+# Wisp Phone's wisp-daemon: the Car Thing's, without the Car Thing's hardware
+device_name: "Wisp Phone"
+device_type: "car_thing"
+log_level: "info"
+
+observer_mode: true
+
+credentials:
+  type: interactive
+
+server:
+  enabled: true
+  # this phone only
+  address: "127.0.0.1"
+  port: 3678
+  allow_origin: "*"
+
+report_url: ""
+
+# hands-free "Okay Wisp" comes in a later version
+voice:
+  enabled: false
+
+# the Car Thing's link to the Wisp app; on the phone, Wisp is the app
+nav:
+  enabled: false
+
+# Wisp Phone updates as an app, not over the air
+update:
+  enabled: false

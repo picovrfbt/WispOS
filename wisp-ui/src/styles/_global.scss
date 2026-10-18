@@ -91,6 +91,19 @@ body,
   overflow: hidden;
 }
 
+// Wisp Phone: the page is the phone's screen; #root is sized by uiScale.ts
+html.phone,
+html.phone body {
+  width: 100vw;
+  height: 100vh;
+}
+
+// screens that cover everything (Home, menus, Wisp's bar) cover Wisp's part of
+// the phone, never the button strip
+html.phone #root {
+  contain: layout;
+}
+
 html {
   background: $bg;
   color: $text-primary;

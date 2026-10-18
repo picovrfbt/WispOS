@@ -29,6 +29,7 @@ import { useHardwareButtons } from '@/hooks/useHardwareButtons'
 import { useIdleScreensaver } from '@/hooks/useIdleScreensaver'
 import { useLastArtUrl } from '@/hooks/useLastArtUrl'
 import { useLastTrack } from '@/hooks/useLastTrack'
+import { PHONE, PHONE_BUTTON_EVENT, type PhoneButton } from '@/phone'
 import { isDJContext, useDJNarration } from '@/hooks/useDJNarration'
 import { useNotify } from '@/notify/notifyContext'
 import { usePhoneNotifications } from '@/hooks/usePhoneNotifications'
@@ -533,6 +534,15 @@ function AppContent() {
     },
     [statusActive, status, signedIn, openOverlay, notify, onHardwarePlayPause, controls],
   )
+
+  // Wisp Phone's Home and Wisp buttons, as the Car Thing's top buttons do them
+  useEffect(() => {
+    if (!PHONE) return
+    const onPress = (e: Event) =>
+      onButtonAction((e as CustomEvent<PhoneButton>).detail as ButtonAction)
+    window.addEventListener(PHONE_BUTTON_EVENT, onPress)
+    return () => window.removeEventListener(PHONE_BUTTON_EVENT, onPress)
+  }, [onButtonAction])
 
   useHardwareButtons({
     status: status && status.active ? status : null,

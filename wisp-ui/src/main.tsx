@@ -19,6 +19,8 @@ import { getSettings } from '@/settings'
 import { ThermalBadge } from '@/components/ThermalBadge'
 import { PhoneBatteryWarnings } from '@/components/PhoneBattery'
 import { ACCENTS, applyAccent } from '@/theme'
+import { PHONE } from '@/phone'
+import { PhoneRail } from '@/components/PhoneRail'
 
 // before anything talks to the daemon
 installDaemonFetchTimeout()
@@ -43,6 +45,9 @@ window.addEventListener('unhandledrejection', (e) => {
   console.error('unhandled rejection:', e.reason)
   reportUiError('unhandled rejection: ' + String(e.reason))
 })
+
+// Wisp Phone: the page is the whole phone screen, with the button strip beside Wisp
+if (PHONE) document.documentElement.classList.add('phone')
 
 // before render, so the ui never paints at the wrong size
 startUiScaleSync()
@@ -72,3 +77,10 @@ createRoot(document.getElementById('root')!).render(
     </ErrorBoundary>
   </StrictMode>,
 )
+
+// outside #root, so the screens' zoom doesn't size the strip
+if (PHONE) {
+  const rail = document.createElement('div')
+  document.body.appendChild(rail)
+  createRoot(rail).render(<PhoneRail />)
+}

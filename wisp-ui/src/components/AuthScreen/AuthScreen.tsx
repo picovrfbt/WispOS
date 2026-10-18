@@ -2,6 +2,7 @@ import { memo } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { SetupScene } from '@/components/Setup'
 import setup from '@/components/Setup/Setup.module.scss'
+import { PHONE } from '@/phone'
 import styles from './AuthScreen.module.scss'
 
 interface Props {
@@ -25,8 +26,20 @@ function AuthScreenImpl({ url, hint }: Props) {
             <div className={styles.qrPlaceholder} role="status" aria-label="Fetching pairing code">
               <span className={styles.qrSpinner} aria-hidden />
             </div>
+          ) : PHONE ? (
+            // Wisp Phone: the sign-in is on this phone, in its browser
+            <a className={styles.signIn} href={url}>
+              Sign in with Spotify
+            </a>
           ) : (
-            <QRCodeSVG value={url} size={232} bgColor="#ffffff" fgColor="#0b0b0c" level="M" marginSize={1} />
+            <QRCodeSVG
+              value={url}
+              size={232}
+              bgColor="#ffffff"
+              fgColor="#0b0b0c"
+              level="M"
+              marginSize={1}
+            />
           )}
         </div>
         <div className={styles.text}>
@@ -34,14 +47,18 @@ function AuthScreenImpl({ url, hint }: Props) {
           <ol className={setup.steps}>
             <li>
               <span className={setup.stepNum}>1</span>
-              <span>Scan the code with your phone's camera</span>
+              <span>
+                {PHONE ? 'Tap Sign in with Spotify' : "Scan the code with your phone's camera"}
+              </span>
             </li>
             <li>
               <span className={setup.stepNum}>2</span>
-              <span>Sign in to your Spotify account</span>
+              <span>
+                {PHONE ? 'Sign in, then come back to Wisp' : 'Sign in to your Spotify account'}
+              </span>
             </li>
           </ol>
-          {loading ? null : (
+          {loading || PHONE ? null : (
             <div className={styles.fallback}>
               <span className={styles.fallbackLabel}>Or open this on any browser</span>
               <span className={styles.fallbackUrl}>{displayUrl(url)}</span>
