@@ -67,6 +67,16 @@
             android:name=".InstallResultReceiver"
             android:exported="false" />
 
+        <!-- the Wisp link again after the app updates itself, and after a restart -->
+        <receiver
+            android:name=".StartupReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
         <activity
             android:name=".MainActivity"
             android:exported="true" />

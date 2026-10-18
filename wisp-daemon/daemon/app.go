@@ -496,20 +496,20 @@ func (app *App) PutSettings(body []byte) error {
 
 // reads the "voiceMic" preference from the UI settings
 // updateInBackgroundFromSettings reads "Update in the background"; off means an
-// install takes the Car Thing over with the updating screen
+// install takes the Car Thing over with the updating screen. On unless turned off.
 func updateInBackgroundFromSettings(body []byte) bool {
 	var s struct {
 		Background *bool `json:"updateInBackground"`
 	}
-	return json.Unmarshal(body, &s) == nil && s.Background != nil && *s.Background
+	return json.Unmarshal(body, &s) != nil || s.Background == nil || *s.Background
 }
 
-// autoInstallFromSettings reads the "install updates automatically" setting; off unless set
+// autoInstallFromSettings reads the "install updates automatically" setting; on unless turned off
 func autoInstallFromSettings(body []byte) bool {
 	var s struct {
 		AutoInstall *bool `json:"autoInstallUpdates"`
 	}
-	return json.Unmarshal(body, &s) == nil && s.AutoInstall != nil && *s.AutoInstall
+	return json.Unmarshal(body, &s) != nil || s.AutoInstall == nil || *s.AutoInstall
 }
 
 // quietForUpdate: automatic installs are on and an update's restart would

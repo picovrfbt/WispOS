@@ -148,8 +148,54 @@ class MainActivity : WispActivity() {
 
         LinkService.start(this)
         MusicServices.checkAll(this) { showServices() }
-        // once per launch, quietly
-        AppUpdater.check(this) { refresh() }
+        // once per launch: a new app shows as a pop-up (or, from the notification, starts updating)
+        updateFromNotice = intent?.getBooleanExtra(UpdateNotice.EXTRA_UPDATE, false) == true
+        AppUpdater.check(this) {
+            refresh()
+            afterUpdateCheck()
+        }
+    }
+
+    // opened from the "new app" notification: update without asking again
+    private var updateFromNotice = false
+    // the pop-up shows once per version per launch
+    private var offeredVersion: String? = null
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (intent.getBooleanExtra(UpdateNotice.EXTRA_UPDATE, false)) {
+            updateFromNotice = true
+            if (AppUpdater.state is AppUpdater.State.Available) afterUpdateCheck()
+            else AppUpdater.check(this) {
+                refresh()
+                afterUpdateCheck()
+            }
+        }
+    }
+
+    private fun afterUpdateCheck() {
+        val s = AppUpdater.state as? AppUpdater.State.Available ?: return
+        if (isFinishing || isDestroyed) return
+        if (updateFromNotice) {
+            updateFromNotice = false
+            startAppUpdate(s.offer)
+            return
+        }
+        if (offeredVersion == s.offer.version) return
+        offeredVersion = s.offer.version
+        UpdateNotice.seen(this, s.offer.version)
+        android.app.AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+            .setTitle("Update available")
+            .setMessage("Wisp app ${s.offer.version} is out (you have ${AppUpdater.installedVersion(this)}). Update now? Android asks you to confirm the install.")
+            .setPositiveButton("Update") { _, _ -> startAppUpdate(s.offer) }
+            .setNegativeButton("Later", null)
+            .show()
+    }
+
+    private fun startAppUpdate(offer: AppUpdater.Offer) {
+        UpdateNotice.clear(this)
+        AppUpdater.install(this, offer) { refresh() }
+        refresh()
     }
 
     override fun onResume() {
@@ -394,6 +440,7 @@ class MainActivity : WispActivity() {
             if (on) LinkService.start(this) else LinkService.stop(this)
         })
         g.addView(switchRow("Wake Spotify when Wisp connects", null, Prefs.wakeOnConnect(this)) { Prefs.setWakeOnConnect(this, it) })
+        g.addView(switchRow("Update the app automatically", "New versions install by themselves", Prefs.autoUpdateApp(this)) { Prefs.setAutoUpdateApp(this, it) })
         g.addView(switchRow("Allow Wi-Fi connections", "For the PC simulator", Prefs.allowLan(this)) { Prefs.setAllowLan(this, it) })
         iconPreview = ImageView(this).apply { setImageResource(AppIcons.current(this@MainActivity).preview) }
         val trailing = LinearLayout(this).apply {

@@ -293,12 +293,12 @@ func TestUpdaterAutoInstallWaitsForQuietAndSkipsBadReleases(t *testing.T) {
 	}
 }
 
-func TestAutoInstallSettingDefaultsOff(t *testing.T) {
-	if autoInstallFromSettings(nil) || autoInstallFromSettings([]byte(`{"v":1}`)) {
-		t.Fatal("automatic installs are off unless turned on")
+func TestAutoInstallSettingDefaultsOn(t *testing.T) {
+	if !autoInstallFromSettings(nil) || !autoInstallFromSettings([]byte(`{"v":1}`)) {
+		t.Fatal("automatic installs are on unless turned off")
 	}
-	if !autoInstallFromSettings([]byte(`{"autoInstallUpdates":true}`)) {
-		t.Fatal("the setting should turn them on")
+	if autoInstallFromSettings([]byte(`{"autoInstallUpdates":false}`)) {
+		t.Fatal("the setting should turn them off")
 	}
 }
 
@@ -328,8 +328,8 @@ func TestUpdaterReportsFocusAndProgress(t *testing.T) {
 			t.Fatal("nothing is running now, so nothing holds the Car Thing")
 		}
 	}
-	if updateInBackgroundFromSettings(nil) || !updateInBackgroundFromSettings([]byte(`{"updateInBackground":true}`)) {
-		t.Fatal("updates take the Car Thing over unless the setting says otherwise")
+	if !updateInBackgroundFromSettings(nil) || updateInBackgroundFromSettings([]byte(`{"updateInBackground":false}`)) {
+		t.Fatal("updates install in the background unless the setting says otherwise")
 	}
 }
 

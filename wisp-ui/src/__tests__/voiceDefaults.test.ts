@@ -34,4 +34,26 @@ describe("Wisp's voice defaults", () => {
     __resetSettings()
     expect(getSettings().wispVoice).toBe('off')
   })
+
+  it('updates install by themselves, in the background, and old settings move once', () => {
+    localStorage.clear()
+    __resetSettings()
+    expect(getSettings()).toMatchObject({ autoInstallUpdates: true, updateInBackground: true })
+    localStorage.setItem(
+      KEY,
+      JSON.stringify({ autoInstallUpdates: false, updateInBackground: false }),
+    )
+    __resetSettings()
+    expect(getSettings()).toMatchObject({ autoInstallUpdates: true, updateInBackground: true })
+    localStorage.setItem(
+      KEY,
+      JSON.stringify({
+        autoInstallUpdates: false,
+        updateInBackground: false,
+        updateDefaultsOn: true,
+      }),
+    )
+    __resetSettings()
+    expect(getSettings()).toMatchObject({ autoInstallUpdates: false, updateInBackground: false })
+  })
 })

@@ -99,6 +99,14 @@ object Prefs {
         ctx.getSharedPreferences(FILE, Context.MODE_PRIVATE).edit().putBoolean("samsung_sleep_done", done).apply()
     }
 
+    /** new Wisp apps download and install by themselves, on unless turned off */
+    fun autoUpdateApp(ctx: Context): Boolean =
+        ctx.getSharedPreferences(FILE, Context.MODE_PRIVATE).getBoolean("auto_update_app", true)
+
+    fun setAutoUpdateApp(ctx: Context, on: Boolean) {
+        ctx.getSharedPreferences(FILE, Context.MODE_PRIVATE).edit().putBoolean("auto_update_app", on).apply()
+    }
+
     /** stay running in the background (an ongoing notification), on unless turned off */
     fun keepRunning(ctx: Context): Boolean =
         ctx.getSharedPreferences(FILE, Context.MODE_PRIVATE).getBoolean("keep_running", true)
