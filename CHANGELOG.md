@@ -3,7 +3,9 @@
 What changed in each Wisp release, newest first. Each version is on the
 [releases page](https://github.com/picovrfbt/WispOS/releases) with its downloads.
 
-## Unreleased
+## v1.0.5 (2026-10-18)
+
+Pick up where you left off, see every update coming, and talk to Wisp over the music.
 
 - **Pick up where you left off.** The "Nothing playing" screen now shows the last song you played, big, with a Resume button, buttons to choose which phone or speaker plays it, and a reminder that the back button goes Home.
 - **Updates ask first again.** A new Wisp shows its "Update available" card as soon as it's found (the Car Thing looks every hour), even while music plays, so you see what's new. Tick "Download and install updates automatically" on the card and later updates install by themselves, without the card. Automatic installs are off for everyone once, including those 1.0.4 turned on.
@@ -11,6 +13,7 @@ What changed in each Wisp release, newest first. Each version is on the
 - **Quieter music while Wisp listens.** After "Okay Wisp" the music dips (or pauses) until Wisp has your request, so the mics hear you. Settings → Wisp's voice → Music while listening: Lower it, Pause it or Leave it. Needs the Wisp app on your phone.
 - **Tap off Wisp to close it.** A tap anywhere above Wisp's bar closes it at once, stops it listening and drops what it was working on.
 - **"Play my liked songs"** and its cousins ("play my likes", "shuffle my favourites", "play my Discover Weekly", "Release Radar", "Daily Mix 2", "On Repeat") work on the Car Thing's own rules, without the phone's model. "Shuffle" or "on shuffle" turns shuffle on.
+- **Wisp app 1.0.4.**
 
 ## v1.0.4 (2026-10-18)
 
