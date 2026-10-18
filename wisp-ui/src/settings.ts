@@ -37,6 +37,8 @@ export interface Settings {
   wispVoice: WispVoiceMode
   /** how fast Wisp talks, 0.5x to 2x; the pitch stays the same */
   voiceSpeed: number
+  /** the voice's defaults went from off at 1x to on at 1.1x (1.0.3): set once untouched settings moved */
+  voiceDefaultsOn: boolean
   /** how loud Wisp talks, 10 to 100%, apart from the music's volume */
   voiceVolumePct: number
   /** which library Home opens on: 'spotify' or a music service's id */
@@ -97,8 +99,9 @@ const DEFAULTS: Settings = {
   navVoice: 'all',
   accentTheme: 'green',
   updateInBackground: false,
-  wispVoice: 'off',
-  voiceSpeed: 1,
+  wispVoice: 'confirmations',
+  voiceSpeed: 1.1,
+  voiceDefaultsOn: true,
   voiceVolumePct: 80,
   homeSource: 'spotify',
   phoneLyrics: false,
@@ -126,7 +129,32 @@ function coerceUiScale(raw: unknown): number {
   return clamp(Math.round(n / UI_SCALE_STEP) * UI_SCALE_STEP, UI_SCALE_MIN, UI_SCALE_MAX)
 }
 
-function coerce(partial: Partial<Settings> | null | undefined): Settings {
+// Wisp's voice used to start off at 1x; settings still on exactly that, never
+// changed, move to the new defaults once (and only once: turning it off later sticks)
+function voiceDefaults(
+  partial: Partial<Settings> | null | undefined,
+): Partial<Settings> | null | undefined {
+  if (!partial || partial.voiceDefaultsOn === true) return partial
+  const untouched =
+    (partial.wispVoice === undefined || partial.wispVoice === 'off') &&
+    (partial.voiceSpeed === undefined || partial.voiceSpeed === 1)
+  return untouched
+    ? {
+        ...partial,
+        wispVoice: DEFAULTS.wispVoice,
+        voiceSpeed: DEFAULTS.voiceSpeed,
+        voiceDefaultsOn: true,
+      }
+    : { ...partial, voiceDefaultsOn: true }
+}
+
+/** whether these stored settings still need the voice's new defaults written back */
+function needsVoiceDefaults(partial: Partial<Settings> | null | undefined): boolean {
+  return !!partial && partial.voiceDefaultsOn !== true
+}
+
+function coerce(raw: Partial<Settings> | null | undefined): Settings {
+  const partial = voiceDefaults(raw)
   return {
     showLyrics: partial?.showLyrics ?? DEFAULTS.showLyrics,
     karaokeLyrics: partial?.karaokeLyrics ?? DEFAULTS.karaokeLyrics,
@@ -162,6 +190,7 @@ function coerce(partial: Partial<Settings> | null | undefined): Settings {
       typeof partial?.voiceSpeed === 'number' && Number.isFinite(partial.voiceSpeed)
         ? clamp(Math.round(partial.voiceSpeed * 10) / 10, VOICE_SPEED_MIN, VOICE_SPEED_MAX)
         : DEFAULTS.voiceSpeed,
+    voiceDefaultsOn: partial ? partial.voiceDefaultsOn === true : DEFAULTS.voiceDefaultsOn,
     voiceVolumePct:
       typeof partial?.voiceVolumePct === 'number' && Number.isFinite(partial.voiceVolumePct)
         ? clamp(Math.round(partial.voiceVolumePct / 10) * 10, 10, 100)
@@ -267,6 +296,8 @@ export async function initSettings(): Promise<void> {
       current = coerce(data)
       writeLocal()
       emit()
+      // the voice's new defaults reach the daemon too, so the phone gets the voice
+      if (needsVoiceDefaults(data)) void putSettings(current)
     } else {
       // daemon never seeded
       void putSettings(current, true)

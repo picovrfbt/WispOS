@@ -20,7 +20,7 @@ import (
 // couldn't. Nothing runs on the Car Thing for this but the message.
 
 // how long a thought may take before Wisp gives up on it
-const thinkTimeout = 8 * time.Second
+const thinkTimeout = 20 * time.Second
 
 // ThinkStatus is how ready the phone's model is
 type ThinkStatus struct {

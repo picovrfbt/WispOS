@@ -11,8 +11,8 @@ android {
         applicationId = "dev.carthingfw.nav"
         minSdk = 29
         targetSdk = 35
-        versionCode = 36
-        versionName = "1.0.1"
+        versionCode = 37
+        versionName = "1.0.2"
 
         // YouTube Music's sign-in at google.com/device (YtSignIn): a Google OAuth
         // client of the "TVs and Limited Input devices" kind, from Gradle

@@ -40,6 +40,7 @@ afterEach(() => {
 
 describe('WispCaption', () => {
   it('shows what Wisp did along the bottom, and stays quiet with the voice off', async () => {
+    updateSettings({ wispVoice: 'off' })
     const said = captureSay()
     render(<WispCaption />)
     voice('playing', 'Midnight City - M83')
