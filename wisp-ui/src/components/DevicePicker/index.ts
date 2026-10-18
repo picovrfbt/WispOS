@@ -1,1 +1,1 @@
-export { DevicePicker } from './DevicePicker'
+export { DevicePicker, DeviceTypeIcon } from './DevicePicker'

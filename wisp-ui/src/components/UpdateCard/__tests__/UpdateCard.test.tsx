@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { UpdateCard } from '../UpdateCard'
+import { __resetSettings, getSettings } from '@/settings'
 
 describe('UpdateCard', () => {
   it('shows the new version', () => {
@@ -78,5 +79,26 @@ describe('UpdateCard', () => {
     expect(screen.getByText(/restarts/)).toBeInTheDocument()
     fireEvent.keyDown(window, { key: 'Enter' })
     expect(onInstall).toHaveBeenCalledTimes(1)
+  })
+
+  it('has a tick for installing by themselves, which the dial reaches last', () => {
+    localStorage.clear()
+    __resetSettings()
+    render(
+      <UpdateCard latest="1.1.0" onInstall={vi.fn()} onRemindLater={vi.fn()} onSkip={vi.fn()} />,
+    )
+    const box = screen.getByRole('checkbox', { name: /install updates automatically/i })
+    expect(box).toHaveAttribute('aria-checked', 'false')
+    fireEvent.click(box)
+    expect(getSettings().autoInstallUpdates).toBe(true)
+    expect(box).toHaveAttribute('aria-checked', 'true')
+    for (let i = 0; i < 3; i++) fireEvent.wheel(window, { deltaY: 1 })
+    fireEvent.keyDown(window, { key: 'Enter' })
+    expect(getSettings().autoInstallUpdates).toBe(false)
+  })
+
+  it('has no tick when it can only be flashed', () => {
+    render(<UpdateCard latest="1.1.0" onRemindLater={vi.fn()} />)
+    expect(screen.queryByRole('checkbox')).toBeNull()
   })
 })

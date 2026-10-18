@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { ObserverStatus } from '@/api/types'
+import { useSettings } from '@/settings'
 
 const SKIPPED_VERSION_KEY = 'wisp.skippedVersion'
-/** never the instant the screen settles; let the idle screen land first */
+/** never the instant the screen settles; let it land first */
 const MIN_DELAY_MS = 1500
 
 export interface UpdateOffer {
@@ -20,20 +21,23 @@ export interface UpdateEligibility extends UpdateOffer {
   busy: boolean
   loading: boolean
   status: ObserverStatus | null
+  /** updates install by themselves: the card's checkbox was ticked */
+  autoInstall: boolean
 }
 
 /**
  * A mandatory update ignores a skip; an optional one stays skipped until a
- * newer version ships. Either way the card waits for a settled idle screen,
- * so it never lands over playback or a question.
+ * newer version ships. The card comes as soon as a release is found, over the
+ * music too, but never over a question or another screen; once updates
+ * install by themselves it doesn't come at all.
  */
 export function updateCardEligible(input: UpdateEligibility): boolean {
   const { available, mandatory, version, skippedVersion } = input
-  if (!available) return false
+  if (!available || input.autoInstall) return false
   if (!mandatory && version === skippedVersion) return false
   if (input.open || input.busy || input.loading) return false
   const { status } = input
-  return status != null && status.active !== true && status.setting_up !== true
+  return status != null && status.setting_up !== true
 }
 
 export interface UseUpdateNoticeParams {
@@ -98,8 +102,10 @@ export function useUpdateNotice(params: UseUpdateNoticeParams): UpdateNotice {
     }
   })
 
+  const { autoInstallUpdates } = useSettings()
   const eligible = updateCardEligible({
     ...offer,
+    autoInstall: autoInstallUpdates,
     skippedVersion,
     open,
     busy,
@@ -112,13 +118,6 @@ export function useUpdateNotice(params: UseUpdateNoticeParams): UpdateNotice {
     const t = window.setTimeout(onShow, Math.max(MIN_DELAY_MS, remindAt - Date.now()))
     return () => window.clearTimeout(t)
   }, [eligible, remindAt, onShow])
-
-  // playback starting is the user telling us they want the device, not a
-  // changelog
-  const playing = status?.active === true
-  useEffect(() => {
-    if (open && playing) onDismiss()
-  }, [open, playing, onDismiss])
 
   const skip = useCallback(() => {
     setSkippedVersion(offer.version)

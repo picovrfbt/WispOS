@@ -1,39 +1,174 @@
+// nothing playing: the last song, big, with a way to pick it back up
+
 .idle {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: $bg;
+}
+
+.main {
+  position: absolute;
+  left: 48px;
+  right: 40px;
+  top: 64px;
+  z-index: $z-content;
+  display: flex;
+  align-items: center;
+  @include flex-gap-x(40px);
+}
+
+.art {
+  flex: none;
+  width: 280px;
+  height: 280px;
+  border-radius: $r-lg;
+  overflow: hidden;
+  background: $surface-elev;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.artEmpty {
   width: 100%;
   height: 100%;
   @include flex-center;
-  flex-direction: column;
-  text-align: center;
-  padding: $s-7;
-  @include flex-gap-y($s-3);
+  color: $text-disabled;
 }
 
-.icon {
-  color: $text-disabled;
-  margin-bottom: $s-3;
+.info {
+  min-width: 0;
+  @include column;
+}
+
+.label {
+  font-size: $fs-md;
+  font-weight: $fw-bold;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: $text-secondary;
 }
 
 .title {
-  font-size: $fs-4xl;
-  font-weight: $fw-semibold;
+  margin-top: $s-3;
+  font-size: 40px;
+  font-weight: $fw-bold;
   letter-spacing: -0.02em;
+  line-height: 1.1;
   color: $text-primary;
+  @include truncate(2);
 }
 
-.hint {
+.artist {
+  margin-top: $s-2;
+  font-size: $fs-2xl;
+  color: $text-secondary;
+  @include truncate(1);
+}
+
+.resume {
+  margin-top: $s-7;
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  @include flex-gap-x($s-4);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: $text-primary;
+  font: inherit;
   font-size: $fs-xl;
-  color: $text-tertiary;
-  max-width: 480px;
-  white-space: pre-line;
-  text-align: center;
+  font-weight: $fw-semibold;
+  cursor: pointer;
+
+  &:active .resumeIcon {
+    transform: scale(0.94);
+  }
+}
+
+.resumeIcon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: $accent;
+  color: #000;
+  @include flex-center;
+  transition: transform $dur-fast $ease-standard;
+
+  svg {
+    margin-left: 4px;
+  }
+}
+
+.footer {
+  position: absolute;
+  left: 48px;
+  right: 32px;
+  bottom: 32px;
+  z-index: $z-content;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  @include flex-gap-x($s-4);
+}
+
+.devices {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  @include flex-gap-x($s-2);
+}
+
+.devicesLabel {
+  flex: none;
+  margin-right: $s-1;
+  font-size: $fs-lg;
+  color: $text-secondary;
+}
+
+.chip {
+  min-width: 0;
+  max-width: 200px;
+  height: $touch-min;
+  display: inline-flex;
+  align-items: center;
+  @include flex-gap-x($s-2);
+  padding: 0 $s-4;
+  border: 0;
+  border-radius: $r-pill;
+  background: rgba(255, 255, 255, 0.12);
+  color: $text-primary;
+  font: inherit;
+  font-size: $fs-lg;
+  font-weight: $fw-semibold;
+  cursor: pointer;
+
+  svg {
+    flex: none;
+  }
+}
+
+.chipOn {
+  background: $accent;
+  color: #000;
+}
+
+.chipName {
+  @include truncate(1);
 }
 
 .status {
   display: flex;
   align-items: center;
-  margin-top: $s-5;
   font-size: $fs-md;
-  color: $text-disabled;
+  color: $text-tertiary;
   @include flex-gap-x($s-2);
 }
 
@@ -41,12 +176,22 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
+  background: $text-tertiary;
 }
 
-.dotOk {
-  background: $accent;
+.backHint {
+  flex: none;
+  display: flex;
+  align-items: center;
+  @include flex-gap-x($s-2);
+  font-size: $fs-md;
+  color: $text-tertiary;
 }
 
-.dotOff {
-  background: $text-disabled;
+.key {
+  width: 24px;
+  height: 24px;
+  border-radius: $r-sm;
+  border: 1.5px solid $text-quaternary;
+  @include flex-center;
 }

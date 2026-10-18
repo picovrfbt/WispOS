@@ -1074,6 +1074,20 @@ func (s *ConcreteApiServer) serve() {
 			w.WriteHeader(http.StatusServiceUnavailable)
 		}
 	})
+	// POST /voice/cancel: a tap off Wisp stops it listening and drops the
+	// command it was working on
+	m.HandleFunc("POST /voice/cancel", func(w http.ResponseWriter, r *http.Request) {
+		s.voiceMu.RLock()
+		fn := s.voiceFn
+		s.voiceMu.RUnlock()
+		c, ok := fn.(interface{ Cancel() })
+		if fn == nil || !ok {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+		c.Cancel()
+		w.WriteHeader(http.StatusNoContent)
+	})
 	m.HandleFunc("/voice/trigger", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
 			w.WriteHeader(http.StatusMethodNotAllowed)

@@ -123,6 +123,8 @@ class NavServer private constructor(private val app: Context) :
                 )
             }
         }
+        // Wisp is listening: the music lower or paused until it has the request
+        if (type == "hush") WispHush.set(app, org.json.JSONObject(message).optString("mode"))
         if (type == "voice_wanted") {
             WispVoice.setWanted(app, org.json.JSONObject(message).optBoolean("enabled", false))
         }

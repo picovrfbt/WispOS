@@ -110,6 +110,40 @@
   border-color: $text-primary;
 }
 
+// a small tick under the buttons: later updates install by themselves
+.auto {
+  align-self: center;
+  display: flex;
+  align-items: center;
+  @include flex-gap-x($s-2);
+  padding: $s-1 $s-2;
+  border: 2px solid transparent;
+  border-radius: $r-md;
+  background: none;
+  color: $text-tertiary;
+  font: inherit;
+  font-size: $fs-md;
+  cursor: pointer;
+}
+
+.autoFocus {
+  border-color: $text-primary;
+}
+
+.box {
+  width: 20px;
+  height: 20px;
+  border-radius: $r-sm;
+  border: 2px solid $text-quaternary;
+  @include flex-center;
+  color: #000;
+}
+
+.boxOn {
+  background: $accent;
+  border-color: $accent;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .overlay {
     animation: none;

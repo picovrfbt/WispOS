@@ -22,3 +22,26 @@
   font-weight: $fw-semibold;
   font-variant-numeric: tabular-nums;
 }
+
+// an update downloading in the background
+.cloud {
+  margin-right: 4px;
+  color: $text-primary;
+  animation: cloudPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes cloudPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cloud {
+    animation: none;
+  }
+}

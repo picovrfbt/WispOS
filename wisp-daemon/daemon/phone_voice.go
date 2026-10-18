@@ -50,6 +50,21 @@ func (n *navRelay) Say(ctx context.Context, text string, speed, volume float64) 
 	return c.Write(ctx, websocket.MessageText, msg)
 }
 
+// Hush asks the phone to lower ("lower") or pause ("pause") the music while
+// Wisp listens, or to bring it back ("off")
+func (n *navRelay) Hush(ctx context.Context, mode string) error {
+	n.mu.Lock()
+	c := n.conn
+	n.mu.Unlock()
+	if c == nil {
+		return ErrNoNavPhone
+	}
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+	msg, _ := json.Marshal(map[string]any{"type": "hush", "mode": mode})
+	return c.Write(ctx, websocket.MessageText, msg)
+}
+
 // SetVoiceWanted keeps the phone's voice ready (downloaded, loaded) or lets it go
 func (n *navRelay) SetVoiceWanted(on bool) {
 	n.mu.Lock()
