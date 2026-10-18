@@ -65,6 +65,11 @@ class WispService : Service() {
                     .redirectOutput(ProcessBuilder.Redirect.appendTo(log))
                 // Android has no resolv.conf for the daemon to find its DNS in
                 pb.environment()["WISP_DNS"] = dnsServers()
+                // nor a home folder, which it looks for before reading its settings
+                pb.environment()["HOME"] = dir.path
+                pb.environment()["XDG_CONFIG_HOME"] = dir.path
+                // and Go's default temporary folder isn't one an app may write to
+                pb.environment()["TMPDIR"] = cacheDir.path
                 val p = pb.start()
                 process = p
                 val code = p.waitFor()
