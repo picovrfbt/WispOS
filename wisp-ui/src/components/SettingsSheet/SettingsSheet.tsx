@@ -28,6 +28,7 @@ import { clearSavedData, fetchSavedData, type SavedData } from '@/api/savedData'
 import { useNotify } from '@/notify/notifyContext'
 import { formatTemp, HOT_C, useThermal, zoneName } from '@/api/thermal'
 import { glideIntoView, pageOffset } from '@/utils/glide'
+import { PHONE } from '@/phone'
 import styles from './SettingsSheet.module.scss'
 
 interface Props {
@@ -249,11 +250,12 @@ export function SettingsPanel({ active, phoneVolume = false, onOpenBluetooth }: 
         />
       </SettingRow>
 
-      <BrightnessRow autoBrightness={autoBrightness} brightness={brightness} />
+      {/* Wisp Phone: the phone sees to its own brightness and its own heat */}
+      {PHONE ? null : <BrightnessRow autoBrightness={autoBrightness} brightness={brightness} />}
       <NightModeRow />
       <AccentRow />
-      <PerformanceRow />
-      <TemperaturesRow />
+      {PHONE ? null : <PerformanceRow />}
+      {PHONE ? null : <TemperaturesRow />}
       <TempUnitRow />
 
       <div className={styles.sectionHead}>
@@ -298,58 +300,68 @@ export function SettingsPanel({ active, phoneVolume = false, onOpenBluetooth }: 
       <NavVoiceRow />
       <ArrivalRow />
 
-      {/* the four buttons along the top of the Car Thing */}
-      <div className={styles.sectionHead}>
-        <div className={styles.section}>Top buttons</div>
-        <div className={styles.buttonsHint}>
-          Tap to change. Hold a button to save what's playing.
-        </div>
-      </div>
-      {PRESET_SLOTS.map((slot) => (
-        <button
-          key={slot}
-          type="button"
-          className={styles.buttonRow}
-          onClick={() => cyclePreset(slot)}
-        >
-          <span className={styles.chip} aria-hidden>
-            {slot}
-          </span>
-          <span className={styles.label}>Button {slot}</span>
-          <span className={styles.value}>{describePreset(getPreset(slot))}</span>
-        </button>
-      ))}
+      {/* Wisp Phone: no buttons along the top, and it updates as an app */}
+      {PHONE ? null : (
+        <>
+          {/* the four buttons along the top of the Car Thing */}
+          <div className={styles.sectionHead}>
+            <div className={styles.section}>Top buttons</div>
+            <div className={styles.buttonsHint}>
+              Tap to change. Hold a button to save what's playing.
+            </div>
+          </div>
+          {PRESET_SLOTS.map((slot) => (
+            <button
+              key={slot}
+              type="button"
+              className={styles.buttonRow}
+              onClick={() => cyclePreset(slot)}
+            >
+              <span className={styles.chip} aria-hidden>
+                {slot}
+              </span>
+              <span className={styles.label}>Button {slot}</span>
+              <span className={styles.value}>{describePreset(getPreset(slot))}</span>
+            </button>
+          ))}
 
-      <SoftwareUpdate />
+          <SoftwareUpdate />
+        </>
+      )}
 
       <StorageSection />
 
       <WispVoiceSection />
 
-      <div className={styles.sectionHead}>
-        <div className={styles.section}>Phone</div>
-      </div>
-      <SwitchRow
-        icon={<BellIcon />}
-        label="Notifications"
-        on={phoneNotifications}
-        onToggle={() => updateSettings({ phoneNotifications: !phoneNotifications })}
-      />
-      <SwitchRow
-        icon={<BatteryIcon />}
-        label="Phone battery"
-        on={phoneBattery}
-        onToggle={() => updateSettings({ phoneBattery: !phoneBattery })}
-      />
-      {onOpenBluetooth ? (
-        <button type="button" className={styles.buttonRow} onClick={onOpenBluetooth}>
-          <span className={styles.chip} aria-hidden>
-            <BluetoothIcon />
-          </span>
-          <span className={styles.label}>Bluetooth</span>
-          <span className={styles.value}>Pair a phone</span>
-        </button>
-      ) : null}
+      {/* Wisp Phone: this phone is the Wisp, with no other phone to pair */}
+      {PHONE ? null : (
+        <>
+          <div className={styles.sectionHead}>
+            <div className={styles.section}>Phone</div>
+          </div>
+          <SwitchRow
+            icon={<BellIcon />}
+            label="Notifications"
+            on={phoneNotifications}
+            onToggle={() => updateSettings({ phoneNotifications: !phoneNotifications })}
+          />
+          <SwitchRow
+            icon={<BatteryIcon />}
+            label="Phone battery"
+            on={phoneBattery}
+            onToggle={() => updateSettings({ phoneBattery: !phoneBattery })}
+          />
+          {onOpenBluetooth ? (
+            <button type="button" className={styles.buttonRow} onClick={onOpenBluetooth}>
+              <span className={styles.chip} aria-hidden>
+                <BluetoothIcon />
+              </span>
+              <span className={styles.label}>Bluetooth</span>
+              <span className={styles.value}>Pair a phone</span>
+            </button>
+          ) : null}
+        </>
+      )}
     </>
   )
 }
