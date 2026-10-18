@@ -1,0 +1,12 @@
+{
+  "name": "wisp-relay",
+  "private": true,
+  "description": "Wisp's relay for passengers pick the music, on Cloudflare Workers",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "4.40.0"
+  }
+}
