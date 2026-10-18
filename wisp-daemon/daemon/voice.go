@@ -78,7 +78,11 @@ const voiceVolumeStep int32 = MaxStateVolume / 10
 
 func newVoiceService(app *App) *voiceService {
 	ctx, cancel := context.WithCancel(context.Background())
-	v := &voiceService{app: app, cfg: app.cfg.Voice, ctx: ctx, cancel: cancel, wakeSignal: make(chan struct{}, 1), weather: newWeatherCache()}
+	cfg, fixed := healVoicePaths(app.cfg.Voice, voiceShipped.lib, voiceShipped.share)
+	for _, f := range fixed {
+		app.log.Infof("voice: config from an older Wisp, using what this system ships: %s", f)
+	}
+	v := &voiceService{app: app, cfg: cfg, ctx: ctx, cancel: cancel, wakeSignal: make(chan struct{}, 1), weather: newWeatherCache()}
 	v.wakeEnabled.Store(true)
 	return v
 }

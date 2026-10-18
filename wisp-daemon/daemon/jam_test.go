@@ -141,13 +141,24 @@ func TestJamSession(t *testing.T) {
 	if now := relay.waitFor(t, "now", ""); now["title"] != "Song" || now["needed"] != float64(1) {
 		t.Fatalf("now: %v", now)
 	}
+	// still here: a keep-alive gets nothing back
+	send(map[string]any{"t": "hello", "keep": true, "from": "passenger-1"})
 	send(map[string]any{"t": "search", "from": "passenger-1", "id": 1, "q": "midnight city"})
 	res := relay.waitFor(t, "results", "passenger-1")
 	if items := res["items"].([]any); len(items) != 2 || items[0].(map[string]any)["title"] != "Midnight City" {
 		t.Fatalf("results: %v", res)
 	}
 	send(map[string]any{"t": "queue", "from": "passenger-1", "id": 2, "uri": "spotify:track:aaa", "title": "Midnight City"})
-	relay.waitFor(t, "queued", "passenger-1")
+	// the "added" rides on the next "now", for everyone, addressed inside to whoever added it
+	for {
+		now := relay.waitFor(t, "now", "")
+		if ack, _ := now["ack"].(map[string]any); ack != nil {
+			if ack["to"] != "passenger-1" || ack["pos"] != float64(1) {
+				t.Fatalf("ack: %v", ack)
+			}
+			break
+		}
+	}
 	// again straight away: too soon
 	send(map[string]any{"t": "queue", "from": "passenger-1", "id": 3, "uri": "spotify:track:bbb", "title": "Wait"})
 	relay.waitFor(t, "wait", "passenger-1")
@@ -226,6 +237,9 @@ func TestJamLive(t *testing.T) {
 	ph := &linePhone{}
 	j := newJamService(&App{server: sp, log: &librespot.NullLogger{}}, nil)
 	j.nav = func() NavHandler { return ph }
+	if r := os.Getenv("WISP_JAM_RELAY"); r != "" {
+		j.server = func() string { return r } // a relay to try, e.g. Wisp's own
+	}
 	st := j.Start()
 	defer j.Stop()
 	j.add(jamItem{Svc: "ytmusic", ID: "v9", Title: "Tube Song", Artist: "Someone", By: "Alex"})

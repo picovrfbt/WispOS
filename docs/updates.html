@@ -17,7 +17,7 @@
 <header class="top">
   <div class="wrap">
     <a class="brand" href="./" aria-label="Wisp, home"><img src="logo.svg" alt="">Wisp</a>
-    <a class="ver" href="new/1.0.1.html" title="What's new in 1.0.1">1.0.1</a>
+    <a class="ver" href="new/1.0.2.html" title="What's new in 1.0.2">1.0.2</a>
     <nav class="links" id="nav-links" aria-label="Main">
       <a href="./#features">Features</a>
       <a href="./#directions">Directions</a>
@@ -41,10 +41,29 @@
   <p class="lead-doc">Wisp updates itself over the air: Settings &rarr; Software update. Here's everything each release brought, newest first.</p>
 
   <article class="upd-latest">
-    <div class="upd-head"><span class="tag">Latest</span><span class="upd-date">October 17, 2026</span></div>
-    <h2>Wisp 1.0.1</h2>
+    <div class="upd-head"><span class="tag">Latest</span><span class="upd-date">October 18, 2026</span></div>
+    <h2>Wisp 1.0.2</h2>
     <div class="upd-body">
-<p>Passengers pick the music, from any of your music services, and clearer messages everywhere.</p>
+<p>Voice commands work again, passengers' playlists save, and the passengers' page is quicker and fits phones.</p>
+<ul>
+<li><b>Voice commands work again</b> on Car Things flashed with Wisp OS over an older Wisp: the old settings pointed at a speech model Wisp OS doesn't ship, so speech never started. Wisp now uses the one that's there (and the smarter-voice matcher, which old settings left off).
+</li>
+<li><b>Saving the passengers' songs works.</b> Spotify kept refusing the playlist ("too many requests") through the shared web route; Wisp now makes it the way Spotify's own apps do, and says it couldn't within 45 seconds instead of waiting.
+</li>
+<li><b>The passengers' QR code shows right away</b> instead of sometimes sitting on "Starting…".
+</li>
+<li><b>The passengers' page fits phones</b>: long YouTube Music lines no longer make it wider than the screen, and they show just the artist.
+</li>
+<li><b>Wisp's own relay</b> for passengers' messages, on Cloudflare's free tier (relay/), with ntfy.sh as the backup; the Car Thing also sends far fewer messages (no reply to the page's "still here", and one message per added song).
+</li></ul>
+    </div>
+    <div class="cta-row"><a class="btn primary" href="new/1.0.2.html">What's new in 1.0.2</a><a class="btn" href="https://github.com/picovrfbt/WispOS/releases/tag/v1.0.2">Downloads</a></div>
+  </article>
+
+  <h2 class="upd-earlier">Earlier updates</h2>
+  <details class="upd-old">
+    <summary><span class="upd-v">Wisp 1.0.1</span><span class="upd-date">October 17, 2026</span><span class="upd-sum">Passengers pick the music, from any of your music services, and clearer messages everywhere.</span></summary>
+    <div class="upd-body">
 <ul>
 <li><b>Passengers pick the music.</b> A QR code on the Car Thing (the player's menu, or "Okay Wisp, let the passengers pick") lets everyone in the car search, add songs to Up next and vote to skip from their own phones, without signing in to your Spotify. A note on the Car Thing says who added what.
 <ul>
@@ -58,10 +77,7 @@
 <li><b>Clearer messages.</b> "Nothing playing" says what to do; a failed update says why in plain words (no internet, a damaged download, no room) on the Car Thing and in the Wisp app; directions say when nothing is close by; and button errors say what didn't work.
 </li></ul>
     </div>
-    <div class="cta-row"><a class="btn primary" href="new/1.0.1.html">What's new in 1.0.1</a><a class="btn" href="https://github.com/picovrfbt/WispOS/releases/tag/v1.0.1">Downloads</a></div>
-  </article>
-
-  <h2 class="upd-earlier">Earlier updates</h2>
+  </details>
   <details class="upd-old">
     <summary><span class="upd-v">Wisp 1.0.0</span><span class="upd-date">October 17, 2026</span><span class="upd-sum">Wisp 1.0: open source, on its own modern system, with its own directions, a smarter voice, community add-ons and new Drive Mode music.</span></summary>
     <div class="upd-body">

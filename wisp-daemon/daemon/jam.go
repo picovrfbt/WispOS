@@ -96,6 +96,11 @@ type jamService struct {
 	steer bool
 	// every song added this session, kept after it ends until saved or forgotten (jam_save.go)
 	picks []jamItem
+
+	// the relay: the newest healthy one, and the one this session started on (jam_relay.go)
+	rmu      sync.Mutex
+	chosen   string
+	sessBase string
 }
 
 func newJamService(app *App, server func() string) *jamService {
@@ -109,11 +114,20 @@ func (j *jamService) phone() NavHandler {
 	return j.nav()
 }
 
+// base: the relay this session uses, picked as it starts (jam_relay.go)
 func (j *jamService) base() string {
 	if j.server != nil {
 		if s := strings.TrimRight(strings.TrimSpace(j.server()), "/"); strings.HasPrefix(s, "https://") {
 			return s
 		}
+	}
+	j.rmu.Lock()
+	defer j.rmu.Unlock()
+	switch {
+	case j.sessBase != "":
+		return j.sessBase
+	case j.chosen != "":
+		return j.chosen
 	}
 	return jamDefaultServer
 }
@@ -199,6 +213,13 @@ func (j *jamService) Start() JamState {
 	j.cancel = cancel
 	topic := j.topic
 	j.mu.Unlock()
+	j.rmu.Lock()
+	j.sessBase = ""
+	j.rmu.Unlock()
+	base := j.base()
+	j.rmu.Lock()
+	j.sessBase = base
+	j.rmu.Unlock()
 	go j.listen(ctx, topic)
 	go j.follow(ctx, topic)
 	go j.feed(ctx, topic)
@@ -323,6 +344,8 @@ type jamRequest struct {
 	URI  string `json:"uri"`
 	// the service: spotify, ytmusic or soundcloud ("" is Spotify for a pick, everywhere for a search)
 	Svc string `json:"svc"`
+	// a hello that only says the page is still open
+	Keep bool `json:"keep"`
 	// the song's name and artist, for "Sam added …"
 	Title  string `json:"title"`
 	Artist string `json:"artist"`
@@ -371,6 +394,10 @@ func (j *jamService) handle(ctx context.Context, topic, raw string) {
 
 	switch r.T {
 	case "hello":
+		// a page saying it's still there needs nothing back: the relay counts every message sent
+		if r.Keep && !isNew {
+			return
+		}
 		j.mu.Lock()
 		j.nowSent = "" // they need to know what's on
 		j.mu.Unlock()
@@ -418,7 +445,6 @@ func (j *jamService) handle(ctx context.Context, topic, raw string) {
 		}
 		it.By = name
 		pos := j.add(it)
-		reply(map[string]any{"t": "queued", "id": r.ID, "title": it.Title, "pos": pos})
 		if it.Title != "" {
 			text := name + " added " + it.Title
 			if it.Svc != jamSpotify {
@@ -427,10 +453,8 @@ func (j *jamService) handle(ctx context.Context, topic, raw string) {
 			j.activity(text)
 		}
 		j.emitState()
-		j.mu.Lock()
-		j.nowSent = ""
-		j.mu.Unlock()
-		j.sendNow(ctx, topic)
+		// one message for everyone: the new Up next, with the "added" for whoever added it
+		j.sendNowWith(ctx, topic, map[string]any{"to": r.From, "id": r.ID, "title": it.Title, "pos": pos})
 		// a song can go to Spotify's queue straight away
 		j.step(ctx, false)
 
@@ -482,8 +506,16 @@ func (j *jamService) allow(from string, at func(*jamPassenger) *time.Time, every
 // sendNow tells the passengers what's playing (and where), the skip votes,
 // what's waiting and where they can search, when any of it changed
 func (j *jamService) sendNow(ctx context.Context, topic string) {
+	j.sendNowWith(ctx, topic, nil)
+}
+
+// sendNowWith sends "now" carrying ack, the answer to a passenger's pick (always sent)
+func (j *jamService) sendNowWith(ctx context.Context, topic string, ack map[string]any) {
 	n := j.observe(ctx)
 	msg := map[string]any{"t": "now"}
+	if ack != nil {
+		msg["ack"] = ack
+	}
 	if n.key != "" {
 		msg["uri"] = n.key
 		msg["svc"] = n.where
@@ -510,7 +542,7 @@ func (j *jamService) sendNow(ctx context.Context, topic string) {
 	}
 	msg["next"] = next
 	key := fmt.Sprint(n.key, msg["votes"], msg["needed"], j.lineSeq, svcs)
-	if key == j.nowSent {
+	if key == j.nowSent && ack == nil {
 		j.mu.Unlock()
 		return
 	}

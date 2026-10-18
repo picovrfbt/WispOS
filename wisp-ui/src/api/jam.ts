@@ -81,9 +81,13 @@ export function useJam(): JamState {
   const [state, setState] = useState<JamState>(JAM_OFF)
   useEffect(() => {
     let alive = true
-    void fetchJam().then((s) => alive && setState(s))
+    // an event is newer than a fetch that answers after it (a session just started, say)
+    let heard = false
+    void fetchJam().then((s) => alive && !heard && setState(s))
     const off = subscribeEvents((evt) => {
-      if (evt.type === 'jam/state') setState({ ...JAM_OFF, ...(evt.data as JamState) })
+      if (evt.type !== 'jam/state') return
+      heard = true
+      setState({ ...JAM_OFF, ...(evt.data as JamState) })
     })
     return () => {
       alive = false

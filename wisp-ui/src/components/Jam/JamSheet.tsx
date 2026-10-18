@@ -22,11 +22,15 @@ function JamSheetImpl({ onClose }: Props) {
   const jam = useJam()
   const [focus, setFocus] = useState<Stop>('done')
   const [error, setError] = useState(false)
+  // the code from the start's own answer, without waiting for its event
+  const [startedUrl, setStartedUrl] = useState<string | undefined>()
 
   useEffect(() => {
     if (jam.active) return
     let alive = true
-    startJam().catch(() => alive && setError(true))
+    startJam()
+      .then((s) => alive && setStartedUrl(s.url))
+      .catch(() => alive && setError(true))
     return () => {
       alive = false
     }
@@ -49,12 +53,13 @@ function JamSheetImpl({ onClose }: Props) {
   })
 
   const people = jam.passengers.length
+  const url = jam.url ?? startedUrl
   return (
     <div className={styles.root} role="dialog" aria-label="Passengers pick the music">
       <div className={styles.qr}>
-        {jam.url ? (
+        {url ? (
           <QRCodeSVG
-            value={jam.url}
+            value={url}
             size={236}
             bgColor="#ffffff"
             fgColor="#0b0b0c"

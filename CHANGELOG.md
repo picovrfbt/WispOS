@@ -3,6 +3,16 @@
 What changed in each Wisp release, newest first. Each version is on the
 [releases page](https://github.com/picovrfbt/WispOS/releases) with its downloads.
 
+## v1.0.2 (2026-10-18)
+
+Voice commands work again, passengers' playlists save, and the passengers' page is quicker and fits phones.
+
+- **Voice commands work again** on Car Things flashed with Wisp OS over an older Wisp: the old settings pointed at a speech model Wisp OS doesn't ship, so speech never started. Wisp now uses the one that's there (and the smarter-voice matcher, which old settings left off).
+- **Saving the passengers' songs works.** Spotify kept refusing the playlist ("too many requests") through the shared web route; Wisp now makes it the way Spotify's own apps do, and says it couldn't within 45 seconds instead of waiting.
+- **The passengers' QR code shows right away** instead of sometimes sitting on "Starting…".
+- **The passengers' page fits phones**: long YouTube Music lines no longer make it wider than the screen, and they show just the artist.
+- **Wisp's own relay** for passengers' messages, on Cloudflare's free tier (relay/), with ntfy.sh as the backup; the Car Thing also sends far fewer messages (no reply to the page's "still here", and one message per added song).
+
 ## v1.0.1 (2026-10-17)
 
 Passengers pick the music, from any of your music services, and clearer messages everywhere.

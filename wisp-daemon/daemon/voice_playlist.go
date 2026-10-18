@@ -143,7 +143,112 @@ type ApiRequestDataCreatePlaylist struct {
 	Uris        []string
 }
 
+// createPlaylist makes the playlist the way Spotify's own apps do (its playlist
+// service), and only falls back to the Web API, whose shared rate limit the
+// open-source players run into ("429 Too Many Requests"), when that fails.
 func (p *AppPlayer) createPlaylist(ctx context.Context, d ApiRequestDataCreatePlaylist) (string, error) {
+	uri, err := p.createPlaylistInternal(ctx, d)
+	if err == nil {
+		return uri, nil
+	}
+	p.app.log.Infof("playlist: Spotify's playlist service: %v; trying the Web API", err)
+	return p.createPlaylistWebApi(ctx, d)
+}
+
+// the JSON shapes of Spotify's playlist service (playlist4 changes)
+type plItem struct {
+	Uri        string `json:"uri"`
+	Attributes struct {
+		Timestamp        string   `json:"timestamp"`
+		FormatAttributes []string `json:"formatAttributes"`
+		AvailableSignals []string `json:"availableSignals"`
+	} `json:"attributes"`
+}
+
+func plItems(uris []string) []plItem {
+	ts := fmt.Sprint(time.Now().UnixMilli())
+	out := make([]plItem, len(uris))
+	for i, u := range uris {
+		out[i].Uri = u
+		out[i].Attributes.Timestamp = ts
+		out[i].Attributes.FormatAttributes = []string{}
+		out[i].Attributes.AvailableSignals = []string{}
+	}
+	return out
+}
+
+// plAdd: one change that adds items, at the top (first) or the end
+func plAdd(items []plItem, first bool) []byte {
+	add := map[string]any{"items": items}
+	if first {
+		add["addFirst"] = true
+	} else {
+		add["addLast"] = true
+	}
+	b, _ := json.Marshal(map[string]any{
+		"deltas": []any{map[string]any{
+			"ops":  []any{map[string]any{"kind": "ADD", "add": add}},
+			"info": map[string]any{"source": map[string]any{"client": "WEBPLAYER"}},
+		}},
+		"wantResultingRevisions": false,
+		"wantSyncResult":         false,
+		"nonces":                 []int{},
+	})
+	return b
+}
+
+func (p *AppPlayer) playlistService(ctx context.Context, path string, body []byte) ([]byte, error) {
+	hdr := http.Header{"Content-Type": {"application/json"}, "Accept": {"application/json"}}
+	resp, err := p.sess.Spclient().Request(ctx, "POST", path, nil, hdr, body)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+	b, _ := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
+	if resp.StatusCode != 200 && resp.StatusCode != 201 {
+		return nil, fmt.Errorf("%s: %s", path, resp.Status)
+	}
+	return b, nil
+}
+
+func (p *AppPlayer) createPlaylistInternal(ctx context.Context, d ApiRequestDataCreatePlaylist) (string, error) {
+	user := p.sess.Username()
+	if user == "" || d.Name == "" || len(d.Uris) == 0 {
+		return "", ErrBadRequest
+	}
+	values := map[string]any{"name": d.Name, "formatAttributes": []any{}, "pictureSize": []any{}}
+	if d.Description != "" {
+		values["description"] = d.Description
+	}
+	body, _ := json.Marshal(map[string]any{"ops": []any{map[string]any{
+		"kind":                 "UPDATE_LIST_ATTRIBUTES",
+		"updateListAttributes": map[string]any{"newAttributes": map[string]any{"values": values, "noValue": []any{}}},
+	}}})
+	b, err := p.playlistService(ctx, "/playlist/v2/playlist", body)
+	if err != nil {
+		return "", err
+	}
+	var made struct {
+		Uri string `json:"uri"`
+	}
+	if json.Unmarshal(b, &made) != nil || !strings.HasPrefix(made.Uri, "spotify:playlist:") {
+		return "", fmt.Errorf("create: unexpected answer %q", clipRunes(string(b), 120))
+	}
+	id := strings.TrimPrefix(made.Uri, "spotify:playlist:")
+	// the songs, a hundred a change, then the playlist into your library (at the top)
+	for i := 0; i < len(d.Uris); i += 100 {
+		part := d.Uris[i:min(i+100, len(d.Uris))]
+		if _, err := p.playlistService(ctx, "/playlist/v2/playlist/"+url.PathEscape(id)+"/changes", plAdd(plItems(part), false)); err != nil {
+			return "", err
+		}
+	}
+	if _, err := p.playlistService(ctx, "/playlist/v2/user/"+url.PathEscape(user)+"/rootlist/changes", plAdd(plItems([]string{made.Uri}), true)); err != nil {
+		return "", err
+	}
+	return made.Uri, nil
+}
+
+func (p *AppPlayer) createPlaylistWebApi(ctx context.Context, d ApiRequestDataCreatePlaylist) (string, error) {
 	user := p.sess.Username()
 	if user == "" || d.Name == "" || len(d.Uris) == 0 {
 		return "", ErrBadRequest

@@ -353,6 +353,10 @@ func (app *App) Run(ctx context.Context) error {
 	if app.nav != nil {
 		go app.nav.run(ctx)
 	}
+	// which relay passengers' messages go through, kept fresh in the background
+	if app.jam != nil {
+		go app.jam.watchRelays(ctx)
+	}
 	// a tether that dropped and came back leaves Spotify on dead sockets
 	go watchNetworkChanges(ctx, app.log, netAddrs, func() {
 		app.client.CloseIdleConnections()

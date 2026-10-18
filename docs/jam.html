@@ -14,7 +14,7 @@
 <style>
   :root { color-scheme: dark; --bg: #08080a; --panel: #131316; --panel-2: #1a1a1f; --line: rgba(255,255,255,.08); --fg: #f2f2f4; --fg-2: rgba(242,242,244,.7); --fg-3: rgba(242,242,244,.5); --green: #1ed760; }
   * { box-sizing: border-box; }
-  html, body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.45 Inter, system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+  html, body { overflow-x: hidden; margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.45 Inter, system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
   main { max-width: 520px; margin: 0 auto; padding: max(18px, env(safe-area-inset-top)) 16px 40px; }
   .head { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
   .head img { width: 30px; height: 30px; border-radius: 8px; }
@@ -39,8 +39,8 @@
   .now .a { color: var(--fg-2); font-size: 15px; }
   .now .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-3); margin-bottom: 2px; }
   .skip { margin-top: 14px; width: 100%; }
-  .results { margin-top: 12px; display: grid; gap: 6px; }
-  .res { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; background: var(--panel-2); }
+  .results { margin-top: 12px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .res { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; background: var(--panel-2); min-width: 0; }
   .res .txt { flex: 1; min-width: 0; }
   .res .t { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .res .a { font-size: 14px; color: var(--fg-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -107,7 +107,7 @@
     </div>
   </section>
 
-  <p class="foot">Wisp, open source firmware for the Car Thing · <a href="./">picovrfbt.github.io/WispOS</a><br>Messages pass through <a href="https://ntfy.sh">ntfy</a>; only searches and songs, never your account.</p>
+  <p class="foot">Wisp, open source firmware for the Car Thing · <a href="./">picovrfbt.github.io/WispOS</a><br>Messages pass through Wisp's relay (or <a href="https://ntfy.sh">ntfy</a>); only searches and songs, never your account.</p>
 </main>
 <div class="toast" id="toast" role="status"></div>
 <script>
@@ -178,11 +178,22 @@
   }
   function status(on, text) { var s = $('status'); s.classList.toggle('on', on); s.lastChild.textContent = text }
 
+  // the answer to an Add: in line, or not this time
+  function added(id, t, pos) {
+    var p = pending[id]
+    if (!p) return
+    delete pending[id]
+    var b = p.button
+    if (t === 'queued') { b.textContent = 'Added'; b.classList.add('done'); toast(!pos || pos === 1 ? p.title + ' is up next' : p.title + ' is number ' + pos + ' in line') }
+    else { b.disabled = false; b.textContent = 'Add'; toast(t === 'wait' ? 'One song every 15 seconds; try again in a moment' : t === 'full' ? "The line's full; try again after a few songs" : "That one couldn't be added") }
+  }
+
   // what the Car Thing says
   function onMessage(d) {
     if (d.to && d.to !== me) return
     if (d.t === 'ended') { $('app').hidden = true; $('join').hidden = true; $('ended').hidden = false; status(false, 'Ended'); es && es.close(); return }
     if (d.t === 'now') {
+      if (d.ack && d.ack.to === me && pending[d.ack.id]) added(d.ack.id, 'queued', d.ack.pos)
       now = d
       $('title').textContent = d.title || 'Nothing playing'
       $('artist').textContent = d.artist || ''
@@ -223,10 +234,7 @@
         row.appendChild(txt); row.appendChild(b); box.appendChild(row)
       })
     } else if (p && (d.t === 'queued' || d.t === 'wait' || d.t === 'failed' || d.t === 'full')) {
-      delete pending[d.id]
-      var b = p.button
-      if (d.t === 'queued') { b.textContent = 'Added'; b.classList.add('done'); toast(!d.pos || d.pos === 1 ? p.title + ' is up next' : p.title + ' is number ' + d.pos + ' in line') }
-      else { b.disabled = false; b.textContent = 'Add'; toast(d.t === 'wait' ? 'One song every 15 seconds; try again in a moment' : d.t === 'full' ? "The line's full; try again after a few songs" : "That one couldn't be added") }
+      added(d.id, d.t, d.pos)
     }
   }
 
@@ -245,7 +253,7 @@
     connect()
     send({ t: 'hello' })
     // the car answers "now" to a hello; say hello again now and then, so it knows you're still here
-    setInterval(function () { if (!document.hidden) send({ t: 'hello' }) }, 5 * 60 * 1000)
+    setInterval(function () { if (!document.hidden) send({ t: 'hello', keep: true }) }, 5 * 60 * 1000)
   }
 
   $('search').addEventListener('submit', function (e) {

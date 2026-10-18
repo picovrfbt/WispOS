@@ -89,7 +89,10 @@ func (j *jamService) Save(ctx context.Context) (JamSaved, error) {
 		sort.Strings(names)
 		desc = "Songs " + joinNames(names) + " picked in the car, with Wisp."
 	}
-	res, err := j.app.server.Submit(ctx, ApiRequestTypeCreatePlaylist, ApiRequestDataCreatePlaylist{Name: name, Description: desc, Uris: uris})
+	// Spotify's busy answers are retried underneath; past this the Car Thing says it couldn't
+	cctx, cancel := context.WithTimeout(ctx, 45*time.Second)
+	defer cancel()
+	res, err := j.app.server.Submit(cctx, ApiRequestTypeCreatePlaylist, ApiRequestDataCreatePlaylist{Name: name, Description: desc, Uris: uris})
 	if err != nil {
 		return JamSaved{}, err
 	}
