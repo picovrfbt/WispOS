@@ -1,0 +1,40 @@
+# Builds a test copy of Wisp Phone (wisp-companion/phone) on every push to the
+# phone-app branch, so it can be tried before it's released. The app is under
+# the run's Artifacts as wisp-phone-test. Debug-signed: it installs beside the
+# Wisp app, but a later release build won't install over it.
+name: phone
+
+on:
+  push:
+    branches: [phone-app]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: wisp-daemon/go.mod
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: microsoft
+          java-version: 17
+          cache: gradle
+
+      - name: Build Wisp Phone
+        working-directory: wisp-companion
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon -q :phone:assembleDebug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wisp-phone-test
+          path: wisp-companion/phone/build/outputs/apk/debug/phone-debug.apk
