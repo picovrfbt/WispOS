@@ -3,6 +3,15 @@
 What changed in each Wisp release, newest first. Each version is on the
 [releases page](https://github.com/picovrfbt/WispOS/releases) with its downloads.
 
+## v1.0.3 (2026-10-18)
+
+Wisp's thinking gets ready and answers, and Wisp's voice is on from the start.
+
+- **Wisp's thinking gets ready.** The Wisp app could stay on "Getting Gemini Nano ready…" for good when Android had already started fetching it; it now follows Android's download and checks again every 30 seconds. Until Gemini Nano is there, the open model (Qwen) answers if it's downloaded.
+- **The open model answers the first time.** It loads as soon as it's the one in use, instead of on the first question, and the Car Thing waits up to 20 seconds for an answer rather than 8.
+- **Wisp's voice is on by default**, saying what your voice commands did (Confirmations), at 1.1x. Settings that were still on the old default (off) move once; if you turn it off, it stays off.
+- **Wisp app 1.0.2.**
+
 ## v1.0.2 (2026-10-18)
 
 Voice commands work again, passengers' playlists save, and the passengers' page is quicker and fits phones.

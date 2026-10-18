@@ -25,8 +25,8 @@ object OpenModel {
     const val SIZE_BYTES = 344_671_744L
     private const val SHA256 = "03e7da1eb1108b50dffaa9bb52cc7bcbad2eb0c66ca990267f480c1e545d2856"
     private const val URL_ = "https://huggingface.co/litert-community/Qwen3-0.6B/resolve/main/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm"
-    // let go of the model when the Car Thing hasn't asked for this long
-    private const val IDLE_MS = 5 * 60_000L
+    // let go of the model when the Car Thing hasn't asked for this long (loading it again is slow)
+    private const val IDLE_MS = 30 * 60_000L
 
     private fun file(ctx: Context) = File(ctx.filesDir, "think/qwen3-0.6b.litertlm")
 
@@ -95,6 +95,22 @@ object OpenModel {
     private var engine: Engine? = null
     private var lastUse = 0L
     private val lock = Any()
+
+    /** loads the model in the background, ready for the first question */
+    fun preload(ctx: Context) {
+        if (engine != null || !downloaded(ctx)) return
+        Thread {
+            try {
+                synchronized(lock) {
+                    if (engine == null) engine = load(ctx)
+                    lastUse = System.currentTimeMillis()
+                }
+                android.os.Handler(android.os.Looper.getMainLooper()).post { scheduleUnload() }
+            } catch (t: Throwable) {
+                Log.w(TAG, "couldn't load $NAME ahead of time", t)
+            }
+        }.apply { isDaemon = true }.start()
+    }
 
     /** one answer to [prompt]; loads the model first if it isn't loaded */
     fun generate(ctx: Context, prompt: String): String = synchronized(lock) {

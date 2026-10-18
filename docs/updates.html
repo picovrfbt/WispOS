@@ -17,7 +17,7 @@
 <header class="top">
   <div class="wrap">
     <a class="brand" href="./" aria-label="Wisp, home"><img src="logo.svg" alt="">Wisp</a>
-    <a class="ver" href="new/1.0.2.html" title="What's new in 1.0.2">1.0.2</a>
+    <a class="ver" href="new/1.0.3.html" title="What's new in 1.0.3">1.0.3</a>
     <nav class="links" id="nav-links" aria-label="Main">
       <a href="./#features">Features</a>
       <a href="./#directions">Directions</a>
@@ -42,9 +42,26 @@
 
   <article class="upd-latest">
     <div class="upd-head"><span class="tag">Latest</span><span class="upd-date">October 18, 2026</span></div>
-    <h2>Wisp 1.0.2</h2>
+    <h2>Wisp 1.0.3</h2>
     <div class="upd-body">
-<p>Voice commands work again, passengers' playlists save, and the passengers' page is quicker and fits phones.</p>
+<p>Wisp's thinking gets ready and answers, and Wisp's voice is on from the start.</p>
+<ul>
+<li><b>Wisp's thinking gets ready.</b> The Wisp app could stay on "Getting Gemini Nano ready…" for good when Android had already started fetching it; it now follows Android's download and checks again every 30 seconds. Until Gemini Nano is there, the open model (Qwen) answers if it's downloaded.
+</li>
+<li><b>The open model answers the first time.</b> It loads as soon as it's the one in use, instead of on the first question, and the Car Thing waits up to 20 seconds for an answer rather than 8.
+</li>
+<li><b>Wisp's voice is on by default</b>, saying what your voice commands did (Confirmations), at 1.1x. Settings that were still on the old default (off) move once; if you turn it off, it stays off.
+</li>
+<li><b>Wisp app 1.0.2.</b>
+</li></ul>
+    </div>
+    <div class="cta-row"><a class="btn primary" href="new/1.0.3.html">What's new in 1.0.3</a><a class="btn" href="https://github.com/picovrfbt/WispOS/releases/tag/v1.0.3">Downloads</a></div>
+  </article>
+
+  <h2 class="upd-earlier">Earlier updates</h2>
+  <details class="upd-old">
+    <summary><span class="upd-v">Wisp 1.0.2</span><span class="upd-date">October 18, 2026</span><span class="upd-sum">Voice commands work again, passengers' playlists save, and the passengers' page is quicker and fits phones.</span></summary>
+    <div class="upd-body">
 <ul>
 <li><b>Voice commands work again</b> on Car Things flashed with Wisp OS over an older Wisp: the old settings pointed at a speech model Wisp OS doesn't ship, so speech never started. Wisp now uses the one that's there (and the smarter-voice matcher, which old settings left off).
 </li>
@@ -57,10 +74,7 @@
 <li><b>Wisp's own relay</b> for passengers' messages, on Cloudflare's free tier (relay/), with ntfy.sh as the backup; the Car Thing also sends far fewer messages (no reply to the page's "still here", and one message per added song).
 </li></ul>
     </div>
-    <div class="cta-row"><a class="btn primary" href="new/1.0.2.html">What's new in 1.0.2</a><a class="btn" href="https://github.com/picovrfbt/WispOS/releases/tag/v1.0.2">Downloads</a></div>
-  </article>
-
-  <h2 class="upd-earlier">Earlier updates</h2>
+  </details>
   <details class="upd-old">
     <summary><span class="upd-v">Wisp 1.0.1</span><span class="upd-date">October 17, 2026</span><span class="upd-sum">Passengers pick the music, from any of your music services, and clearer messages everywhere.</span></summary>
     <div class="upd-body">

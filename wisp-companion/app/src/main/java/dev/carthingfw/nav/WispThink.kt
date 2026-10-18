@@ -51,39 +51,63 @@ object WispThink {
         if (started) return
         started = true
         app = ctx.applicationContext
-        worker.execute {
+        worker.execute { checkNano() }
+        // Android fetches Gemini Nano in its own time: look again until it's here (or isn't coming)
+        Thread {
+            while (true) {
+                Thread.sleep(NANO_RECHECK_MS)
+                if (nano != null || nanoMissing) break
+                checkNano()
+            }
+        }.apply { isDaemon = true }.start()
+    }
+
+    // how often to look again while Android is getting Gemini Nano
+    private const val NANO_RECHECK_MS = 30_000L
+    private val following = java.util.concurrent.atomic.AtomicBoolean(false)
+
+    /** asks Android how Gemini Nano is doing, and follows (or starts) its download */
+    @Synchronized private fun checkNano() {
+        if (nano != null) return
+        try {
+            val m = Generation.getClient()
+            when (runBlocking { m.checkStatus() }) {
+                FeatureStatus.AVAILABLE -> nanoReady(m)
+                // already on its way (Android started it, or we did): follow it
+                FeatureStatus.DOWNLOADING, FeatureStatus.DOWNLOADABLE -> {
+                    nanoDownloading = true
+                    pick()
+                    follow(m)
+                }
+                else -> noNano()
+            }
+        } catch (e: Throwable) {
+            // no AICore, an unlocked bootloader, or a phone without Gemini Nano
+            Log.i(TAG, "Gemini Nano isn't available here: ${e.message}")
+            noNano()
+        }
+    }
+
+    // download() starts a download, or joins the one that's going, and reports when it's done
+    private fun follow(m: GenerativeModel) {
+        if (!following.compareAndSet(false, true)) return
+        Thread {
             try {
-                val m = Generation.getClient()
-                when (runBlocking { m.checkStatus() }) {
-                    FeatureStatus.AVAILABLE -> nanoReady(m)
-                    FeatureStatus.DOWNLOADING -> {
-                        nanoDownloading = true
-                        pick()
-                    }
-                    FeatureStatus.DOWNLOADABLE -> {
-                        nanoDownloading = true
-                        pick()
-                        runBlocking {
-                            m.download().collect { s ->
-                                when (s) {
-                                    is DownloadStatus.DownloadCompleted -> nanoReady(m)
-                                    is DownloadStatus.DownloadFailed -> {
-                                        Log.w(TAG, "Gemini Nano download failed", s.e)
-                                        noNano()
-                                    }
-                                    else -> {}
-                                }
-                            }
+                runBlocking {
+                    m.download().collect { s ->
+                        when (s) {
+                            is DownloadStatus.DownloadCompleted -> nanoReady(m)
+                            is DownloadStatus.DownloadFailed -> Log.w(TAG, "Gemini Nano download failed; trying again later", s.e)
+                            else -> {}
                         }
                     }
-                    else -> noNano()
                 }
             } catch (e: Throwable) {
-                // no AICore, an unlocked bootloader, or a phone without Gemini Nano
-                Log.i(TAG, "Gemini Nano isn't available here: ${e.message}")
-                noNano()
+                Log.w(TAG, "following Gemini Nano's download stopped: ${e.message}")
+            } finally {
+                following.set(false)
             }
-        }
+        }.apply { isDaemon = true }.start()
     }
 
     private fun nanoReady(m: GenerativeModel) {
@@ -132,10 +156,13 @@ object WispThink {
         when {
             open && Prefs.thinkPreferOpen(app) -> set("ready", "open")
             nano != null -> set("ready", "nano")
-            nanoDownloading -> set("downloading", "nano")
+            // Gemini Nano is still coming: the open model answers meanwhile
             open -> set("ready", "open")
+            nanoDownloading -> set("downloading", "nano")
             else -> set("unavailable", "")
         }
+        // loaded before the first question, so it doesn't spend the Car Thing's wait loading
+        if (model == "open") OpenModel.preload(app)
     }
 
     private fun set(s: String, m: String) {

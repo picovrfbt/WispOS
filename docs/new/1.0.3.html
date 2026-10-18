@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What's new in Wisp 1.0.3</title>
+<meta name="description" content="Wisp 1.0.3 for the Spotify Car Thing: Wisp's thinking on your phone gets ready and answers, and Wisp's voice is on from the start.">
+<meta name="theme-color" content="#08080a">
+<link rel="icon" href="../logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="../" aria-label="Wisp, home"><img src="../logo.svg" alt="">Wisp</a>
+    <a class="ver" href="1.0.3.html" title="What's new in 1.0.3" aria-current="page">1.0.3</a>
+    <nav class="links" id="nav-links" aria-label="Main">
+      <a href="../#features">Features</a>
+      <a href="../#directions">Directions</a>
+      <a href="../#addons">Add-ons</a>
+      <a href="../use.html">How to use</a>
+      <a href="../guide.html">Set up</a>
+      <a href="../studio.html">Add-on Studio</a>
+      <a href="../updates.html">Updates</a>
+    </nav>
+    <div class="top-actions">
+      <a class="btn primary dl" href="https://github.com/picovrfbt/WispOS/releases/latest">Download</a>
+      <button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Menu"><span></span></button>
+    </div>
+  </div>
+</header>
+
+<main class="doc whatsnew">
+<div class="wrap">
+  <p class="eyebrow">What's new · October 18, 2026</p>
+  <h1>Wisp 1.0.3</h1>
+  <p class="lead-doc">Ask Wisp anything and the model on your phone answers again, and Wisp talks back from the start.</p>
+  <div class="cta-row">
+    <a class="btn primary" href="../use.html#settings">How to update</a>
+    <a class="btn" href="1.0.2.html">What came in 1.0.2</a>
+  </div>
+
+  <section class="gstep">
+    <h2>Fixed</h2>
+    <ul class="needs">
+      <li><b>Wisp's thinking gets ready.</b> The Wisp app could stay on "Getting Gemini Nano ready…" for good. It now follows Android's download of Gemini Nano and checks again every 30 seconds, and until it's there, the open model answers if you've downloaded it.</li>
+      <li><b>The open model answers the first time.</b> It loads as soon as it's the one in use, so your first question isn't spent waiting for it, and the Car Thing gives it longer to answer.</li>
+    </ul>
+  </section>
+
+  <section class="gstep">
+    <h2>Changed</h2>
+    <ul class="needs">
+      <li><b>Wisp's voice is on from the start</b>, saying what your voice commands did, a little quicker at 1.1x. Change it in Settings → Wisp's voice; if you turn it off, it stays off.</li>
+      <li><b>Update the Wisp app too</b> (1.0.2, from inside the app): the thinking fixes are in it.</li>
+    </ul>
+    <p>Try it: say <b>"Okay Wisp, tell me a fun fact about the moon."</b> Only the model on your phone can answer that.</p>
+    <p><a href="../updates.html">Every update ›</a></p>
+  </section>
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="../"><img src="../logo.svg" alt="">Wisp</a>
+    <nav>
+      <a href="../guide.html">Set up</a>
+      <a href="../use.html">How to use</a>
+      <a href="../updates.html">Updates</a>
+      <a href="../addons.html">Make an add-on</a>
+      <a href="../privacy.html">Privacy</a>
+      <a href="https://github.com/picovrfbt/WispOS">GitHub</a>
+    </nav>
+    <p class="legal">Wisp is not affiliated with, endorsed by or sponsored by Spotify, Google or YouTube. Spotify and Car Thing are trademarks of Spotify AB.</p>
+  </div>
+</footer>
+<script src="../site.js" defer></script>
+</body>
+</html>
