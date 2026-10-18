@@ -18,9 +18,7 @@ export function makeMockStatus(): ObserverStatusActive {
     track_name: env.VITE_MOCK_TRACK_NAME ?? 'Open Highway',
     track_artist: env.VITE_MOCK_TRACK_ARTIST ?? 'Coastline Radio',
     track_album: env.VITE_MOCK_TRACK_ALBUM ?? 'Golden Hour',
-    track_image:
-      env.VITE_MOCK_TRACK_IMAGE ??
-      SAMPLE_COVER,
+    track_image: env.VITE_MOCK_TRACK_IMAGE ?? SAMPLE_COVER,
     context_uri: env.VITE_MOCK_CONTEXT_URI ?? 'spotify:playlist:dev-mock',
     context_name: env.VITE_MOCK_CONTEXT_NAME ?? 'Dev Playlist',
     duration: Number(env.VITE_MOCK_DURATION ?? 200000),

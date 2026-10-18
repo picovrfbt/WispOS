@@ -18,10 +18,10 @@ function TrackInfoImpl({ trackName, artist, large = false, badge }: Props) {
       {badge ? (
         <div className={styles.artistRow}>
           <span className={styles.badge}>{badge}</span>
-          <Marquee text={artist || 'Failed to fetch'} className={styles.artist} />
+          <Marquee text={artist} className={styles.artist} />
         </div>
       ) : (
-        <Marquee text={artist || 'Failed to fetch'} className={styles.artist} />
+        <Marquee text={artist} className={styles.artist} />
       )}
     </div>
   )

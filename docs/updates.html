@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wisp updates</title>
+<meta name="description" content="Every Wisp update, newest first: what changed in each release of Wisp for the Spotify Car Thing.">
+<meta name="theme-color" content="#08080a">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<!-- made by tools/updates_page.py from CHANGELOG.md; edit those, not this -->
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="Wisp, home"><img src="logo.svg" alt="">Wisp</a>
+    <a class="ver" href="new/1.0.1.html" title="What's new in 1.0.1">1.0.1</a>
+    <nav class="links" id="nav-links" aria-label="Main">
+      <a href="./#features">Features</a>
+      <a href="./#directions">Directions</a>
+      <a href="./#addons">Add-ons</a>
+      <a href="use.html">How to use</a>
+      <a href="guide.html">Set up</a>
+      <a href="studio.html">Add-on Studio</a>
+      <a href="updates.html" aria-current="page">Updates</a>
+    </nav>
+    <div class="top-actions">
+      <a class="btn primary dl" href="https://github.com/picovrfbt/WispOS/releases/latest">Download</a>
+      <button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Menu"><span></span></button>
+    </div>
+  </div>
+</header>
+
+<main class="doc updates">
+<div class="wrap">
+  <p class="eyebrow">Updates</p>
+  <h1>What's changed</h1>
+  <p class="lead-doc">Wisp updates itself over the air: Settings &rarr; Software update. Here's everything each release brought, newest first.</p>
+
+  <article class="upd-latest">
+    <div class="upd-head"><span class="tag">Latest</span><span class="upd-date">October 17, 2026</span></div>
+    <h2>Wisp 1.0.1</h2>
+    <div class="upd-body">
+<p>Passengers pick the music, from any of your music services, and clearer messages everywhere.</p>
+<ul>
+<li><b>Passengers pick the music.</b> A QR code on the Car Thing (the player's menu, or "Okay Wisp, let the passengers pick") lets everyone in the car search, add songs to Up next and vote to skip from their own phones, without signing in to your Spotify. A note on the Car Thing says who added what.
+<ul>
+<li><b>From any of your music services.</b> Passengers search Spotify and, when you're signed in to them in the Wisp app, YouTube Music and SoundCloud, all at once or one at a time. Every song shows where it plays, and the page shows Up next in order with who added each. Wisp keeps the line itself: a YouTube Music or SoundCloud pick starts in its app as the song before it ends, and Spotify carries on where it was afterwards.
+</li>
+<li><b>Autoplay from their songs.</b> When Spotify runs out and starts its own autoplay, it plays the radio of the last passenger song that played on Spotify instead (a switch on the QR screen).
+</li>
+<li><b>Keep their songs.</b> When a session ends, the Car Thing asks whether to save every song the passengers added as a private Spotify playlist, "Car jam · Oct 17". Their YouTube Music and SoundCloud picks are matched on Spotify; any that aren't there are counted.
+</li></ul>
+</li>
+<li><b>Clearer messages.</b> "Nothing playing" says what to do; a failed update says why in plain words (no internet, a damaged download, no room) on the Car Thing and in the Wisp app; directions say when nothing is close by; and button errors say what didn't work.
+</li></ul>
+    </div>
+    <div class="cta-row"><a class="btn primary" href="new/1.0.1.html">What's new in 1.0.1</a><a class="btn" href="https://github.com/picovrfbt/WispOS/releases/tag/v1.0.1">Downloads</a></div>
+  </article>
+
+  <h2 class="upd-earlier">Earlier updates</h2>
+  <details class="upd-old">
+    <summary><span class="upd-v">Wisp 1.0.0</span><span class="upd-date">October 17, 2026</span><span class="upd-sum">Wisp 1.0: open source, on its own modern system, with its own directions, a smarter voice, community add-ons and new Drive Mode music.</span></summary>
+    <div class="upd-body">
+<ul>
+<li><b>Wisp's own directions.</b> Settings → Navigation → Directions by: Wisp. The map screen with nothing navigating is now <b>Where to?</b>: gas, food, coffee, parking, EV charging and groceries nearby, and your recent places, or "Okay Wisp, take me to…" for anywhere. Up to three routes with their times and roads, avoid highways or tolls, then <b>Start</b> for turn-by-turn on the Car Thing (spoken through Wisp's voice, rerouting when you leave the route) or <b>Google Maps</b> to drive it there with live traffic. From OpenStreetMap: no account, no key. Spoken directions: every turn, just the turns, or muted (the speaker on the map, or Settings).
+</li>
+<li><b>A new map screen.</b> A big turn card with the turn after it, your speed, and the time, miles and arrival along the bottom, for Wisp's directions and Google Maps' alike.
+</li>
+<li><b>Add-ons, grown up.</b> Each now has a picture, shown with its name, author and description; the catalog shows the one under the knob in full. Eight to start: Forecast, Big clock, Trip, Odometer, Parking timer, Sun &amp; moon, World clocks and Plate spotter.
+</li>
+<li><b>Make your own add-on</b> in the <a href="https://picovrfbt.github.io/WispOS/studio.html">Add-on Studio</a> in your browser, no code needed, or from five templates; the <a href="https://picovrfbt.github.io/WispOS/addons.html">guide</a> covers the rest.
+</li>
+<li><b>Choose the phone's model.</b> On phones with Gemini Nano, the Wisp app can use the open model instead; phones without Nano are offered it once, on the Car Thing or in setup.
+</li>
+<li><b>A how-to for everything</b> on the <a href="https://picovrfbt.github.io/WispOS/use.html">website</a>.
+</li>
+<li><b>Open source.</b> Everything is public at <a href="https://github.com/picovrfbt/WispOS">picovrfbt/WispOS</a>, with a website at <a href="https://picovrfbt.github.io/WispOS/">picovrfbt.github.io/WispOS</a>. Updates need no GitHub token any more; the Wisp app forgets the one it kept.
+</li>
+<li><b>Wisp OS.</b> Wisp now runs on its own system: a current Linux kernel, the screen drawn by the GPU in a modern Chromium, and Wisp's own boot logo and start-up animation. Flash it once over USB; updates come over the air from then on.
+</li>
+<li><b>A lighter on-device voice.</b> A smaller speech model (about half the memory, about three times faster) that steps aside when memory runs short and comes back when there's room.
+</li>
+<li><b>A smarter voice.</b> Ask the way you'd ask a person: "I wanna hear Daft Punk", "who sings this?", "play the album", "no, the other one", "when do we get there?", "take me home", "call Mom", "dim the screen". Answers show on the Car Thing and are spoken through your phone. Everyday requests are understood on the Car Thing; with the Wisp app, a language model on your phone handles anything looser: Gemini Nano where the phone has it, or an open model (Qwen3 0.6B, about 345 MB) you can download from Options → Wisp's thinking.
+</li>
+<li><b>Add-ons.</b> Small pages from the community, from Home → Add-ons. Each is reviewed before it's listed, checked when it downloads, and sandboxed so it sees only what it asks for.
+</li>
+<li><b>Call by voice</b> needs a new, optional setup step in the Wisp app.
+</li>
+<li><b>The knob turns the right way</b> on Wisp OS.
+</li>
+<li><b>YouTube Music signs in with a code</b> at google.com/device, through YouTube's official API: your playlists (private ones too) and the music you've liked. Google no longer allows signing in inside apps. SoundCloud signs in with your email and password.
+</li>
+<li><b>New Drive Mode music.</b> All three sounds, Ethereal, Cinematic and Lo-fi, remade with cleaner stems.
+</li>
+<li><b>A new setup.</b> Wisp's own welcome screens, guide links and QR codes, start to finish.
+</li></ul>
+    </div>
+  </details>
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="./"><img src="logo.svg" alt="">Wisp</a>
+    <nav>
+      <a href="guide.html">Set up</a>
+      <a href="use.html">How to use</a>
+      <a href="updates.html">Updates</a>
+      <a href="addons.html">Make an add-on</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="https://github.com/picovrfbt/WispOS">GitHub</a>
+    </nav>
+    <p class="legal">Wisp is not affiliated with, endorsed by or sponsored by Spotify, Google or YouTube. Spotify and Car Thing are trademarks of Spotify AB.</p>
+  </div>
+</footer>
+<script src="site.js" defer></script>
+</body>
+</html>

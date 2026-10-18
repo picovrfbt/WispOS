@@ -71,6 +71,8 @@ type ApiServer interface {
 	SetNavHandler(h NavHandler)
 	// the community add-ons (addons.go)
 	SetAddonStore(a *addonStore)
+	// passengers picking the music (jam.go)
+	SetJam(j *jamService)
 
 	// /update/* uses this, nil = 503
 	SetUpdateHandler(h UpdateHandler)
@@ -180,6 +182,7 @@ type ConcreteApiServer struct {
 	navFn NavHandler
 	// add-ons, under navMu too
 	addonStore *addonStore
+	jam        *jamService
 
 	updateMu sync.RWMutex
 
@@ -221,8 +224,10 @@ const (
 	ApiRequestTypeSetShufflingContext ApiRequestType = "shuffling_context"
 	ApiRequestTypeDjSignal            ApiRequestType = "dj_signal"
 	ApiRequestTypeAddToQueue          ApiRequestType = "add_to_queue"
-	ApiRequestTypeGetSaved            ApiRequestType = "get_saved"
-	ApiRequestTypeSetSaved            ApiRequestType = "set_saved"
+	// Spotify's radio playlist for a song: data the track's uri, answers the playlist's
+	ApiRequestTypeTrackRadio ApiRequestType = "track_radio"
+	ApiRequestTypeGetSaved   ApiRequestType = "get_saved"
+	ApiRequestTypeSetSaved   ApiRequestType = "set_saved"
 	// saves whatever is playing to Liked Songs ("like this")
 	ApiRequestTypeLikeCurrent    ApiRequestType = "like_current"
 	ApiRequestTypeToken          ApiRequestType = "token"
@@ -1006,6 +1011,11 @@ func (s *ConcreteApiServer) serve() {
 		s.navMu.RLock()
 		defer s.navMu.RUnlock()
 		return s.addonStore
+	})
+	s.registerJamRoutes(m, func() *jamService {
+		s.navMu.RLock()
+		defer s.navMu.RUnlock()
+		return s.jam
 	})
 	s.registerSunRoutes(m)
 	s.registerThermalRoutes(m)

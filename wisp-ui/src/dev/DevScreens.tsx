@@ -70,8 +70,18 @@ const SCREENS: ScreenDef[] = [
   { id: 'menu', label: 'Menu open', hint: 'Bottom-sheet over player' },
   { id: 'nav', label: 'Navigation', hint: 'Map + turn card (live daemon nav)' },
   { id: 'nav-live', label: 'Navigation, live only', hint: 'Where to? when nothing is navigating' },
+  { id: 'jam', label: 'Passengers pick', hint: 'The QR code screen (live daemon)' },
+  {
+    id: 'jam-save',
+    label: 'Keep their songs',
+    hint: 'After a jam: save as a playlist (live daemon)',
+  },
   { id: 'home', label: 'Home', hint: 'Rail + cards library browser (live daemon data)' },
-  { id: 'addons', label: 'Add-ons', hint: 'Installed add-ons and the catalog (needs the add-on preview server)' },
+  {
+    id: 'addons',
+    label: 'Add-ons',
+    hint: 'Installed add-ons and the catalog (needs the add-on preview server)',
+  },
   { id: 'phone-media', label: 'Phone media', hint: 'YouTube etc. playing on the phone (sample)' },
   {
     id: 'phone-ytmusic',

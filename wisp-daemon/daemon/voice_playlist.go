@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
@@ -129,4 +131,56 @@ func (p *AppPlayer) addCurrentToPlaylist(ctx context.Context, playlistUri string
 	}
 	_ = json.NewDecoder(resp.Body).Decode(&out)
 	return map[string]any{"uri": rs.TrackUri, "name": rs.TrackName}, nil
+}
+
+// ApiRequestTypeCreatePlaylist makes a private playlist in your Spotify library
+// with these songs (data ApiRequestDataCreatePlaylist), answering its uri
+const ApiRequestTypeCreatePlaylist ApiRequestType = "create_playlist"
+
+type ApiRequestDataCreatePlaylist struct {
+	Name        string
+	Description string
+	Uris        []string
+}
+
+func (p *AppPlayer) createPlaylist(ctx context.Context, d ApiRequestDataCreatePlaylist) (string, error) {
+	user := p.sess.Username()
+	if user == "" || d.Name == "" || len(d.Uris) == 0 {
+		return "", ErrBadRequest
+	}
+	body, _ := json.Marshal(map[string]any{"name": d.Name, "description": d.Description, "public": false})
+	hdr := http.Header{"Content-Type": {"application/json"}}
+	resp, err := p.sess.WebApi(ctx, "POST", "v1/users/"+url.PathEscape(user)+"/playlists", nil, hdr, body)
+	if err != nil {
+		return "", err
+	}
+	var made struct {
+		Id  string `json:"id"`
+		Uri string `json:"uri"`
+	}
+	err = json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&made)
+	_ = resp.Body.Close()
+	if resp.StatusCode != 200 && resp.StatusCode != 201 {
+		return "", fmt.Errorf("create playlist: %s", resp.Status)
+	}
+	if err != nil || made.Id == "" {
+		return "", errors.New("create playlist: no playlist in the answer")
+	}
+	// a hundred songs a request
+	for i := 0; i < len(d.Uris); i += 100 {
+		part := d.Uris[i:min(i+100, len(d.Uris))]
+		b, _ := json.Marshal(map[string]any{"uris": part})
+		resp, err := p.sess.WebApi(ctx, "POST", "v1/playlists/"+url.PathEscape(made.Id)+"/tracks", nil, hdr, b)
+		if err != nil {
+			return "", err
+		}
+		_ = resp.Body.Close()
+		if resp.StatusCode != 200 && resp.StatusCode != 201 {
+			return "", fmt.Errorf("add to the new playlist: %s", resp.Status)
+		}
+	}
+	if made.Uri == "" {
+		made.Uri = "spotify:playlist:" + made.Id
+	}
+	return made.Uri, nil
 }

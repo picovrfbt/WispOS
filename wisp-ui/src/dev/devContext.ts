@@ -25,6 +25,8 @@ export type DevForcedScreen =
   | 'home-services'
   | 'nav'
   | 'nav-live'
+  | 'jam'
+  | 'jam-save'
   | 'power-menu'
   | 'bluetooth-menu'
   | 'settings'

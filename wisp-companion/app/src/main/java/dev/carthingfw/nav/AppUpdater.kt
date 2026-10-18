@@ -43,6 +43,14 @@ object AppUpdater {
     fun installedVersion(ctx: Context): String =
         ctx.packageManager.getPackageInfo(ctx.packageName, 0).versionName ?: "0"
 
+    // what a failure says in the app: what it means, not the exception
+    private fun failText(e: Exception): String = when {
+        e is java.io.IOException && e !is java.io.FileNotFoundException ->
+            "Couldn't reach the internet. Try again"
+        e.message?.contains("verification") == true -> "The download was damaged. Try again"
+        else -> e.message ?: "Something went wrong. Try again"
+    }
+
     /** looks for a newer companion in the latest release; [done] runs on the main thread */
     fun check(ctx: Context, done: () -> Unit = {}) {
         if (state is State.Checking || state is State.Downloading || state is State.Installing) return
@@ -54,7 +62,7 @@ object AppUpdater {
                 if (offer != null && newer(offer.version, installedVersion(app))) State.Available(offer) else State.UpToDate
             } catch (e: Exception) {
                 Log.w(TAG, "update check failed", e)
-                State.Failed(e.message ?: "check failed")
+                State.Failed(failText(e))
             }
             main.post(done)
         }.start()
@@ -81,7 +89,7 @@ object AppUpdater {
                 startInstall(app, apk)
             } catch (e: Exception) {
                 Log.w(TAG, "update install failed", e)
-                state = State.Failed(e.message ?: "install failed")
+                state = State.Failed(failText(e))
                 main.post(progress)
             }
         }.start()

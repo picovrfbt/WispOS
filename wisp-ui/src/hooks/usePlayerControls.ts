@@ -117,7 +117,7 @@ export function usePlayerControls(params: UsePlayerControlsParams): UsePlayerCon
     const command = nextPaused ? pause : play
     void Promise.resolve(command()).catch((err) => {
       setOptimisticPause(null)
-      reportCommandError('Play/pause failed', err)
+      reportCommandError("Spotify didn't respond. Try again", err)
     })
   }, [isPaused, pause, play, reportCommandError])
 
@@ -130,11 +130,13 @@ export function usePlayerControls(params: UsePlayerControlsParams): UsePlayerCon
       setTrackTransition({ fromTrackId: status?.track_id ?? '', at: now })
       void Promise.resolve(prev()).catch((err) => {
         setTrackTransition(null)
-        reportCommandError('Previous failed', err)
+        reportCommandError("Couldn't go back a song", err)
       })
     } else {
       // first press > rewind to start of current track
-      void Promise.resolve(seek(0)).catch((err) => reportCommandError('Seek failed', err))
+      void Promise.resolve(seek(0)).catch((err) =>
+        reportCommandError("Couldn't restart the song", err),
+      )
     }
   }, [prev, reportCommandError, seek, status?.track_id])
 
@@ -142,7 +144,7 @@ export function usePlayerControls(params: UsePlayerControlsParams): UsePlayerCon
     setTrackTransition({ fromTrackId: status?.track_id ?? '', at: Date.now() })
     void Promise.resolve(prev()).catch((err) => {
       setTrackTransition(null)
-      reportCommandError('Previous failed', err)
+      reportCommandError("Couldn't go back a song", err)
     })
   }, [prev, reportCommandError, status?.track_id])
 
@@ -150,7 +152,7 @@ export function usePlayerControls(params: UsePlayerControlsParams): UsePlayerCon
     setTrackTransition({ fromTrackId: status?.track_id ?? '', at: Date.now() })
     void Promise.resolve(next()).catch((err) => {
       setTrackTransition(null)
-      reportCommandError('Next failed', err)
+      reportCommandError("Couldn't skip ahead", err)
     })
   }, [next, reportCommandError, status?.track_id])
 
@@ -159,7 +161,7 @@ export function usePlayerControls(params: UsePlayerControlsParams): UsePlayerCon
     setOptimisticShuffle({ value: nextShuffle, at: Date.now() })
     void Promise.resolve(setShuffle(nextShuffle)).catch((err) => {
       setOptimisticShuffle(null)
-      reportCommandError('Shuffle failed', err)
+      reportCommandError("Couldn't change shuffle", err)
     })
   }, [reportCommandError, setShuffle, shuffle])
 
@@ -167,7 +169,7 @@ export function usePlayerControls(params: UsePlayerControlsParams): UsePlayerCon
   const onDJSignal = useCallback(() => {
     if (!djSignal) return
     void Promise.resolve(djSignal()).catch((err) => {
-      reportCommandError('Switching DJ set failed', err)
+      reportCommandError("Couldn't switch the DJ set", err)
     })
   }, [djSignal, reportCommandError])
 
@@ -177,7 +179,7 @@ export function usePlayerControls(params: UsePlayerControlsParams): UsePlayerCon
     setOptimisticRepeat({ value: nextMode, at: Date.now() })
     void Promise.resolve(setRepeat(nextMode)).catch((err) => {
       setOptimisticRepeat(null)
-      reportCommandError('Repeat failed', err)
+      reportCommandError("Couldn't change repeat", err)
     })
   }, [repeat, reportCommandError, setRepeat])
 

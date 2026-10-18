@@ -49,6 +49,8 @@ type App struct {
 
 	// nil when nav is disabled
 	nav *navRelay
+	// passengers picking the music (jam.go)
+	jam *jamService
 
 	// nil when updates are disabled
 	updates *updater
@@ -192,6 +194,10 @@ func New(opts *Options) (*App, error) {
 		}
 		return app.cfg.Update.Repo
 	}, app.log))
+
+	// passengers picking the music, through a relay (jam.go)
+	app.jam = newJamService(app, nil)
+	app.server.SetJam(app.jam)
 
 	// turn-by-turn relay from the phone; dialled once Run starts
 	if app.cfg.Nav.Enabled {

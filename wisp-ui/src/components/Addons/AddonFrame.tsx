@@ -19,7 +19,8 @@ interface Props {
 function AddonFrameImpl({ addon, onClose }: Props) {
   const frame = useRef<HTMLIFrameElement>(null)
 
-  const send = (msg: Record<string, unknown>) => frame.current?.contentWindow?.postMessage({ wisp: 1, ...msg }, '*')
+  const send = (msg: Record<string, unknown>) =>
+    frame.current?.contentWindow?.postMessage({ wisp: 1, ...msg }, '*')
 
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
@@ -33,7 +34,8 @@ function AddonFrameImpl({ addon, onClose }: Props) {
       }
       answer(addon, req).then(
         (data) => send({ reply: req.id, data }),
-        (err: unknown) => send({ reply: req.id, error: err instanceof Error ? err.message : 'failed' }),
+        (err: unknown) =>
+          send({ reply: req.id, error: err instanceof Error ? err.message : 'failed' }),
       )
     }
     window.addEventListener('message', onMessage)
@@ -45,7 +47,9 @@ function AddonFrameImpl({ addon, onClose }: Props) {
     if (!addon.permissions?.includes('now_playing')) return
     return subscribeEvents((evt) => {
       if (evt.type === 'observer_track_changed' || evt.type === 'observer_state_changed') {
-        void answer(addon, { wisp: 1, type: 'now_playing' }).then((np) => send({ event: 'nowplaying', data: np }))
+        void answer(addon, { wisp: 1, type: 'now_playing' }).then((np) =>
+          send({ event: 'nowplaying', data: np }),
+        )
       }
     })
   }, [addon])

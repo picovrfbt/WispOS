@@ -1,9 +1,11 @@
+import { useCallback } from 'react'
 import { BluetoothMenu } from '@/components/BluetoothMenu'
 import { CallCard } from '@/components/CallCard'
 import { DebugScreen } from '@/components/DebugScreen'
 import { DevicePicker } from '@/components/DevicePicker'
 import { AddonsScreen } from '@/components/Addons'
 import { DriveMode } from '@/components/DriveMode'
+import { JamActivity, JamSave, JamSheet } from '@/components/Jam'
 import { ModelOffer } from '@/components/ModelOffer'
 import { FullVisualizer } from '@/components/Visualizer'
 import { Home, type NowPlayingCard } from '@/components/Home'
@@ -63,6 +65,11 @@ export function OverlayHost({
   nowPlaying,
 }: OverlayHostProps) {
   const overlays = useOverlayState()
+  const openJam = useCallback(() => overlays.open('jam'), [overlays])
+  const offerJamSave = useCallback(() => {
+    overlays.close('jam')
+    overlays.open('jamSave')
+  }, [overlays])
 
   return (
     <>
@@ -160,6 +167,14 @@ export function OverlayHost({
       <Leaving open={overlays.isOpen('addons')}>
         <AddonsScreen onClose={() => overlays.close('addons')} />
       </Leaving>
+      <Leaving open={overlays.isOpen('jam')}>
+        <JamSheet onClose={() => overlays.close('jam')} />
+      </Leaving>
+      <Leaving open={overlays.isOpen('jamSave')}>
+        <JamSave onClose={() => overlays.close('jamSave')} />
+      </Leaving>
+      {/* passengers' picks along the top, the QR when a session starts by voice, keeping their songs at the end */}
+      <JamActivity notify={notify} onStarted={openJam} onEnded={offerJamSave} />
       <Leaving open={overlays.isOpen('viz')}>
         <FullVisualizer
           art={nowPlaying?.image}

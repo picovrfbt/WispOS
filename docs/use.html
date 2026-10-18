@@ -16,7 +16,7 @@
 <header class="top">
   <div class="wrap">
     <a class="brand" href="./" aria-label="Wisp, home"><img src="logo.svg" alt="">Wisp</a>
-    <a class="ver" href="new/1.0.html" title="What's new in 1.0">1.0</a>
+    <a class="ver" href="new/1.0.1.html" title="What's new in 1.0.1">1.0.1</a>
     <nav class="links" id="nav-links" aria-label="Main">
       <a href="./#features">Features</a>
       <a href="./#directions">Directions</a>
@@ -24,6 +24,7 @@
       <a href="use.html" aria-current="page">How to use</a>
       <a href="guide.html">Set up</a>
       <a href="studio.html">Add-on Studio</a>
+      <a href="updates.html">Updates</a>
     </nav>
     <div class="top-actions">
       <a class="gh" href="https://github.com/picovrfbt/WispOS" aria-label="Wisp on GitHub"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.09 0 4.42-2.7 5.4-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg></a>
@@ -46,6 +47,7 @@
     <a href="#voice"><span>04</span>Talking to Wisp</a>
     <a href="#directions"><span>05</span>Directions</a>
     <a href="#drive"><span>06</span>Drive Mode</a>
+    <a href="#passengers"><span>♫</span>Passengers pick the music</a>
     <a href="#calls"><span>07</span>Calls and the phone</a>
     <a href="#addons"><span>08</span>Add-ons</a>
     <a href="#settings"><span>09</span>Settings and updates</a>
@@ -146,6 +148,26 @@
     </div>
   </section>
 
+  <section id="passengers" class="gstep">
+    <h2><span class="num">♫</span>Passengers pick the music</h2>
+    <div class="two align">
+      <div>
+        <p>Let everyone in the car add songs. In the player's menu, tap <b>Passengers pick the music</b>, or say "Okay Wisp, let the passengers pick". A QR code fills the screen.</p>
+        <ul class="needs">
+          <li><b>Passengers scan it</b> with their phone's camera: a page opens where they type their name, search, tap <b>Add</b> to put a song in Up next, and vote to skip what's playing. About half the passengers' votes skips a song.</li>
+          <li><b>Spotify, YouTube Music and SoundCloud.</b> Passengers can search every service you're signed in to in the Wisp app; each song is labelled with where it plays, and the page shows what's up next and who added it. A YouTube Music or SoundCloud song starts in its app on your phone when the one before it ends, then Spotify picks up where it was.</li>
+          <li><b>Autoplay</b> (on the QR screen): when Spotify runs out and would autoplay, it plays songs like the passengers' Spotify picks instead.</li>
+          <li><b>Keep their songs:</b> when the session ends, the Car Thing asks whether to save the passengers' songs as a private Spotify playlist named for the day, like "Car jam · Oct 17". Press <b>Save</b> or <b>No thanks</b>.</li>
+          <li><b>The Car Thing does the searching and queueing,</b> so no one signs in to your Spotify. A note at the top says who added what.</li>
+          <li><b>Done</b> hides the code and keeps the session going; <b>Stop</b> (or "stop passenger mode") ends it. Each session has a new code.</li>
+        </ul>
+        <p class="note-doc">Phones reach the car through <a href="https://ntfy.sh">ntfy</a>, a free, open-source message relay, on a private, random channel. Only searches and song picks pass through it.</p>
+      </div>
+      <img class="shot-doc" src="screenshots/jam.png" alt="The Car Thing showing a QR code for passengers, with who's joined" loading="lazy">
+    </div>
+    <div class="use-row two-up"><figure><img src="screenshots/jam-phone.png" alt="" loading="lazy" style="aspect-ratio:auto;object-fit:contain;max-height:420px;background:#08080a"><figcaption>What passengers see on their phone</figcaption></figure></div>
+  </section>
+
   <section id="calls" class="gstep">
     <h2><span class="num">07</span>Calls and the phone</h2>
     <div class="two align">
@@ -209,6 +231,7 @@
     <nav>
       <a href="guide.html">Set up</a>
       <a href="use.html">How to use</a>
+      <a href="updates.html">Updates</a>
       <a href="addons.html">Make an add-on</a>
       <a href="studio.html">Add-on Studio</a>
       <a href="privacy.html">Privacy</a>

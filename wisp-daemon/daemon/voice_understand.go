@@ -146,6 +146,8 @@ const (
 	doLyrics     = "lyrics"
 	doNavigate   = "navigate"
 	doNavStop    = "nav_stop"
+	doJamStart   = "jam_start"
+	doJamStop    = "jam_stop"
 	doCall       = "call"
 	doMood       = "mood"
 )
@@ -186,6 +188,8 @@ var understandRules = []struct {
 	{regexp.MustCompile(`^(?:(?:make (?:it|the screen) )?(?:dimmer|darker)|dim(?: the screen| it)?|turn (?:down )?the brightness(?: down)?|less brightness|the screen is too bright|too bright|lower (?:the )?brightness|decrease (?:the )?brightness)$`), doDimmer, 0},
 	{regexp.MustCompile(`^(?:turn |switch )?auto(?:matic)? brightness (on|off)$|^(?:turn|switch) (on|off) auto(?:matic)? brightness$`), doAutoBright, -1},
 	{regexp.MustCompile(`^(?:(show|turn on) (?:the )?lyrics|(hide|turn off) (?:the )?lyrics|lyrics (on|off))$`), doLyrics, -1},
+	{regexp.MustCompile(`^(?:let|have) (?:the )?(?:passengers|everyone|my friends|the kids) (?:pick|choose|add|queue)(?: (?:the )?(?:music|songs))?$|^(?:start|open) (?:a |the )?(?:jam|passenger mode|passengers? (?:picks?|mode))$|^passenger mode(?: on)?$`), doJamStart, 0},
+	{regexp.MustCompile(`^(?:stop|end|close) (?:the )?(?:jam|passenger mode|passengers? (?:picks?|picking|mode))$|^passenger mode off$`), doJamStop, 0},
 	{regexp.MustCompile(`^(?:stop|end|cancel|quit|exit) (?:the )?(?:navigation|navigating|directions|route|trip)$|^(?:stop|cancel) navigat(?:ion|ing)$`), doNavStop, 0},
 	{regexp.MustCompile(`^(?:take me|navigate|drive me|get me|give me directions|directions|show me the way|how do i get|route me) (?:to |back to )?(.+)$|^go (?:to |back to )(.+)$|^(?:go|head|let'?s go) (home)$`), doNavigate, -2},
 	{regexp.MustCompile(`^(?:call|phone|dial|ring) (.+?)(?: up| on (?:the )?phone)?$|^give (.+?) a (?:call|ring)$`), doCall, -2},
@@ -301,6 +305,18 @@ func (v *voiceService) handleUnderstood(ctx context.Context, gen uint64, u under
 		return v.setSettings(gen, map[string]any{"showLyrics": on}, msg)
 	case doNavigate:
 		return v.navigateTo(ctx, gen, u.arg)
+	case doJamStart:
+		if v.app.jam == nil {
+			return v.fail(gen, "That isn't available here")
+		}
+		v.app.jam.Start()
+		return v.answer(gen, "Passengers can scan the code on the screen")
+	case doJamStop:
+		if v.app.jam == nil || !v.app.jam.State().Active {
+			return v.answer(gen, "Passengers aren't picking right now")
+		}
+		v.app.jam.Stop()
+		return v.answer(gen, "The music's back with you")
 	case doNavStop:
 		if v.app.nav != nil && v.app.nav.own.Active() {
 			v.app.nav.own.Stop()

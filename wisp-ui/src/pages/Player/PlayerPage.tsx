@@ -73,7 +73,7 @@ export function PlayerPage({
 
   const onSeek = useCallback(
     (positionMs: number) => {
-      void seek(positionMs).catch(() => notify('Seek failed', { variant: 'error' }))
+      void seek(positionMs).catch(() => notify("Couldn't skip to that spot", { variant: 'error' }))
     },
     [seek, notify],
   )
@@ -86,7 +86,7 @@ export function PlayerPage({
         ? status.position
         : status.position + (Date.now() - status.received_at)
       const target = Math.min(status.duration, Math.max(0, base + deltaMs))
-      void seek(target).catch(() => notify('Seek failed', { variant: 'error' }))
+      void seek(target).catch(() => notify("Couldn't skip to that spot", { variant: 'error' }))
     },
     [live, status, seek, notify],
   )
