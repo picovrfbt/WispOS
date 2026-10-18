@@ -2,10 +2,14 @@ package daemon
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -357,5 +361,49 @@ func TestJamEndKeepsPicksForTheOffer(t *testing.T) {
 	j.Forget()
 	if j.State().Picks != 0 {
 		t.Fatal("forgotten")
+	}
+}
+
+func TestJamRelayPick(t *testing.T) {
+	var healthy atomic.Bool
+	relay := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/v1/health" && healthy.Load() {
+			_, _ = w.Write([]byte(`{"healthy":true}`))
+			return
+		}
+		http.NotFound(w, r)
+	}))
+	defer relay.Close()
+	list := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// one with a path and one not https are skipped
+		_, _ = w.Write([]byte(`{"relays":["` + relay.URL + `/sub", "http://not-https.example", "` + relay.URL + `"]}`))
+	}))
+	defer list.Close()
+	j, _, _ := newLineJam(t)
+	j.client = &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}, Timeout: 5 * time.Second}
+	j.mu.Lock()
+	j.topic = ""
+	j.mu.Unlock()
+
+	healthy.Store(true)
+	j.pickRelay(context.Background(), list.URL)
+	if j.base() != relay.URL {
+		t.Fatalf("picked %s", j.base())
+	}
+	// a session keeps the relay it started on, whatever's picked later
+	st := j.Start()
+	defer func() {
+		j.mu.Lock()
+		j.topic = ""
+		j.cancel()
+		j.mu.Unlock()
+	}()
+	if !strings.HasSuffix(st.URL, "@"+strings.TrimPrefix(relay.URL, "https://")) {
+		t.Fatalf("link %s", st.URL)
+	}
+	healthy.Store(false)
+	j.pickRelay(context.Background(), list.URL)
+	if j.base() != relay.URL {
+		t.Fatalf("session moved to %s", j.base())
 	}
 }

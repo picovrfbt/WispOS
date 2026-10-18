@@ -175,7 +175,9 @@ func (j *jamService) searchOne(ctx context.Context, svc, q string, limit int) []
 		if it.Video == "" || len(it.Video) > 100 || it.Name == "" {
 			continue
 		}
-		out = append(out, jamItem{Svc: svc, ID: it.Video, Title: clipRunes(it.Name, 80), Artist: clipRunes(it.Sub, 60), Image: jamImage(it.Image)})
+		// YouTube Music's line is "artist • album • 2:16 · 4.2M plays": the artist is enough
+		artist, _, _ := strings.Cut(it.Sub, " • ")
+		out = append(out, jamItem{Svc: svc, ID: it.Video, Title: clipRunes(it.Name, 80), Artist: clipRunes(strings.TrimSpace(artist), 60), Image: jamImage(it.Image)})
 	}
 	return out
 }
