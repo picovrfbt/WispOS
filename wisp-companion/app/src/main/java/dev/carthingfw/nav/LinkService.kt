@@ -25,6 +25,8 @@ class LinkService : Service() {
         NavServer.ensureStarted(applicationContext)
         // Wisp's thinking on this phone, for the Car Thing's voice
         WispThink.start(applicationContext)
+        // a notification when a new Wisp app is out
+        UpdateNotice.watch(applicationContext)
         try {
             startForeground(ID, notification(this), ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE)
         } catch (e: Exception) {

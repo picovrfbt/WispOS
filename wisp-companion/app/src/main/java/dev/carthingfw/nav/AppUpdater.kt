@@ -68,8 +68,9 @@ object AppUpdater {
         }.start()
     }
 
-    /** downloads the offered APK, checks it, and hands it to Android's installer */
-    fun install(ctx: Context, offer: Offer, progress: () -> Unit) {
+    /** downloads the offered APK, checks it, and hands it to Android's installer;
+     *  [background]: nobody's looking, so if Android wants a yes, it's asked by notification */
+    fun install(ctx: Context, offer: Offer, background: Boolean = false, progress: () -> Unit) {
         if (state is State.Downloading || state is State.Installing) return
         val app = ctx.applicationContext
         state = State.Downloading(0)
@@ -86,7 +87,7 @@ object AppUpdater {
                 }
                 state = State.Installing
                 main.post(progress)
-                startInstall(app, apk)
+                startInstall(app, apk, background)
             } catch (e: Exception) {
                 Log.w(TAG, "update install failed", e)
                 state = State.Failed(failText(e))
@@ -177,10 +178,14 @@ object AppUpdater {
         }
     }
 
-    private fun startInstall(ctx: Context, apk: File) {
+    private fun startInstall(ctx: Context, apk: File, background: Boolean) {
         val installer = ctx.packageManager.packageInstaller
         val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL).apply {
             setAppPackageName(ctx.packageName)
+            // an app updating itself needn't ask, once it installed itself the time before (Android 12+)
+            if (android.os.Build.VERSION.SDK_INT >= 31) {
+                setRequireUserAction(PackageInstaller.SessionParams.USER_ACTION_NOT_REQUIRED)
+            }
         }
         val id = installer.createSession(params)
         installer.openSession(id).use { session ->
@@ -188,7 +193,7 @@ object AppUpdater {
                 apk.inputStream().use { it.copyTo(out) }
                 session.fsync(out)
             }
-            val intent = Intent(ctx, InstallResultReceiver::class.java)
+            val intent = Intent(ctx, InstallResultReceiver::class.java).putExtra(InstallResultReceiver.BACKGROUND, background)
             val pending = PendingIntent.getBroadcast(
                 ctx, id, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE,
             )
@@ -241,9 +246,19 @@ object AppUpdater {
 
 /** Android's answer to an install: ask the user, or report how it went */
 class InstallResultReceiver : BroadcastReceiver() {
+    companion object {
+        const val BACKGROUND = "dev.carthingfw.nav.BACKGROUND_INSTALL"
+    }
+
     override fun onReceive(ctx: Context, intent: Intent) {
         when (val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE)) {
             PackageInstaller.STATUS_PENDING_USER_ACTION -> {
+                if (intent.getBooleanExtra(BACKGROUND, false)) {
+                    // Android wants a yes and nobody's in the app: the notification asks
+                    AppUpdater.finished(false, "waiting for you to confirm")
+                    AppUpdater.check(ctx) { UpdateNotice.offerIfNew(ctx) }
+                    return
+                }
                 @Suppress("DEPRECATION")
                 val confirm = intent.getParcelableExtra<Intent>(Intent.EXTRA_INTENT) ?: return
                 ctx.startActivity(confirm.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))

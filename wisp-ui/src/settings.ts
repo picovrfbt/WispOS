@@ -39,6 +39,8 @@ export interface Settings {
   voiceSpeed: number
   /** the voice's defaults went from off at 1x to on at 1.1x (1.0.3): set once untouched settings moved */
   voiceDefaultsOn: boolean
+  /** updates went from asking to installing by themselves, in the background (1.0.4): set once moved */
+  updateDefaultsOn: boolean
   /** how loud Wisp talks, 10 to 100%, apart from the music's volume */
   voiceVolumePct: number
   /** which library Home opens on: 'spotify' or a music service's id */
@@ -93,15 +95,16 @@ const DEFAULTS: Settings = {
   presets: {},
   nightMode: 'off',
   phoneNotifications: false,
-  autoInstallUpdates: false,
+  autoInstallUpdates: true,
   arrivalAction: 'none',
   navEngine: 'google',
   navVoice: 'all',
   accentTheme: 'green',
-  updateInBackground: false,
+  updateInBackground: true,
   wispVoice: 'confirmations',
   voiceSpeed: 1.1,
   voiceDefaultsOn: true,
+  updateDefaultsOn: true,
   voiceVolumePct: 80,
   homeSource: 'spotify',
   phoneLyrics: false,
@@ -129,28 +132,37 @@ function coerceUiScale(raw: unknown): number {
   return clamp(Math.round(n / UI_SCALE_STEP) * UI_SCALE_STEP, UI_SCALE_MIN, UI_SCALE_MAX)
 }
 
-// Wisp's voice used to start off at 1x; settings still on exactly that, never
-// changed, move to the new defaults once (and only once: turning it off later sticks)
+// Defaults that changed move stored settings once (and only once: turning one
+// back later sticks). Wisp's voice used to start off at 1x: settings still on
+// exactly that move to the new voice. Updates used to wait to be installed and
+// take the screen over: they now install by themselves, in the background.
 function voiceDefaults(
   partial: Partial<Settings> | null | undefined,
 ): Partial<Settings> | null | undefined {
-  if (!partial || partial.voiceDefaultsOn === true) return partial
-  const untouched =
-    (partial.wispVoice === undefined || partial.wispVoice === 'off') &&
-    (partial.voiceSpeed === undefined || partial.voiceSpeed === 1)
-  return untouched
-    ? {
-        ...partial,
-        wispVoice: DEFAULTS.wispVoice,
-        voiceSpeed: DEFAULTS.voiceSpeed,
-        voiceDefaultsOn: true,
-      }
-    : { ...partial, voiceDefaultsOn: true }
+  if (!partial) return partial
+  let out = partial
+  if (out.voiceDefaultsOn !== true) {
+    const untouched =
+      (out.wispVoice === undefined || out.wispVoice === 'off') &&
+      (out.voiceSpeed === undefined || out.voiceSpeed === 1)
+    out = untouched
+      ? {
+          ...out,
+          wispVoice: DEFAULTS.wispVoice,
+          voiceSpeed: DEFAULTS.voiceSpeed,
+          voiceDefaultsOn: true,
+        }
+      : { ...out, voiceDefaultsOn: true }
+  }
+  if (out.updateDefaultsOn !== true) {
+    out = { ...out, autoInstallUpdates: true, updateInBackground: true, updateDefaultsOn: true }
+  }
+  return out
 }
 
-/** whether these stored settings still need the voice's new defaults written back */
+/** whether these stored settings still need a changed default written back */
 function needsVoiceDefaults(partial: Partial<Settings> | null | undefined): boolean {
-  return !!partial && partial.voiceDefaultsOn !== true
+  return !!partial && (partial.voiceDefaultsOn !== true || partial.updateDefaultsOn !== true)
 }
 
 function coerce(raw: Partial<Settings> | null | undefined): Settings {
@@ -173,7 +185,9 @@ function coerce(raw: Partial<Settings> | null | undefined): Settings {
       ? (partial?.nightMode as NightMode)
       : DEFAULTS.nightMode,
     phoneNotifications: partial?.phoneNotifications === true,
-    autoInstallUpdates: partial?.autoInstallUpdates === true,
+    autoInstallUpdates: partial
+      ? partial.autoInstallUpdates !== false
+      : DEFAULTS.autoInstallUpdates,
     arrivalAction: partial?.arrivalAction === 'pause' ? 'pause' : 'none',
     navEngine: partial?.navEngine === 'wisp' ? 'wisp' : 'google',
     navVoice:
@@ -181,7 +195,9 @@ function coerce(raw: Partial<Settings> | null | undefined): Settings {
     accentTheme: ACCENT_ORDER.includes(partial?.accentTheme as AccentTheme)
       ? (partial?.accentTheme as AccentTheme)
       : DEFAULTS.accentTheme,
-    updateInBackground: partial?.updateInBackground === true,
+    updateInBackground: partial
+      ? partial.updateInBackground !== false
+      : DEFAULTS.updateInBackground,
     wispVoice: VOICE_MODES.includes(partial?.wispVoice as WispVoiceMode)
       ? (partial?.wispVoice as WispVoiceMode)
       : DEFAULTS.wispVoice,
@@ -191,6 +207,7 @@ function coerce(raw: Partial<Settings> | null | undefined): Settings {
         ? clamp(Math.round(partial.voiceSpeed * 10) / 10, VOICE_SPEED_MIN, VOICE_SPEED_MAX)
         : DEFAULTS.voiceSpeed,
     voiceDefaultsOn: partial ? partial.voiceDefaultsOn === true : DEFAULTS.voiceDefaultsOn,
+    updateDefaultsOn: partial ? partial.updateDefaultsOn === true : DEFAULTS.updateDefaultsOn,
     voiceVolumePct:
       typeof partial?.voiceVolumePct === 'number' && Number.isFinite(partial.voiceVolumePct)
         ? clamp(Math.round(partial.voiceVolumePct / 10) * 10, 10, 100)

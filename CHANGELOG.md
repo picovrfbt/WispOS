@@ -3,6 +3,16 @@
 What changed in each Wisp release, newest first. Each version is on the
 [releases page](https://github.com/picovrfbt/WispOS/releases) with its downloads.
 
+## v1.0.4 (2026-10-18)
+
+Updates take care of themselves, on the Car Thing and on your phone.
+
+- **The Car Thing updates itself.** "Install updates automatically" and "Update in the background" are now on by default: a new Wisp installs while you drive, without taking over the screen, and is there the next time it starts. Settings that were still on the old defaults move once; turn either off in Settings → Software update and it stays off.
+- **The Wisp app updates itself too.** It looks for a new version every few hours while it runs in the background and installs it by itself, where Android lets an app update itself without asking (Android 12 and up, once it has updated itself the first time). Turn it off in Options → Update the app automatically.
+- **When an update needs you**, the Wisp app says so: a notification ("tap to update"), once per version, and a pop-up when you open the app.
+- **The Wisp link comes back by itself** after the app updates and after the phone restarts.
+- **Wisp app 1.0.3.**
+
 ## v1.0.3 (2026-10-18)
 
 Wisp's thinking gets ready and answers, and Wisp's voice is on from the start.
