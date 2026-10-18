@@ -50,6 +50,7 @@ function MenuImpl({
         </div>
         <Row label="Devices" value={currentDevice ?? 'Switch'} onClick={onOpenDevices} />
         <VisualizerRows />
+        <PassengersRow />
       </div>
     </div>
   )
@@ -79,6 +80,22 @@ function VisualizerRows() {
         />
       ) : null}
     </>
+  )
+}
+
+// passengers pick the music from their phones: the QR code screen
+function PassengersRow() {
+  const overlays = useContext(OverlayContext)
+  if (!overlays) return null
+  return (
+    <Row
+      label="Passengers pick the music"
+      value="Show code"
+      onClick={() => {
+        overlays.close('menu')
+        overlays.open('jam')
+      }}
+    />
   )
 }
 

@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -353,7 +354,7 @@ func (u *updater) Check(ctx context.Context) {
 	rel, err := u.latestRelease(ctx, repo)
 	if err != nil {
 		u.log.Infof("update: check failed: %v", err)
-		u.setState(func(s *UpdateState) { s.Phase, s.Error = "error", err.Error() })
+		u.setState(func(s *UpdateState) { s.Phase, s.Error = "error", updateErrText(err) })
 		return
 	}
 	cur := u.version()
@@ -452,6 +453,28 @@ func releaseHighlights(body string) []string {
 
 var ErrNoUpdate = errors.New("no update to install")
 
+// updateErrText: what an update failure says on screen. The log keeps the full error;
+// the screen gets what it means and what to do.
+func updateErrText(err error) string {
+	var nerr net.Error
+	msg := err.Error()
+	switch {
+	case errors.As(err, &nerr), errors.Is(err, context.DeadlineExceeded),
+		strings.Contains(msg, "no such host"), strings.Contains(msg, "connection refused"),
+		strings.Contains(msg, "connection reset"), strings.Contains(msg, "unexpected EOF"):
+		return "Couldn't reach the internet. Check the phone's connection and try again"
+	case strings.Contains(msg, "checksum"), strings.Contains(msg, "verification"):
+		return "The download was damaged. Try again"
+	case strings.HasPrefix(msg, "not enough space"):
+		return "Not enough room on the Car Thing for the update"
+	case strings.HasPrefix(msg, "github: 403"), strings.HasPrefix(msg, "github: 429"):
+		return "GitHub is busy right now. Try again in a bit"
+	case strings.HasPrefix(msg, "bundle"), strings.HasPrefix(msg, "release"), strings.HasPrefix(msg, "bad release"):
+		return "This update is broken. Wait for the next one"
+	}
+	return msg
+}
+
 // Install downloads, verifies and unpacks the latest bundle, switches to it and
 // restarts into it. It returns once the work is under way.
 func (u *updater) Install() error {
@@ -468,7 +491,7 @@ func (u *updater) Install() error {
 	go func() {
 		if err := u.install(context.Background(), rel); err != nil {
 			u.log.Warnf("update: install of %s failed: %v", rel.TagName, err)
-			u.setState(func(s *UpdateState) { s.Phase, s.Error, s.Percent = "error", err.Error(), 0 })
+			u.setState(func(s *UpdateState) { s.Phase, s.Error, s.Percent = "error", updateErrText(err), 0 })
 		}
 	}()
 	return nil

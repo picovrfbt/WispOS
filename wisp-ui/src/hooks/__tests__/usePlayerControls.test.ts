@@ -122,7 +122,7 @@ describe('usePlayerControls optimistic play/pause', () => {
       })
 
       expect(result.current.isPaused).toBe(true)
-      expect(onCommandError).toHaveBeenCalledWith('Play/pause failed')
+      expect(onCommandError).toHaveBeenCalledWith("Spotify didn't respond. Try again")
     } finally {
       warnSpy.mockRestore()
     }

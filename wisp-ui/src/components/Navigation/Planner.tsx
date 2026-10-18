@@ -202,6 +202,9 @@ export function Planner({ location, onClose }: Props) {
           {view.place.address ? <div className={styles.planAddr}>{view.place.address}</div> : null}
           {error ? <p className={styles.planMsg}>{error}</p> : null}
           {!routes && !error ? <p className={styles.planMsg}>Finding the ways there…</p> : null}
+          {routes && !routes.length && !error ? (
+            <p className={styles.planMsg}>No way there by road</p>
+          ) : null}
           <div className={styles.routes}>
             {shown.map((r, i) => (
               <div
@@ -270,6 +273,9 @@ export function Planner({ location, onClose }: Props) {
           <div className={styles.whereSub}>Nearest first · turn to pick, press for routes</div>
           {error ? <p className={styles.planMsg}>{error}</p> : null}
           {!results ? <p className={styles.planMsg}>Looking nearby…</p> : null}
+          {results && !results.length && !error ? (
+            <p className={styles.planMsg}>Nothing close by</p>
+          ) : null}
           <div className={styles.results}>
             {(results ?? []).map((p, i) => (
               <div

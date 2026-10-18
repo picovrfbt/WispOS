@@ -73,15 +73,15 @@ type NavState struct {
 	Text    string `json:"text,omitempty"`
 	SubText string `json:"sub_text,omitempty"`
 	// the maneuver arrow, a data:image/png;base64 URL
-	Icon     string       `json:"icon,omitempty"`
+	Icon string `json:"icon,omitempty"`
 	// Wisp's own directions (own_nav.go): the turn's shape for its arrow
 	// ("left", "slight-right", "uturn", "roundabout", "arrive", …) and the
 	// turn after ("Pine Ave" and its shape)
-	Own          bool   `json:"own,omitempty"`
-	Maneuver     string `json:"maneuver,omitempty"`
-	Then         string `json:"then,omitempty"`
-	ThenManeuver string `json:"then_maneuver,omitempty"`
-	Location *NavLocation `json:"location,omitempty"`
+	Own          bool         `json:"own,omitempty"`
+	Maneuver     string       `json:"maneuver,omitempty"`
+	Then         string       `json:"then,omitempty"`
+	ThenManeuver string       `json:"then_maneuver,omitempty"`
+	Location     *NavLocation `json:"location,omitempty"`
 	// the phone's offset from UTC in minutes, from its hello; the Car Thing
 	// itself runs on UTC. kept after the phone goes, the last one known
 	TzOffsetMin *int `json:"tz_offset_min,omitempty"`
@@ -685,3 +685,19 @@ func (s *ConcreteApiServer) SetAddonStore(a *addonStore) {
 }
 
 func (s *StubApiServer) SetAddonStore(_ *addonStore) {}
+
+func (s *ConcreteApiServer) SetJam(j *jamService) {
+	s.navMu.Lock()
+	s.jam = j
+	s.navMu.Unlock()
+	if j != nil {
+		// the phone's other music services, for the passengers' picks from them
+		j.nav = func() NavHandler {
+			s.navMu.RLock()
+			defer s.navMu.RUnlock()
+			return s.navFn
+		}
+	}
+}
+
+func (s *StubApiServer) SetJam(_ *jamService) {}

@@ -122,7 +122,7 @@ async function navJson<T>(res: Response): Promise<T> {
   if (!res.ok) {
     if (res.status === 503) throw new Error("Waiting for your phone's location")
     if (res.status === 404) throw new Error('Nothing found nearby')
-    throw new Error(body.error ? "Couldn't reach the map service" : `nav: ${res.status}`)
+    throw new Error("Couldn't reach the map service. Check the phone's internet")
   }
   return body
 }

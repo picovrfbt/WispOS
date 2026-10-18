@@ -3,6 +3,16 @@
 What changed in each Wisp release, newest first. Each version is on the
 [releases page](https://github.com/picovrfbt/WispOS/releases) with its downloads.
 
+## v1.0.1 (2026-10-17)
+
+Passengers pick the music, from any of your music services, and clearer messages everywhere.
+
+- **Passengers pick the music.** A QR code on the Car Thing (the player's menu, or "Okay Wisp, let the passengers pick") lets everyone in the car search, add songs to Up next and vote to skip from their own phones, without signing in to your Spotify. A note on the Car Thing says who added what.
+  - **From any of your music services.** Passengers search Spotify and, when you're signed in to them in the Wisp app, YouTube Music and SoundCloud, all at once or one at a time. Every song shows where it plays, and the page shows Up next in order with who added each. Wisp keeps the line itself: a YouTube Music or SoundCloud pick starts in its app as the song before it ends, and Spotify carries on where it was afterwards.
+  - **Autoplay from their songs.** When Spotify runs out and starts its own autoplay, it plays the radio of the last passenger song that played on Spotify instead (a switch on the QR screen).
+  - **Keep their songs.** When a session ends, the Car Thing asks whether to save every song the passengers added as a private Spotify playlist, "Car jam · Oct 17". Their YouTube Music and SoundCloud picks are matched on Spotify; any that aren't there are counted.
+- **Clearer messages.** "Nothing playing" says what to do; a failed update says why in plain words (no internet, a damaged download, no room) on the Car Thing and in the Wisp app; directions say when nothing is close by; and button errors say what didn't work.
+
 ## v1.0.0 (2026-10-17)
 
 Wisp 1.0: open source, on its own modern system, with its own directions, a smarter voice, community add-ons and new Drive Mode music.

@@ -131,7 +131,7 @@ function ServicePlayerImpl({ media, service, dialEnabled, onBack }: Props) {
   const onSeek = useCallback(
     (ms: number) => {
       void phoneMediaSeek(ms).then((ok) => {
-        if (!ok) notify('Seek failed', { variant: 'error' })
+        if (!ok) notify("Couldn't skip to that spot", { variant: 'error' })
       })
     },
     [notify],

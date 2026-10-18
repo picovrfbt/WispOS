@@ -8,6 +8,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -329,5 +330,19 @@ func TestUpdaterReportsFocusAndProgress(t *testing.T) {
 	}
 	if updateInBackgroundFromSettings(nil) || !updateInBackgroundFromSettings([]byte(`{"updateInBackground":true}`)) {
 		t.Fatal("updates take the Car Thing over unless the setting says otherwise")
+	}
+}
+
+func TestUpdateErrText(t *testing.T) {
+	for in, want := range map[string]string{
+		`Get "https://api.github.com/x": dial tcp: lookup api.github.com: no such host`: "Couldn't reach the internet. Check the phone's connection and try again",
+		"download failed verification (checksum mismatch)":                              "The download was damaged. Try again",
+		"not enough space (12 MB free)":                                                 "Not enough room on the Car Thing for the update",
+		"bundle is missing VERSION":                                                     "This update is broken. Wait for the next one",
+		"an update is already in progress":                                              "an update is already in progress",
+	} {
+		if got := updateErrText(errors.New(in)); got != want {
+			t.Errorf("%q: got %q", in, got)
+		}
 	}
 }

@@ -9,6 +9,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
+	"net/url"
 	"os"
 	"sort"
 	"strconv"
@@ -386,6 +388,7 @@ func clusterToRemoteState(cluster *connectpb.Cluster) *RemoteState {
 		PrevTracks:            projectQueue(ps.PrevTracks, QueueLimit),
 		NextTracks:            projectQueue(ps.NextTracks, QueueLimit),
 		RawMetadata:           rawMeta,
+		TrackAutoplay:         track != nil && (track.Provider == "autoplay" || rawMeta["autoplay.is_autoplay"] == "true"),
 	}
 	now := time.Now()
 	rs.ReceivedAt = now
@@ -1166,6 +1169,7 @@ func (p *AppPlayer) handleApiRequest(ctx context.Context, req ApiRequest) (any, 
 			"track_artist":      rs.TrackArtist,
 			"track_album":       rs.TrackAlbum,
 			"track_image":       rs.TrackImageUrl,
+			"track_autoplay":    rs.TrackAutoplay,
 			"context_uri":       rs.ContextUri,
 			"context_name":      rs.ContextName,
 			"duration":          rs.Duration,
@@ -1289,6 +1293,9 @@ func (p *AppPlayer) handleApiRequest(ctx context.Context, req ApiRequest) (any, 
 			data.Volume, data.Relative, rs.Volume, target, rs.DeviceName)
 		return nil, p.sendActiveDeviceVolume(ctx, target)
 
+	case ApiRequestTypeTrackRadio:
+		uri, _ := req.Data.(string)
+		return p.trackRadio(ctx, uri)
 	case ApiRequestTypePlay:
 		// tell the active device to start a context
 		data, _ := req.Data.(ApiRequestDataPlay)
@@ -1370,6 +1377,10 @@ func (p *AppPlayer) handleApiRequest(ctx context.Context, req ApiRequest) (any, 
 		data, _ := req.Data.(ApiRequestDataAddToPlaylist)
 		return p.addCurrentToPlaylist(ctx, data.PlaylistUri)
 
+	case ApiRequestTypeCreatePlaylist:
+		data, _ := req.Data.(ApiRequestDataCreatePlaylist)
+		return p.createPlaylist(ctx, data)
+
 	case ApiRequestTypeLikeCurrent:
 		rs := p.state.remoteState
 		if rs == nil || !strings.HasPrefix(rs.TrackUri, "spotify:track:") {
@@ -1396,6 +1407,37 @@ const djContextResolveUrl = "hm://lexicon-session-provider/context-resolve/v2/se
 
 // buildPlayCommand turns a play request into the connect command for it. Pure, so the envelope
 // can be pinned by a test without a session.
+// trackRadio: the radio playlist Spotify makes for a song (what its "Go to song
+// radio" plays), for the passengers' picks to carry on from
+func (p *AppPlayer) trackRadio(ctx context.Context, uri string) (string, error) {
+	if !strings.HasPrefix(uri, "spotify:track:") || len(uri) > 60 {
+		return "", fmt.Errorf("not a track: %q", uri)
+	}
+	resp, err := p.sess.Spclient().Request(ctx, "GET", "/inspiredby-mix/v2/seed_to_playlist/"+uri,
+		url.Values{"response-format": []string{"json"}}, nil, nil)
+	if err != nil {
+		return "", err
+	}
+	defer func() { _ = resp.Body.Close() }()
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("song radio: %s", resp.Status)
+	}
+	var body struct {
+		MediaItems []struct {
+			Uri string `json:"uri"`
+		} `json:"mediaItems"`
+	}
+	if err := json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&body); err != nil {
+		return "", err
+	}
+	for _, m := range body.MediaItems {
+		if strings.HasPrefix(m.Uri, "spotify:playlist:") {
+			return m.Uri, nil
+		}
+	}
+	return "", errors.New("song radio: no playlist")
+}
+
 func buildPlayCommand(data ApiRequestDataPlay, username string) connectCommand {
 	uri := data.Uri
 	// the library alias is not a playable context: the device accepts it, then clears

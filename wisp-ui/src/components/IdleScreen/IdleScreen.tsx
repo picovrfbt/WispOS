@@ -14,8 +14,8 @@ interface Props {
 function IdleScreenImpl({ connected, devices, onSelectDevice }: Props) {
   const subtitle =
     devices.length > 0
-      ? 'No remote device is currently playing. \n Select one below'
-      : 'No remote device is currently playing. \n Open Spotify on your phone to control it here'
+      ? 'Pick where to play below'
+      : 'Play something in Spotify on your phone and it shows up here'
 
   return (
     <div className={styles.idle}>

@@ -62,12 +62,19 @@ export async function answer(a: AddonManifest, req: BridgeRequest): Promise<unkn
     case 'location': {
       needs(a, 'location')
       const loc = (await fetchNavStatus()).location
-      return loc ? { lat: coarse(loc.lat), lng: coarse(loc.lng), speed_mph: Math.round(loc.speed * 2.23694) } : null
+      return loc
+        ? { lat: coarse(loc.lat), lng: coarse(loc.lng), speed_mph: Math.round(loc.speed * 2.23694) }
+        : null
     }
     case 'nav': {
       needs(a, 'nav')
       const n = await fetchNavStatus()
-      return { active: n.active, distance: n.title ?? '', instruction: n.text ?? '', arrival: n.sub_text ?? '' }
+      return {
+        active: n.active,
+        distance: n.title ?? '',
+        instruction: n.text ?? '',
+        arrival: n.sub_text ?? '',
+      }
     }
     case 'timezone': {
       // the phone's time zone: the Car Thing's own clock runs on UTC
@@ -82,7 +89,8 @@ export async function answer(a: AddonManifest, req: BridgeRequest): Promise<unkn
       } catch {
         throw new NotAllowed('not a web address')
       }
-      if (!a.network?.includes(host)) throw new NotAllowed(`${host} isn't one of this add-on's sites`)
+      if (!a.network?.includes(host))
+        throw new NotAllowed(`${host} isn't one of this add-on's sites`)
       return addonFetch(a.id, url)
     }
     case 'storage_get':

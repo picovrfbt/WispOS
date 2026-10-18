@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pick the music</title>
+<meta name="description" content="Add songs to the car's music and vote to skip, from your phone.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#08080a">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { color-scheme: dark; --bg: #08080a; --panel: #131316; --panel-2: #1a1a1f; --line: rgba(255,255,255,.08); --fg: #f2f2f4; --fg-2: rgba(242,242,244,.7); --fg-3: rgba(242,242,244,.5); --green: #1ed760; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.45 Inter, system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+  main { max-width: 520px; margin: 0 auto; padding: max(18px, env(safe-area-inset-top)) 16px 40px; }
+  .head { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+  .head img { width: 30px; height: 30px; border-radius: 8px; }
+  .head b { font-size: 19px; letter-spacing: -.02em; }
+  .head span { margin-left: auto; font-size: 13px; color: var(--fg-3); display: flex; align-items: center; gap: 6px; }
+  .head span i { width: 8px; height: 8px; border-radius: 50%; background: #f5a524; }
+  .head span.on i { background: var(--green); }
+  h1 { margin: 0 0 6px; font-size: 28px; letter-spacing: -.03em; line-height: 1.1; }
+  .sub { margin: 0 0 18px; color: var(--fg-2); }
+  .card { padding: 16px; border-radius: 20px; background: var(--panel); border: 1px solid var(--line); margin-bottom: 14px; }
+  label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  input { width: 100%; font: inherit; color: var(--fg); background: var(--panel-2); border: 1px solid rgba(255,255,255,.12); border-radius: 14px; padding: 13px 14px; }
+  input:focus-visible, button:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+  button { font: inherit; font-weight: 650; cursor: pointer; border: 0; border-radius: 999px; padding: 12px 18px; color: #04140a; background: var(--green); }
+  button.quiet { background: rgba(255,255,255,.08); color: var(--fg); }
+  button:disabled { opacity: .5; cursor: default; }
+  .row { display: flex; gap: 8px; }
+  .row input { flex: 1; }
+  .now { display: flex; gap: 14px; align-items: center; }
+  .now .art { width: 64px; height: 64px; border-radius: 12px; flex: none; background: var(--panel-2) center / cover no-repeat; }
+  .now .t { font-size: 18px; font-weight: 650; line-height: 1.2; }
+  .now .a { color: var(--fg-2); font-size: 15px; }
+  .now .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-3); margin-bottom: 2px; }
+  .skip { margin-top: 14px; width: 100%; }
+  .results { margin-top: 12px; display: grid; gap: 6px; }
+  .res { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; background: var(--panel-2); }
+  .res .txt { flex: 1; min-width: 0; }
+  .res .t { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .res .a { font-size: 14px; color: var(--fg-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .res button { padding: 9px 14px; font-size: 14px; flex: none; }
+  .res button.done { background: rgba(30,215,96,.16); color: var(--green); }
+  .res .cov { width: 44px; height: 44px; border-radius: 8px; flex: none; background: var(--panel) center / cover no-repeat; }
+  .svc { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 650; padding: 2px 8px 2px 6px; border-radius: 999px; background: rgba(255,255,255,.07); color: var(--fg-2); vertical-align: 1px; white-space: nowrap; letter-spacing: 0; text-transform: none; }
+  .svc::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--c, var(--green)); }
+  .svc.spotify { --c: #1ed760; } .svc.ytmusic { --c: #ff3b4a; } .svc.soundcloud { --c: #ff6a1f; }
+  .res .a .svc { margin-right: 6px; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .chips button { padding: 7px 13px; font-size: 14px; font-weight: 600; background: rgba(255,255,255,.07); color: var(--fg-2); }
+  .chips button[aria-pressed="true"] { background: var(--fg); color: #0b0b0d; }
+  .next h2 { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-3); margin: 0 0 10px; }
+  .next ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .next li { display: flex; gap: 10px; align-items: baseline; }
+  .next li b { color: var(--fg-3); font-weight: 600; width: 16px; flex: none; text-align: right; }
+  .next .t { font-weight: 600; } .next .a { color: var(--fg-3); font-size: 14px; margin-top: 2px; }
+  .msg { color: var(--fg-2); font-size: 15px; margin: 10px 2px 0; }
+  .toast { position: fixed; left: 50%; bottom: max(20px, env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(20px); opacity: 0; transition: .25s; padding: 12px 18px; border-radius: 999px; background: #26262c; border: 1px solid var(--line); font-weight: 600; white-space: nowrap; max-width: calc(100% - 32px); overflow: hidden; text-overflow: ellipsis; }
+  .toast.show { opacity: 1; transform: translateX(-50%); }
+  .foot { margin-top: 26px; font-size: 13px; color: var(--fg-3); text-align: center; }
+  .foot a { color: var(--fg-2); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <div class="head"><img src="logo.svg" alt=""><b>Wisp</b><span id="status"><i></i>Connecting…</span></div>
+
+  <section id="bad" hidden>
+    <h1>This link isn't complete</h1>
+    <p class="sub">Scan the QR code on the Car Thing again: Home → the player's menu → Passengers pick the music.</p>
+  </section>
+
+  <section id="ended" hidden>
+    <h1>The music's back with the driver</h1>
+    <p class="sub">This session has ended. If they start a new one, scan its QR code.</p>
+  </section>
+
+  <section id="join" hidden>
+    <h1>Pick the music</h1>
+    <p class="sub">Add songs to what's playing in the car, from Spotify or the driver's other music apps, and vote to skip.</p>
+    <div class="card">
+      <label for="name">Your name, so the driver knows who added what</label>
+      <div class="row"><input id="name" maxlength="24" autocomplete="given-name" placeholder="Sam"><button id="go">Join</button></div>
+    </div>
+  </section>
+
+  <section id="app" hidden>
+    <div class="card">
+      <div class="now">
+        <div class="art" id="art" role="img" aria-label="Cover"></div>
+        <div><div class="eyebrow">Playing now <span class="svc" id="nowsvc" hidden></span></div><div class="t" id="title">Nothing yet</div><div class="a" id="artist"></div></div>
+      </div>
+      <button class="quiet skip" id="skip" disabled>Vote to skip</button>
+    </div>
+    <div class="card next" id="next" hidden><h2>Up next</h2><ol id="nextlist"></ol></div>
+    <div class="card">
+      <form id="search" class="row"><input id="q" type="search" placeholder="Search for a song" enterkeyhint="search" autocomplete="off"><button>Search</button></form>
+      <div class="chips" id="chips" role="group" aria-label="Where to search" hidden></div>
+      <div class="results" id="results"></div>
+      <p class="msg" id="smsg" hidden></p>
+    </div>
+  </section>
+
+  <p class="foot">Wisp, open source firmware for the Car Thing · <a href="./">picovrfbt.github.io/WispOS</a><br>Messages pass through <a href="https://ntfy.sh">ntfy</a>; only searches and songs, never your account.</p>
+</main>
+<div class="toast" id="toast" role="status"></div>
+<script>
+(function () {
+  'use strict'
+  var $ = function (id) { return document.getElementById(id) }
+  var hash = decodeURIComponent(location.hash.slice(1))
+  var m = /^(wisp[a-z0-9]{16,40})(?:@([a-z0-9.-]+(?::\d+)?))?$/.exec(hash)
+  if (!m) { $('bad').hidden = false; $('status').hidden = true; return }
+  var topic = m[1], host = 'https://' + (m[2] || 'ntfy.sh')
+  var store = function (k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v) } catch (e) { return null } }
+  var me = store('wisp.jam.id')
+  if (!me) { me = 'p' + Math.random().toString(36).slice(2) + Date.now().toString(36); store('wisp.jam.id', me) }
+  var name = store('wisp.jam.name') || ''
+  var seq = 0, pending = {}, now = null, votedFor = null, toastTimer = 0
+  var where = store('wisp.jam.where') || 'all', services = [], servicesKey = ''
+  var NAMES = { spotify: 'Spotify', ytmusic: 'YouTube Music', soundcloud: 'SoundCloud' }
+
+  // a small label for where a song plays
+  function badge(svc) {
+    var b = document.createElement('span'); b.className = 'svc ' + (NAMES[svc] ? svc : 'spotify'); b.textContent = NAMES[svc] || 'Spotify'
+    return b
+  }
+  function okImage(u) { return /^https:\/\/[^"'()\s]+$/.test(u || '') }
+  // the search chips, when there's more than Spotify to search
+  function showServices(list) {
+    var key = list.map(function (s) { return s.id }).join(',')
+    if (key === servicesKey) return
+    servicesKey = key; services = list
+    var box = $('chips'); box.innerHTML = ''
+    box.hidden = list.length < 2
+    if (where !== 'all' && !list.some(function (s) { return s.id === where })) where = 'all'
+    var all = [{ id: 'all', name: 'Everywhere' }].concat(list)
+    all.forEach(function (s) {
+      var b = document.createElement('button'); b.type = 'button'; b.textContent = s.name
+      b.setAttribute('aria-pressed', String(s.id === where))
+      b.onclick = function () {
+        where = s.id; store('wisp.jam.where', where)
+        Array.prototype.forEach.call(box.children, function (c) { c.setAttribute('aria-pressed', String(c === b)) })
+        if ($('q').value.trim()) $('search').requestSubmit()
+      }
+      box.appendChild(b)
+    })
+    $('q').placeholder = list.length > 1 ? 'Search ' + list.map(function (s) { return s.name }).join(', ') : 'Search for a song'
+  }
+  function showNext(list) {
+    var ol = $('nextlist'); ol.innerHTML = ''
+    $('next').hidden = !list || !list.length
+    ;(list || []).forEach(function (it, i) {
+      var li = document.createElement('li')
+      var n = document.createElement('b'); n.textContent = i + 1
+      var d = document.createElement('div')
+      var t = document.createElement('div'); t.className = 't'; t.textContent = it.title
+      var a = document.createElement('div'); a.className = 'a'
+      a.appendChild(badge(it.svc)); a.appendChild(document.createTextNode(' ' + [it.artist, it.by ? 'added by ' + it.by : ''].filter(Boolean).join(' · ')))
+      d.appendChild(t); d.appendChild(a); li.appendChild(n); li.appendChild(d); ol.appendChild(li)
+    })
+  }
+
+  function toast(t) {
+    var el = $('toast'); el.textContent = t; el.classList.add('show')
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { el.classList.remove('show') }, 2600)
+  }
+  function send(msg) {
+    msg.from = me; msg.name = name
+    return fetch(host + '/' + topic + '-in', { method: 'POST', body: JSON.stringify(msg) })
+      .catch(function () { toast("Couldn't reach the car; check your connection") })
+  }
+  function status(on, text) { var s = $('status'); s.classList.toggle('on', on); s.lastChild.textContent = text }
+
+  // what the Car Thing says
+  function onMessage(d) {
+    if (d.to && d.to !== me) return
+    if (d.t === 'ended') { $('app').hidden = true; $('join').hidden = true; $('ended').hidden = false; status(false, 'Ended'); es && es.close(); return }
+    if (d.t === 'now') {
+      now = d
+      $('title').textContent = d.title || 'Nothing playing'
+      $('artist').textContent = d.artist || ''
+      $('art').style.backgroundImage = okImage(d.image) ? 'url("' + d.image + '")' : ''
+      if (d.services) showServices(d.services)
+      var ns = $('nowsvc'); ns.hidden = !d.uri || (services.length < 2 && (d.svc || 'spotify') === 'spotify')
+      ns.className = 'svc ' + (NAMES[d.svc] ? d.svc : 'spotify'); ns.textContent = 'on ' + (NAMES[d.svc] || 'Spotify')
+      showNext(d.next)
+      var voted = votedFor && votedFor === d.uri
+      $('skip').disabled = !d.uri || voted
+      $('skip').textContent = voted ? 'You voted to skip · ' + d.votes + ' of ' + d.needed : (d.votes ? 'Vote to skip · ' + d.votes + ' of ' + d.needed : 'Vote to skip')
+      return
+    }
+    var p = pending[d.id]
+    if (d.t === 'results' && p) {
+      delete pending[d.id]
+      var box = $('results'); box.innerHTML = ''
+      $('smsg').hidden = d.items.length > 0
+      $('smsg').textContent = 'Nothing found. Try the artist and song.'
+      d.items.forEach(function (it) {
+        var row = document.createElement('div'); row.className = 'res'
+        var txt = document.createElement('div'); txt.className = 'txt'
+        var t = document.createElement('div'); t.className = 't'; t.textContent = it.title
+        var a = document.createElement('div'); a.className = 'a'
+        if (services.length > 1) a.appendChild(badge(it.svc))
+        a.appendChild(document.createTextNode(it.artist || ''))
+        txt.appendChild(t); txt.appendChild(a)
+        var cov = document.createElement('div'); cov.className = 'cov'
+        if (okImage(it.image)) cov.style.backgroundImage = 'url("' + it.image + '")'
+        row.appendChild(cov)
+        var b = document.createElement('button'); b.textContent = 'Add'
+        b.onclick = function () {
+          var id = ++seq; pending[id] = { button: b, title: it.title }
+          b.disabled = true; b.textContent = 'Adding…'
+          send({ t: 'queue', id: id, svc: it.svc || 'spotify', uri: it.uri, title: it.title, artist: it.artist })
+          setTimeout(function () { if (pending[id]) { delete pending[id]; b.disabled = false; b.textContent = 'Add'; toast('The car didn’t answer; try again') } }, 12000)
+        }
+        row.appendChild(txt); row.appendChild(b); box.appendChild(row)
+      })
+    } else if (p && (d.t === 'queued' || d.t === 'wait' || d.t === 'failed' || d.t === 'full')) {
+      delete pending[d.id]
+      var b = p.button
+      if (d.t === 'queued') { b.textContent = 'Added'; b.classList.add('done'); toast(!d.pos || d.pos === 1 ? p.title + ' is up next' : p.title + ' is number ' + d.pos + ' in line') }
+      else { b.disabled = false; b.textContent = 'Add'; toast(d.t === 'wait' ? 'One song every 15 seconds; try again in a moment' : d.t === 'full' ? "The line's full; try again after a few songs" : "That one couldn't be added") }
+    }
+  }
+
+  var es = null
+  function connect() {
+    es = new EventSource(host + '/' + topic + '-out/sse?since=2m')
+    es.onopen = function () { status(true, 'Connected') }
+    es.onerror = function () { status(false, 'Reconnecting…') }
+    es.onmessage = function (e) {
+      try { var ev = JSON.parse(e.data); if (ev.event === 'message') onMessage(JSON.parse(ev.message)) } catch (err) {}
+    }
+  }
+
+  function start() {
+    $('join').hidden = true; $('app').hidden = false
+    connect()
+    send({ t: 'hello' })
+    // the car answers "now" to a hello; say hello again now and then, so it knows you're still here
+    setInterval(function () { if (!document.hidden) send({ t: 'hello' }) }, 5 * 60 * 1000)
+  }
+
+  $('search').addEventListener('submit', function (e) {
+    e.preventDefault()
+    var q = $('q').value.trim()
+    if (!q) return
+    var id = ++seq; pending[id] = {}
+    $('results').innerHTML = ''; $('smsg').hidden = false; $('smsg').textContent = 'Searching…'
+    send({ t: 'search', id: id, q: q, svc: where })
+    setTimeout(function () { if (pending[id]) { delete pending[id]; $('smsg').textContent = 'The car didn’t answer. Is its music on?' } }, 12000)
+    $('q').blur()
+  })
+  $('skip').addEventListener('click', function () {
+    if (!now || !now.uri) return
+    votedFor = now.uri; $('skip').disabled = true; $('skip').textContent = 'Voted to skip'
+    send({ t: 'skip', uri: now.uri })
+  })
+  $('go').addEventListener('click', function () {
+    name = $('name').value.trim().slice(0, 24) || 'A passenger'
+    store('wisp.jam.name', name)
+    start()
+  })
+  $('name').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('go').click() })
+
+  status(false, 'Ready')
+  if (name) start()
+  else { $('join').hidden = false; $('name').focus() }
+})()
+</script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+import { JamSave, JamSheet } from '@/components/Jam'
 import { AddonsScreen } from '@/components/Addons'
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { NavContext, useNav } from '@/hooks/navContext'
@@ -560,8 +561,12 @@ function AppContent() {
       overlays.isOpen('queue') ||
       overlays.isOpen('drive') ||
       overlays.isOpen('addons') ||
+      overlays.isOpen('jam') ||
+      overlays.isOpen('jamSave') ||
       overlays.isOpen('viz') ||
       forced === 'addons' ||
+      forced === 'jam' ||
+      forced === 'jam-save' ||
       forced === 'home' ||
       forced === 'home-services' ||
       forced === 'phone-media' ||
@@ -683,6 +688,20 @@ function AppContent() {
     return (
       <div className={styles.app}>
         <AddonsScreen onClose={() => setForced(null)} />
+      </div>
+    )
+  }
+  if (forced === 'jam-save') {
+    return (
+      <div className={styles.app}>
+        <JamSave onClose={() => setForced(null)} />
+      </div>
+    )
+  }
+  if (forced === 'jam') {
+    return (
+      <div className={styles.app}>
+        <JamSheet onClose={() => setForced(null)} />
       </div>
     )
   }

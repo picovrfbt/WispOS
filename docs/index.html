@@ -20,14 +20,15 @@
 <header class="top">
   <div class="wrap">
     <a class="brand" href="./" aria-label="Wisp, home"><img src="logo.svg" alt="">Wisp</a>
-    <a class="ver" href="new/1.0.html" title="What's new in 1.0">1.0</a>
+    <a class="ver" href="new/1.0.1.html" title="What's new in 1.0.1">1.0.1</a>
     <nav class="links" id="nav-links" aria-label="Main">
-      <a href="./#features">Features</a>
-      <a href="./#directions">Directions</a>
-      <a href="./#addons">Add-ons</a>
+      <a href="#features">Features</a>
+      <a href="#directions">Directions</a>
+      <a href="#addons">Add-ons</a>
       <a href="use.html">How to use</a>
       <a href="guide.html">Set up</a>
       <a href="studio.html">Add-on Studio</a>
+      <a href="updates.html">Updates</a>
     </nav>
     <div class="top-actions">
       <a class="gh" href="https://github.com/picovrfbt/WispOS" aria-label="Wisp on GitHub"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.09 0 4.42-2.7 5.4-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg></a>
@@ -39,7 +40,7 @@
 
 <div class="hero">
   <div class="wrap">
-    <a class="pill hero-pill" href="new/1.0.html"><span class="dot"></span>New in Wisp 1.0: its own directions, add-ons and more. See what's new ›</a>
+    <a class="pill hero-pill" href="new/1.0.1.html"><span class="dot"></span>New in Wisp 1.0.1: passengers pick the music. See what's new ›</a>
     <h1>The Car Thing, <span class="glow">made new.</span></h1>
     <p class="lead">Spotify switched the Car Thing off. Wisp turns it back on, and then some: your music on the knob, turn-by-turn directions, lyrics in time and a voice that answers. Free and open source.</p>
     <div class="actions">
@@ -121,6 +122,20 @@
       <div class="say you">When do we get there?</div>
       <div class="say wisp"><span>Wisp</span>12 minutes to go. You'll get there at 3:45 PM</div>
     </div>
+  </div>
+</section>
+
+<section id="passengers">
+  <div class="wrap">
+    <p class="eyebrow">Passengers pick the music</p>
+    <h2>Hand the aux to the back seat.</h2>
+    <p class="sub">Show a QR code on the Car Thing and everyone in the car can add songs from their own phone, from Spotify, YouTube Music or SoundCloud, and vote to skip. Nobody installs anything or signs in to your accounts. When the ride's over, keep what they picked as a Spotify playlist.</p>
+    <div class="use-row">
+      <figure><img src="screenshots/jam.png" alt="The Car Thing showing a QR code for passengers, with who's joined and the Autoplay switch" loading="lazy"><figcaption><b>Scan to join</b> Who's in, the skip votes, and Autoplay</figcaption></figure>
+      <figure><img src="screenshots/jam-upnext.png" alt="Up next on a passenger's phone: each song labelled Spotify or YouTube Music, with who added it" loading="lazy"><figcaption><b>On their phones</b> Every song says where it plays</figcaption></figure>
+      <figure><img src="screenshots/jam-save.png" alt="Keep their songs? Save or No thanks" loading="lazy"><figcaption><b>Keep their songs</b> A playlist when the ride ends</figcaption></figure>
+    </div>
+    <div class="cta-row addon-cta"><a class="btn" href="use.html#passengers">How passengers pick</a><a class="btn ghost" href="new/1.0.1.html">What's new in 1.0.1</a></div>
   </div>
 </section>
 
@@ -245,6 +260,7 @@ cd WispOS/wisp-ui && npm ci && npm run dev   <span class="g">✓ ready</span></d
     <nav>
       <a href="guide.html">Set up</a>
       <a href="use.html">How to use</a>
+      <a href="updates.html">Updates</a>
       <a href="addons.html">Make an add-on</a>
       <a href="studio.html">Add-on Studio</a>
       <a href="privacy.html">Privacy</a>

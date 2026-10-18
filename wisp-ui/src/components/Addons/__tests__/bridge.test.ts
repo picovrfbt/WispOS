@@ -28,11 +28,19 @@ describe("an add-on's bridge", () => {
   })
 
   it('only fetches from its own sites', async () => {
-    await expect(ask(forecast, 'fetch', { url: 'https://evil.example.com/x' })).rejects.toThrow(/isn't one of/)
-    await expect(ask(clock, 'fetch', { url: 'https://api.open-meteo.com/v1' })).rejects.toThrow(/isn't one of/)
+    await expect(ask(forecast, 'fetch', { url: 'https://evil.example.com/x' })).rejects.toThrow(
+      /isn't one of/,
+    )
+    await expect(ask(clock, 'fetch', { url: 'https://api.open-meteo.com/v1' })).rejects.toThrow(
+      /isn't one of/,
+    )
     await expect(ask(forecast, 'fetch', { url: 'not a url' })).rejects.toThrow(/web address/)
-    server.use(http.post('*/addons/fetch', () => HttpResponse.json({ status: 200, body: '{"ok":1}' })))
-    await expect(ask(forecast, 'fetch', { url: 'https://api.open-meteo.com/v1/forecast' })).resolves.toEqual({
+    server.use(
+      http.post('*/addons/fetch', () => HttpResponse.json({ status: 200, body: '{"ok":1}' })),
+    )
+    await expect(
+      ask(forecast, 'fetch', { url: 'https://api.open-meteo.com/v1/forecast' }),
+    ).resolves.toEqual({
       status: 200,
       body: '{"ok":1}',
     })
@@ -41,23 +49,36 @@ describe("an add-on's bridge", () => {
   it('tells roughly where, never exactly', async () => {
     server.use(
       http.get('*/nav/status', () =>
-        HttpResponse.json({ connected: true, active: false, updated_at: 0, location: { lat: 33.768912, lng: -118.195403, speed: 13.4 } }),
+        HttpResponse.json({
+          connected: true,
+          active: false,
+          updated_at: 0,
+          location: { lat: 33.768912, lng: -118.195403, speed: 13.4 },
+        }),
       ),
     )
-    await expect(ask(forecast, 'location')).resolves.toEqual({ lat: 33.77, lng: -118.2, speed_mph: 30 })
+    await expect(ask(forecast, 'location')).resolves.toEqual({
+      lat: 33.77,
+      lng: -118.2,
+      speed_mph: 30,
+    })
   })
 
   it('keeps each add-on its own small storage', async () => {
     await ask(clock, 'storage_set', { key: 'face', value: 'analog' })
     await expect(ask(clock, 'storage_get', { key: 'face' })).resolves.toBe('analog')
     await expect(ask(forecast, 'storage_get', { key: 'face' })).resolves.toBeNull()
-    await expect(ask(clock, 'storage_set', { key: 'big', value: 'x'.repeat(20000) })).rejects.toThrow(/full/)
+    await expect(
+      ask(clock, 'storage_set', { key: 'big', value: 'x'.repeat(20000) }),
+    ).rejects.toThrow(/full/)
     forgetAddon(clock)
     await expect(ask(clock, 'storage_get', { key: 'face' })).resolves.toBeNull()
   })
 
   it('says plainly what an add-on can know', () => {
-    expect(permissionLine(forecast)).toBe('knows roughly where you are and the weather; talks to api.open-meteo.com')
+    expect(permissionLine(forecast)).toBe(
+      'knows roughly where you are and the weather; talks to api.open-meteo.com',
+    )
     expect(permissionLine(clock)).toBe('Asks for nothing')
   })
 })

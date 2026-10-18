@@ -58,6 +58,8 @@ type RemoteState struct {
 	TrackAlbum string
 	// TrackImageUrl from the ProvidedTrack metadata.
 	TrackImageUrl string
+	// TrackAutoplay: Spotify picked this one itself, after the music ran out
+	TrackAutoplay bool
 
 	// ContextUri is what context is playing (playlist, album, etc).
 	ContextUri string

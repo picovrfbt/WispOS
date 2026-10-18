@@ -114,6 +114,8 @@ type searchTrackResult struct {
 	Uri    string `json:"uri"`
 	Name   string `json:"name"`
 	Artist string `json:"artist"`
+	// the album's cover, where the search gave one
+	Image string `json:"image,omitempty"`
 }
 
 // query hashs, if they fail we rotate them
@@ -640,6 +642,14 @@ func (p *AppPlayer) searchTracks(ctx context.Context, query string) ([]searchTra
 										} `json:"profile"`
 									} `json:"items"`
 								} `json:"artists"`
+								AlbumOfTrack struct {
+									CoverArt struct {
+										Sources []struct {
+											Url   string `json:"url"`
+											Width int    `json:"width"`
+										} `json:"sources"`
+									} `json:"coverArt"`
+								} `json:"albumOfTrack"`
 							} `json:"data"`
 						} `json:"item"`
 					} `json:"items"`
@@ -663,7 +673,15 @@ func (p *AppPlayer) searchTracks(ctx context.Context, query string) ([]searchTra
 				arts = append(arts, a.Profile.Name)
 			}
 		}
-		out = append(out, searchTrackResult{Uri: d.Uri, Name: d.Name, Artist: strings.Join(arts, ", ")})
+		// a small cover is plenty for a list: the first that's at least 200 wide
+		img := ""
+		for _, src := range d.AlbumOfTrack.CoverArt.Sources {
+			img = src.Url
+			if src.Width >= 200 {
+				break
+			}
+		}
+		out = append(out, searchTrackResult{Uri: d.Uri, Name: d.Name, Artist: strings.Join(arts, ", "), Image: img})
 	}
 	if len(out) == 0 {
 		return nil, ErrNotFound
