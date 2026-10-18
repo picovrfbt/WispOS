@@ -43,6 +43,7 @@ import { OverlayHost } from '@/overlays/OverlayHost'
 import { AuthPage } from '@/pages/Auth/AuthPage'
 import { BootPage } from '@/pages/Boot/BootPage'
 import { OfflinePage } from '@/pages/Offline/OfflinePage'
+import { PhoneOffline } from '@/components/PhoneOffline'
 import { PlayerPage } from '@/pages/Player/PlayerPage'
 import { usePlayerControls } from '@/hooks/usePlayerControls'
 import { usePrefetch } from '@/hooks/usePrefetch'
@@ -913,6 +914,15 @@ function AppContent() {
 
     switch (route.kind) {
       case 'offline':
+        // Wisp Phone: no phone to pair or computer to plug in, only this phone's internet
+        if (PHONE) {
+          return (
+            <div className={styles.app}>
+              <PhoneOffline online={online} />
+              {globalOverlays}
+            </div>
+          )
+        }
         return (
           <div className={styles.app}>
             <OfflinePage

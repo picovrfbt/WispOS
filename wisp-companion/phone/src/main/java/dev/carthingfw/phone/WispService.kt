@@ -8,6 +8,7 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.net.ConnectivityManager
 import android.os.IBinder
 import android.util.Log
 import java.io.File
@@ -58,11 +59,13 @@ class WispService : Service() {
             if (log.length() > MAX_LOG_BYTES) log.delete()
             val started = System.currentTimeMillis()
             try {
-                val p = ProcessBuilder(bin.path, "--config_dir", dir.path)
+                val pb = ProcessBuilder(bin.path, "--config_dir", dir.path)
                     .directory(dir)
                     .redirectErrorStream(true)
                     .redirectOutput(ProcessBuilder.Redirect.appendTo(log))
-                    .start()
+                // Android has no resolv.conf for the daemon to find its DNS in
+                pb.environment()["WISP_DNS"] = dnsServers()
+                val p = pb.start()
                 process = p
                 val code = p.waitFor()
                 Log.w(TAG, "wisp-daemon exited with $code")
@@ -80,6 +83,16 @@ class WispService : Service() {
                 break
             }
         }
+    }
+
+    // the phone's DNS servers right now, "ip,ip" (empty: the daemon uses public ones)
+    private fun dnsServers(): String = try {
+        val cm = getSystemService(ConnectivityManager::class.java)
+        cm.getLinkProperties(cm.activeNetwork)?.dnsServers.orEmpty()
+            .mapNotNull { it.hostAddress?.substringBefore('%') }
+            .joinToString(",")
+    } catch (e: Exception) {
+        ""
     }
 
     private fun notification(): Notification {
@@ -107,6 +120,13 @@ class WispService : Service() {
 
         fun start(ctx: Context) {
             ctx.startForegroundService(Intent(ctx, WispService::class.java))
+        }
+
+        /** the end of the daemon's log, for the screens to show when it won't start */
+        fun logTail(ctx: Context, lines: Int = 30): String = try {
+            File(File(ctx.filesDir, "wisp"), "daemon.log").readLines().takeLast(lines).joinToString("\n")
+        } catch (e: Exception) {
+            "(no log yet)"
         }
     }
 }

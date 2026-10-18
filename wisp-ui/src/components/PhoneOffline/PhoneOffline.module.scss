@@ -1,0 +1,25 @@
+.wrap {
+  width: 100%;
+  max-width: 760px;
+  @include column;
+  @include flex-gap-y($s-3);
+}
+
+.text {
+  font-size: $fs-xl;
+  color: $text-secondary;
+}
+
+// small enough to fit a screenshot
+.log {
+  max-height: 200px;
+  overflow: auto;
+  padding: $s-3;
+  border-radius: $r-md;
+  background: rgba(255, 255, 255, 0.06);
+  color: $text-secondary;
+  font-family: monospace;
+  font-size: $fs-xs;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
