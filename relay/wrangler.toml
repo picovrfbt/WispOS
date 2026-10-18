@@ -1,0 +1,13 @@
+# Wisp's relay for "passengers pick the music" (see README.md)
+name = "wisp-relay"
+main = "src/worker.js"
+compatibility_date = "2025-09-01"
+
+[[durable_objects.bindings]]
+name = "TOPICS"
+class_name = "Topic"
+
+# SQLite-backed Durable Objects are on Cloudflare's free plan
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Topic"]
