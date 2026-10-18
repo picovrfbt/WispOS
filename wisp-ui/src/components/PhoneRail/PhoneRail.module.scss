@@ -1,0 +1,56 @@
+// outside #root's zoom, so sized against the phone's height (RAIL_VH in phone.ts)
+.rail {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 24vh;
+  z-index: $z-content;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  background: #0b0b0d;
+  border-left: 1px solid $divider;
+}
+
+.btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.4vh;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: $text-secondary;
+  font: inherit;
+  font-size: 3.2vh;
+  font-weight: $fw-semibold;
+  cursor: pointer;
+
+  &:active .chip {
+    transform: scale(0.94);
+  }
+}
+
+.chip {
+  width: 13vh;
+  height: 13vh;
+  border-radius: 3.6vh;
+  background: rgba(255, 255, 255, 0.1);
+  color: $text-primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform $dur-fast $ease-standard;
+
+  svg {
+    width: 6.4vh;
+    height: 6.4vh;
+  }
+}
+
+.voice .chip {
+  background: linear-gradient(135deg, $accent, #2dd4d6, #7c5cff);
+  color: #000;
+}

@@ -6,6 +6,7 @@ import {
   UI_SCALE_MAX,
   UI_SCALE_MIN,
 } from '@/settings'
+import { PHONE, phonePanel } from '@/phone'
 
 // the panel is a fixed 800x480 and every dimension in the app is a compile-time px
 // constant, so "display size" works by sizing #root to a *logical* viewport and zooming
@@ -70,9 +71,21 @@ function safePct(pct: number): number {
   return Math.max(UI_SCALE_MIN, Math.min(UI_SCALE_MAX, pct))
 }
 
+function carThingSize(pct: number): { w: number; h: number; z: number } {
+  const { w, h } = logicalSize(pct)
+  return { w, h, z: BASE_W / w }
+}
+
+// Wisp Phone: the screens fill the phone's height at 480 logical px and stretch
+// to its width, beside the button strip
+function phoneSize(pct: number): { w: number; h: number; z: number } {
+  const panel = phonePanel()
+  const z = (panel.h / BASE_H) * (pct / 100)
+  return { w: Math.round(panel.w / z), h: Math.ceil(panel.h / z), z }
+}
+
 export function applyUiScale(pct: number): void {
-  const { w, h } = logicalSize(safePct(pct))
-  const z = BASE_W / w
+  const { w, h, z } = PHONE ? phoneSize(safePct(pct)) : carThingSize(safePct(pct))
 
   // absent under jsdom, where testing-library mounts into its own container
   const el = document.getElementById('root')
@@ -106,6 +119,8 @@ export function getUiScaleY(): number {
 export function startUiScaleSync(): () => void {
   let applied = getSettings().uiScalePct
   applyUiScale(applied)
+  // a phone turning or its bars coming and going changes the room
+  if (PHONE) window.addEventListener('resize', () => applyUiScale(applied))
   return subscribeSettings(() => {
     const pct = getSettings().uiScalePct
     // the store emits on every patch. rewriting #root's width invalidates layout for the

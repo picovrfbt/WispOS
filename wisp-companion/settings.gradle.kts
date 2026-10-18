@@ -16,3 +16,4 @@ rootProject.name = "car-thing-nav"
 include(":app")
 include(":drive-core")
 include(":drive-recorder")
+include(":phone")

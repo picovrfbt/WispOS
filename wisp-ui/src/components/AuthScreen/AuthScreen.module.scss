@@ -68,3 +68,19 @@
   color: $text-tertiary;
   line-height: 1.45;
 }
+
+// Wisp Phone: the whole panel is the button
+.signIn {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: #1ed760;
+  color: #000;
+  @include flex-center;
+  padding: $s-6;
+  text-align: center;
+  text-decoration: none;
+  font-size: $fs-3xl;
+  font-weight: $fw-bold;
+  line-height: 1.2;
+}

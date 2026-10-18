@@ -1,0 +1,3 @@
+# built by scripts/phone-parts.sh
+src/main/jniLibs/
+src/main/assets/ui/

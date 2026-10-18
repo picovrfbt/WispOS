@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- the wisp in white, with its glow -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <group android:pivotX="0" android:pivotY="0" android:scaleX="0.28" android:scaleY="0.28" android:translateX="12.8" android:translateY="17.9">
+        <path android:pathData="M58,196 C96,128 128,214 160,150 S214,82 224,74" android:strokeColor="#30FFFFFF" android:strokeWidth="30" android:strokeLineCap="round" />
+        <path android:pathData="M204,74 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0" android:fillColor="#30FFFFFF" />
+        <path android:pathData="M58,196 C96,128 128,214 160,150 S214,82 224,74" android:strokeColor="#FFFFFF" android:strokeWidth="16" android:strokeLineCap="round" />
+        <path android:pathData="M213,74 a11,11 0 1,0 22,0 a11,11 0 1,0 -22,0" android:fillColor="#FFFFFF" />
+    </group>
+</vector>
