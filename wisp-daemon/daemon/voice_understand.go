@@ -150,6 +150,7 @@ const (
 	doJamStop    = "jam_stop"
 	doCall       = "call"
 	doMood       = "mood"
+	doLibrary    = "library"
 )
 
 type understood struct {
@@ -173,6 +174,9 @@ var understandRules = []struct {
 	{regexp.MustCompile(`^(?:(?:when|what time) (?:will|do|am|are|'?ll) (?:i|we) (?:get there|arrive|be there|get in|reach)|how (?:long|much longer)(?: (?:until|till|til|to|before) (?:i|we) (?:get there|arrive|are there))?|what'?s (?:my|the|our) eta|eta|are we there yet|how far(?: (?:is it|away|to go))?|how much (?:further|farther))$`), askArrival, 0},
 	{regexp.MustCompile(`^(?:what'?s (?:my|the) next (?:turn|direction)|where do i (?:turn|go next)|next turn|what'?s next on the route)$`), askNextTurn, 0},
 	{regexp.MustCompile(`^(?:(?:how'?s|what'?s|how is|what is) (?:my |the )?(?:phone'?s? )?battery|(?:my |phone )?battery(?: level)?|is my phone (?:charging|dying))$`), askBattery, 0},
+	// the driver's own library: Liked Songs and the playlists Spotify makes for
+	// them. arg is "liked", "discover weekly" and so on, "shuffle " in front to shuffle
+	{libraryRule, doLibrary, 0},
 	// a mood, not a name: Spotify's best playlist for it
 	{regexp.MustCompile(`^play (?:something|some music|some songs|anything|music)(?: that'?s| to| for| i can| we can)? ?(chill|relaxing|relaxed|calm|mellow|upbeat|happy|sad|energetic|hype|fun|romantic|focus|study|sleepy|dance|party|workout|driving|road trip|feel good|feel-good|summer|rainy day|night drive|late night|throwback|old school|90s|80s|2000s|70s|60s)(?: music| songs| vibes)?$|^(?:put on|play) (?:some )?(chill|relaxing|calm|mellow|upbeat|happy|sad|energetic|hype|romantic|focus|study|dance|party|workout|driving|road trip|feel good|summer|throwback|90s|80s|2000s|70s|60s) (?:music|songs|vibes|tunes)$|^i'?m in the mood for (?:something )?(\w+(?: \w+)?)$`), doMood, -2},
 	// follow-ups on what's playing
@@ -195,6 +199,33 @@ var understandRules = []struct {
 	{regexp.MustCompile(`^(?:call|phone|dial|ring) (.+?)(?: up| on (?:the )?phone)?$|^give (.+?) a (?:call|ring)$`), doCall, -2},
 }
 
+// "play my liked songs", "shuffle my likes", "play my discover weekly on shuffle"
+var libraryRule = regexp.MustCompile(`^(?:(play|shuffle|start|listen to) )?(?:(?:all )?(?:of )?(?:my|the|our) )?(?:spotify )?(liked songs|liked song|liked music|liked tracks|liked|likes|saved songs|saved music|favou?rite songs|favou?rites|loved songs|library|discover weekly|release radar|daily mix(?: (?:[1-6]|one|two|three|four|five|six))?|on repeat|repeat rewind)(?: playlist)?( on shuffle| shuffled| on random)?$`)
+
+// libraryNames: what each way of saying it is called
+var libraryNames = map[string]string{
+	"liked songs": "liked", "liked song": "liked", "liked music": "liked", "liked tracks": "liked",
+	"liked": "liked", "likes": "liked", "saved songs": "liked", "saved music": "liked",
+	"favorite songs": "liked", "favourite songs": "liked", "favorites": "liked", "favourites": "liked",
+	"loved songs": "liked", "library": "liked",
+	"daily mix one": "daily mix 1", "daily mix two": "daily mix 2", "daily mix three": "daily mix 3",
+	"daily mix four": "daily mix 4", "daily mix five": "daily mix 5", "daily mix six": "daily mix 6",
+	"daily mix": "daily mix 1",
+}
+
+// understandLibrary reads a library request into its arg: the name, with
+// "shuffle " in front when it asked for shuffle
+func understandLibrary(m []string) string {
+	name := m[2]
+	if n, ok := libraryNames[name]; ok {
+		name = n
+	}
+	if m[1] == "shuffle" || m[3] != "" {
+		return "shuffle " + name
+	}
+	return name
+}
+
 // understand says what a (normalised) command is, if it's one of its own
 func understand(t string) (understood, bool) {
 	for _, r := range understandRules {
@@ -203,6 +234,14 @@ func understand(t string) (understood, bool) {
 			continue
 		}
 		u := understood{what: r.what}
+		if r.what == doLibrary {
+			// a bare "library" or "likes" isn't asking for anything
+			if m[1] == "" && m[3] == "" && !strings.Contains(t, " ") {
+				continue
+			}
+			u.arg = understandLibrary(m)
+			return u, true
+		}
 		switch {
 		case r.arg > 0 && r.arg < len(m):
 			u.arg = strings.TrimSpace(m[r.arg])
@@ -327,6 +366,9 @@ func (v *voiceService) handleUnderstood(ctx context.Context, gen uint64, u under
 		return v.callContact(ctx, gen, u.arg)
 	case doMood:
 		return v.playMood(ctx, gen, u.arg)
+	case doLibrary:
+		name, shuffle := strings.CutPrefix(u.arg, "shuffle ")
+		return v.playLibrary(ctx, gen, name, shuffle)
 	}
 	return v.fail(gen, "Sorry, I didn't catch that")
 }
@@ -541,6 +583,54 @@ func (v *voiceService) playFromCurrent(ctx context.Context, gen uint64, what str
 		uri = tracks[0].Uri
 	}
 	return v.playUri(ctx, gen, uri, label)
+}
+
+// playLibrary plays Liked Songs, or a playlist Spotify makes for the driver
+// (Discover Weekly, Release Radar, a Daily Mix): one they follow first, else
+// Spotify's search, which finds their own copy
+func (v *voiceService) playLibrary(ctx context.Context, gen uint64, name string, shuffle bool) (string, error) {
+	if name == "liked" {
+		v.memory.remember(voiceTurn{uri: likedCollectionUri, label: "Liked Songs"})
+		return v.playUriShuffled(ctx, gen, likedCollectionUri, "Liked Songs", shuffle)
+	}
+	label := titleWords(name)
+	if v.resolver != nil {
+		if idx := v.resolver.index(); idx != nil {
+			for _, e := range idx.Playlists {
+				if strings.EqualFold(strings.TrimSpace(e.Name), name) && e.Uri != "" {
+					v.memory.remember(voiceTurn{uri: e.Uri, label: e.Name})
+					return v.playUriShuffled(ctx, gen, e.Uri, e.Name, shuffle)
+				}
+			}
+		}
+	}
+	v.emit("thinking", "")
+	res, err := v.app.server.Submit(ctx, ApiRequestTypeSearch, ApiRequestDataSearch{Query: label, TopN: true, Kind: "playlist"})
+	lists, _ := res.([]searchTrackResult)
+	if err != nil || len(lists) == 0 {
+		return v.fail(gen, "Couldn't find your "+label)
+	}
+	pick := lists[0]
+	for _, l := range lists {
+		if strings.EqualFold(strings.TrimSpace(l.Name), name) && l.Uri != "" {
+			pick = l
+			break
+		}
+	}
+	if pick.Uri == "" {
+		return v.fail(gen, "Couldn't find your "+label)
+	}
+	v.memory.remember(voiceTurn{uri: pick.Uri, label: pick.Name})
+	return v.playUriShuffled(ctx, gen, pick.Uri, pick.Name, shuffle)
+}
+
+// titleWords: "discover weekly" -> "Discover Weekly"
+func titleWords(s string) string {
+	w := strings.Fields(s)
+	for i, x := range w {
+		w[i] = strings.ToUpper(x[:1]) + x[1:]
+	}
+	return strings.Join(w, " ")
 }
 
 // playMood plays Spotify's top playlist for a mood ("chill" -> "chill mix")

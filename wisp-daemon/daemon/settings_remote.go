@@ -85,6 +85,7 @@ var remoteSettings = map[string]remoteSetting{
 	"voiceSpeed":         remoteNumber(0.5, 2, 0.1),
 	"voiceVolumePct":     remoteNumber(10, 100, 10),
 	// directions and updates
+	"listenMusic":        remoteOneOf("lower", "pause", "off"),
 	"arrivalAction":      remoteOneOf("none", "pause"),
 	"autoInstallUpdates": remoteBool,
 	"updateInBackground": remoteBool,

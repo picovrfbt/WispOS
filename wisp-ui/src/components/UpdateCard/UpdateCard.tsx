@@ -2,6 +2,7 @@ import { memo, useEffect, useState } from 'react'
 import { BRAND_NAME } from '@/brand'
 import styles from './UpdateCard.module.scss'
 import { useLeaving } from '@/overlays/leavingContext'
+import { updateSettings, useSettings } from '@/settings'
 
 const MAX_HIGHLIGHTS = 3
 
@@ -39,10 +40,16 @@ function UpdateCardImpl({
     primary: !onInstall,
   })
   if (canSkip) choices.push({ label: 'Skip this version', run: onSkip })
+  // ticked, later updates install by themselves and this card stops coming
+  const { autoInstallUpdates } = useSettings()
+  const canAuto = onInstall != null
+  const toggleAuto = () => updateSettings({ autoInstallUpdates: !autoInstallUpdates })
+  // the checkbox is the dial's last stop, after the buttons
+  const stops = choices.length + (canAuto ? 1 : 0)
   const [sel, setSel] = useState(0)
 
   // the dial picks a button and a press takes it
-  const many = choices.length > 1
+  const many = stops > 1
   const leaving = useLeaving()
   useEffect(() => {
     if (!many || leaving) return
@@ -50,7 +57,8 @@ function UpdateCardImpl({
       if (e.key === 'Enter') {
         e.preventDefault()
         e.stopPropagation()
-        choices[Math.min(sel, choices.length - 1)].run()
+        if (canAuto && sel >= choices.length) toggleAuto()
+        else choices[Math.min(sel, choices.length - 1)].run()
       }
     }
     const onWheel = (e: WheelEvent) => {
@@ -58,7 +66,7 @@ function UpdateCardImpl({
       if (d === 0) return
       e.preventDefault()
       e.stopPropagation()
-      setSel((i) => Math.max(0, Math.min(choices.length - 1, i + (d > 0 ? 1 : -1))))
+      setSel((i) => Math.max(0, Math.min(stops - 1, i + (d > 0 ? 1 : -1))))
     }
     window.addEventListener('keydown', onKeyDown, { capture: true })
     window.addEventListener('wheel', onWheel, { capture: true, passive: false })
@@ -108,6 +116,33 @@ function UpdateCardImpl({
             </button>
           ))}
         </div>
+        {canAuto ? (
+          <button
+            type="button"
+            role="checkbox"
+            aria-checked={autoInstallUpdates}
+            className={`${styles.auto} ${many && sel === choices.length ? styles.autoFocus : ''}`}
+            onClick={toggleAuto}
+          >
+            <span className={`${styles.box} ${autoInstallUpdates ? styles.boxOn : ''}`} aria-hidden>
+              {autoInstallUpdates ? (
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12.5l4.5 4.5L19 7.5" />
+                </svg>
+              ) : null}
+            </span>
+            <span>Download and install updates automatically</span>
+          </button>
+        ) : null}
       </div>
     </div>
   )

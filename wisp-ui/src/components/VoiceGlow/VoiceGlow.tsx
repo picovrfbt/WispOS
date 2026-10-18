@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import { subscribeEvents } from '@/api/eventBus'
+import { cancelVoice } from '@/api/client'
+import { WISP_DISMISS } from '@/voice/WispCaption'
 import type { ApiEvent, VoiceEventData } from '@/api/types'
 import styles from './VoiceGlow.module.scss'
 
@@ -10,12 +12,17 @@ const STALE_MS = 15000
 // how tall the band stands with no voice, and how much a full voice adds
 const REST = 0.42
 const SWING = 0.85
+// the band along the bottom that is Wisp's own: a tap there doesn't close it
+const OWN_BAND_PX = 150
 
 /**
  * The Wisp bar: a band of soft colour along the bottom edge, in the style of
  * Spotify's DJ and voice screens. While the Car Thing listens after "Okay
  * Wisp" it rises and falls with your voice (the wake listener reports a level
  * every 80 ms); while it works out what you said, it drifts quicker and lower.
+ *
+ * A tap anywhere above it closes Wisp at once: it stops listening, drops
+ * what it was working on, and the tap goes no further.
  *
  * Only transforms and opacity move, on layers whose gradients are drawn once,
  * so the Car Thing's compositor animates it without repainting.
@@ -63,22 +70,38 @@ export function VoiceGlow() {
     }
   }, [])
 
+  const dismiss = (e: PointerEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.clientY > window.innerHeight - OWN_BAND_PX) return
+    setState('off')
+    setHeardLevel(false)
+    if (levelRef.current) levelRef.current.style.transform = ''
+    window.dispatchEvent(new Event(WISP_DISMISS))
+    void cancelVoice()
+  }
+
   const breathing = state === 'listening' && !heardLevel
   return (
-    <div
-      className={`${styles.bar} ${state !== 'off' ? styles.on : ''} ${
-        state === 'thinking' ? styles.thinking : ''
-      } ${state === 'speaking' ? styles.speaking : ''}`}
-      data-state={state}
-      aria-hidden
-    >
-      <div ref={levelRef} className={`${styles.level} ${breathing ? styles.breathing : ''}`}>
-        <span className={`${styles.blob} ${styles.b1}`} />
-        <span className={`${styles.blob} ${styles.b2}`} />
-        <span className={`${styles.blob} ${styles.b3}`} />
-        <span className={`${styles.blob} ${styles.b4}`} />
-        <span className={`${styles.blob} ${styles.b5}`} />
+    <>
+      <div
+        className={`${styles.bar} ${state !== 'off' ? styles.on : ''} ${
+          state === 'thinking' ? styles.thinking : ''
+        } ${state === 'speaking' ? styles.speaking : ''}`}
+        data-state={state}
+        aria-hidden
+      >
+        <div ref={levelRef} className={`${styles.level} ${breathing ? styles.breathing : ''}`}>
+          <span className={`${styles.blob} ${styles.b1}`} />
+          <span className={`${styles.blob} ${styles.b2}`} />
+          <span className={`${styles.blob} ${styles.b3}`} />
+          <span className={`${styles.blob} ${styles.b4}`} />
+          <span className={`${styles.blob} ${styles.b5}`} />
+        </div>
       </div>
-    </div>
+      {state !== 'off' ? (
+        <div className={styles.catcher} onPointerDown={dismiss} data-testid="wisp-catcher" />
+      ) : null}
+    </>
   )
 }

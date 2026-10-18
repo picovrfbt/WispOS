@@ -28,6 +28,7 @@ import { useDeviceSwitch } from '@/hooks/useDeviceSwitch'
 import { useHardwareButtons } from '@/hooks/useHardwareButtons'
 import { useIdleScreensaver } from '@/hooks/useIdleScreensaver'
 import { useLastArtUrl } from '@/hooks/useLastArtUrl'
+import { useLastTrack } from '@/hooks/useLastTrack'
 import { isDJContext, useDJNarration } from '@/hooks/useDJNarration'
 import { useNotify } from '@/notify/notifyContext'
 import { usePhoneNotifications } from '@/hooks/usePhoneNotifications'
@@ -403,6 +404,7 @@ function AppContent() {
 
   // remembered across boots: the screensaver needs both on a cold start
   const lastArtUrl = useLastArtUrl(realStatus)
+  const lastTrack = useLastTrack(realStatus)
   const utcOffsetMin = useUtcOffset(realStatus)
 
   const {
@@ -826,7 +828,13 @@ function AppContent() {
   if (forced === 'idle') {
     return (
       <div className={styles.app}>
-        <IdleScreen connected={connected} devices={connectDevices} onSelectDevice={onPickDevice} />
+        <IdleScreen
+          connected={connected}
+          devices={connectDevices}
+          onSelectDevice={onPickDevice}
+          lastTrack={lastTrack}
+          onResume={resumeLast}
+        />
         {globalOverlays}
       </div>
     )
@@ -951,6 +959,8 @@ function AppContent() {
               connected={connected}
               devices={connectDevices}
               onSelectDevice={onPickDevice}
+              lastTrack={lastTrack}
+              onResume={resumeLast}
             />
             {globalOverlays}
           </div>

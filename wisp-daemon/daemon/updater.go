@@ -42,7 +42,8 @@ import (
 const (
 	ApiEventTypeUpdate ApiEventType = "update/state"
 
-	updateCheckEvery    = 6 * time.Hour
+	// often enough that a new release's card shows up the same drive
+	updateCheckEvery    = time.Hour
 	updateAutoEvery     = 10 * time.Minute
 	updateConfirmWindow = 3 * time.Minute
 	updateMaxBundle     = 200 << 20

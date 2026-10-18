@@ -293,12 +293,15 @@ func TestUpdaterAutoInstallWaitsForQuietAndSkipsBadReleases(t *testing.T) {
 	}
 }
 
-func TestAutoInstallSettingDefaultsOn(t *testing.T) {
-	if !autoInstallFromSettings(nil) || !autoInstallFromSettings([]byte(`{"v":1}`)) {
-		t.Fatal("automatic installs are on unless turned off")
+func TestAutoInstallSettingDefaultsOff(t *testing.T) {
+	if autoInstallFromSettings(nil) || autoInstallFromSettings([]byte(`{"v":1}`)) {
+		t.Fatal("automatic installs are off unless ticked")
 	}
-	if autoInstallFromSettings([]byte(`{"autoInstallUpdates":false}`)) {
-		t.Fatal("the setting should turn them off")
+	if autoInstallFromSettings([]byte(`{"autoInstallUpdates":true}`)) {
+		t.Fatal("1.0.4's tick for everyone should wait for the screen to move the settings over")
+	}
+	if !autoInstallFromSettings([]byte(`{"autoInstallUpdates":true,"updateAskDefaults":true}`)) {
+		t.Fatal("a tick on the update card should turn them on")
 	}
 }
 

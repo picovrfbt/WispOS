@@ -28,6 +28,9 @@ interface Caption {
   quiet: boolean
 }
 
+/** a tap off Wisp closes its bar and words at once (VoiceGlow sends it) */
+export const WISP_DISMISS = 'wisp:dismiss'
+
 /** tells the Wisp bar a caption is up, so it glows under the words */
 function signal(showing: boolean) {
   window.dispatchEvent(new CustomEvent('wisp:caption', { detail: showing }))
@@ -59,7 +62,11 @@ export function WispCaption() {
       const { state, text } = (evt.data ?? {}) as VoiceEventData
       switch (state) {
         case 'thinking':
-          show(text || THINKING_WORDS[Math.floor(Math.random() * THINKING_WORDS.length)], THINKING_MS, true)
+          show(
+            text || THINKING_WORDS[Math.floor(Math.random() * THINKING_WORDS.length)],
+            THINKING_MS,
+            true,
+          )
           break
         case 'playing': {
           const i = text ? text.lastIndexOf(' - ') : -1
@@ -99,8 +106,15 @@ export function WispCaption() {
         // 'listening' belongs to the Wisp bar; 'idle' changes nothing here
       }
     })
+    const onDismiss = () => {
+      window.clearTimeout(hide)
+      setCaption(null)
+      signal(false)
+    }
+    window.addEventListener(WISP_DISMISS, onDismiss)
     return () => {
       unsub()
+      window.removeEventListener(WISP_DISMISS, onDismiss)
       window.clearTimeout(hide)
       signal(false)
     }

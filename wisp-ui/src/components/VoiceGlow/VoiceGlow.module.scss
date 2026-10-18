@@ -20,6 +20,13 @@
   transform: none;
 }
 
+// over everything but the bar while Wisp is up: a tap on it closes Wisp
+.catcher {
+  position: fixed;
+  inset: 0;
+  z-index: $z-pairing - 6;
+}
+
 // stands taller with the voice; the level events set its scale directly
 .level {
   position: absolute;

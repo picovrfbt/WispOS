@@ -504,12 +504,16 @@ func updateInBackgroundFromSettings(body []byte) bool {
 	return json.Unmarshal(body, &s) != nil || s.Background == nil || *s.Background
 }
 
-// autoInstallFromSettings reads the "install updates automatically" setting; on unless turned off
+// autoInstallFromSettings reads the "install updates automatically" setting:
+// off unless ticked. A tick from before 1.0.5 (when 1.0.4 turned it on for
+// everyone) doesn't count until the screen has moved the settings over, so
+// everyone sees the update card once
 func autoInstallFromSettings(body []byte) bool {
 	var s struct {
-		AutoInstall *bool `json:"autoInstallUpdates"`
+		AutoInstall bool `json:"autoInstallUpdates"`
+		Moved       bool `json:"updateAskDefaults"`
 	}
-	return json.Unmarshal(body, &s) != nil || s.AutoInstall == nil || *s.AutoInstall
+	return json.Unmarshal(body, &s) == nil && s.AutoInstall && s.Moved
 }
 
 // quietForUpdate: automatic installs are on and an update's restart would
