@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What's new in Wisp 1.0.6</title>
+<meta name="description" content="Wisp 1.0.6 for the Spotify Car Thing: it finds your phone again by itself, when the car starts and after a drop.">
+<meta name="theme-color" content="#08080a">
+<link rel="icon" href="../logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="../" aria-label="Wisp, home"><img src="../logo.svg" alt="">Wisp</a>
+    <a class="ver" href="1.0.6.html" title="What's new in 1.0.6" aria-current="page">1.0.6</a>
+    <nav class="links" id="nav-links" aria-label="Main">
+      <a href="../#features">Features</a>
+      <a href="../#directions">Directions</a>
+      <a href="../#addons">Add-ons</a>
+      <a href="../use.html">How to use</a>
+      <a href="../guide.html">Set up</a>
+      <a href="../studio.html">Add-on Studio</a>
+      <a href="../updates.html">Updates</a>
+    </nav>
+    <div class="top-actions">
+      <a class="btn primary dl" href="https://github.com/picovrfbt/WispOS/releases/latest">Download</a>
+      <button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Menu"><span></span></button>
+    </div>
+  </div>
+</header>
+
+<main class="doc whatsnew">
+<div class="wrap">
+  <p class="eyebrow">What's new · October 19, 2026</p>
+  <h1>Wisp 1.0.6</h1>
+  <p class="lead-doc">The Car Thing finds your phone again by itself: when the car starts, and after a drop.</p>
+  <div class="cta-row">
+    <a class="btn primary" href="../use.html#settings">How to update</a>
+    <a class="btn" href="1.0.5.html">What came in 1.0.5</a>
+  </div>
+
+  <section class="gstep">
+    <h2>Fixed</h2>
+    <ul class="needs">
+      <li><b>No more "pick a connection" when the car starts.</b> The Car Thing could ask for your paired phone before its Bluetooth was ready, then act as if it had never met it. It now asks again, and says "Reconnecting…" while it does.</li>
+      <li><b>Reconnects after the phone drops the link.</b> Phones sometimes end the Bluetooth link by themselves to save power. The Car Thing used to take that as you disconnecting and wait 10 minutes; now it tries again after a minute.</li>
+      <li><b>Clearer setup on Samsung phones.</b> The Wisp app only asks about "Never sleeping apps" when it isn't already allowed to run in the background.</li>
+    </ul>
+    <p><a href="../updates.html">Every update ›</a></p>
+  </section>
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="../"><img src="../logo.svg" alt="">Wisp</a>
+    <nav>
+      <a href="../guide.html">Set up</a>
+      <a href="../use.html">How to use</a>
+      <a href="../updates.html">Updates</a>
+      <a href="../addons.html">Make an add-on</a>
+      <a href="../privacy.html">Privacy</a>
+      <a href="https://github.com/picovrfbt/WispOS">GitHub</a>
+    </nav>
+    <p class="legal">Wisp is not affiliated with, endorsed by or sponsored by Spotify, Google or YouTube. Spotify and Car Thing are trademarks of Spotify AB.</p>
+  </div>
+</footer>
+<script src="../site.js" defer></script>
+</body>
+</html>

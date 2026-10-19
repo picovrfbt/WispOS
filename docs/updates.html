@@ -17,7 +17,7 @@
 <header class="top">
   <div class="wrap">
     <a class="brand" href="./" aria-label="Wisp, home"><img src="logo.svg" alt="">Wisp</a>
-    <a class="ver" href="new/1.0.5.html" title="What's new in 1.0.5">1.0.5</a>
+    <a class="ver" href="new/1.0.6.html" title="What's new in 1.0.6">1.0.6</a>
     <nav class="links" id="nav-links" aria-label="Main">
       <a href="./#features">Features</a>
       <a href="./#directions">Directions</a>
@@ -41,10 +41,27 @@
   <p class="lead-doc">Wisp updates itself over the air: Settings &rarr; Software update. Here's everything each release brought, newest first.</p>
 
   <article class="upd-latest">
-    <div class="upd-head"><span class="tag">Latest</span><span class="upd-date">October 18, 2026</span></div>
-    <h2>Wisp 1.0.5</h2>
+    <div class="upd-head"><span class="tag">Latest</span><span class="upd-date">October 19, 2026</span></div>
+    <h2>Wisp 1.0.6</h2>
     <div class="upd-body">
-<p>Pick up where you left off, see every update coming, and talk to Wisp over the music.</p>
+<p>The Car Thing finds your phone again by itself: when the car starts, and after a drop.</p>
+<ul>
+<li><b>Reconnects after the phone drops the link.</b> When the phone ended the Bluetooth link by itself mid-drive (phones do, to save power), the Car Thing took it as you disconnecting on purpose and waited 10 minutes before trying again. Now it tries again after a minute; disconnecting from the Car Thing's own Bluetooth menu still waits the full 10.
+</li>
+<li><b>Clearer setup on Samsung phones.</b> The Wisp app's "Never sleeping apps" step only shows when the app isn't already set to run in the background (Unrestricted): Samsung leaves Unrestricted apps out of that list, so the step sent you looking for something that wasn't there.
+</li>
+<li><b>No more "pick a connection" when the car starts.</b> If the screen asked for your paired phone before the Car Thing's Bluetooth was up, it never asked again and showed first-time setup until a phone connected. It now asks again, and says "Reconnecting…" meanwhile.
+</li>
+<li><b>Wisp app 1.0.5.</b>
+</li></ul>
+    </div>
+    <div class="cta-row"><a class="btn primary" href="new/1.0.6.html">What's new in 1.0.6</a><a class="btn" href="https://github.com/picovrfbt/WispOS/releases/tag/v1.0.6">Downloads</a></div>
+  </article>
+
+  <h2 class="upd-earlier">Earlier updates</h2>
+  <details class="upd-old">
+    <summary><span class="upd-v">Wisp 1.0.5</span><span class="upd-date">October 18, 2026</span><span class="upd-sum">Pick up where you left off, see every update coming, and talk to Wisp over the music.</span></summary>
+    <div class="upd-body">
 <ul>
 <li><b>Pick up where you left off.</b> The "Nothing playing" screen now shows the last song you played, big, with a Resume button, buttons to choose which phone or speaker plays it, and a reminder that the back button goes Home.
 </li>
@@ -61,10 +78,7 @@
 <li><b>Wisp app 1.0.4.</b>
 </li></ul>
     </div>
-    <div class="cta-row"><a class="btn primary" href="new/1.0.5.html">What's new in 1.0.5</a><a class="btn" href="https://github.com/picovrfbt/WispOS/releases/tag/v1.0.5">Downloads</a></div>
-  </article>
-
-  <h2 class="upd-earlier">Earlier updates</h2>
+  </details>
   <details class="upd-old">
     <summary><span class="upd-v">Wisp 1.0.4</span><span class="upd-date">October 18, 2026</span><span class="upd-sum">Updates take care of themselves, on the Car Thing and on your phone.</span></summary>
     <div class="upd-body">
