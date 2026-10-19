@@ -3,6 +3,7 @@ import { QRCodeSVG } from 'qrcode.react'
 import { SetupScene } from '@/components/Setup'
 import setup from '@/components/Setup/Setup.module.scss'
 import { PHONE } from '@/phone'
+import { usePhoneDaemonLog } from '@/hooks/usePhoneDaemonLog'
 import styles from './AuthScreen.module.scss'
 
 interface Props {
@@ -16,8 +17,12 @@ function displayUrl(url: string): string {
 }
 
 // the last step: Spotify sign-in, by QR on the phone or the link anywhere
+// Wisp Phone: how long the sign-in code gets before the screen shows why it hasn't come
+const LOG_AFTER_MS = 15000
+
 function AuthScreenImpl({ url, hint }: Props) {
   const loading = !url
+  const log = usePhoneDaemonLog(loading, LOG_AFTER_MS)
   return (
     <SetupScene>
       <div className={styles.row}>
@@ -69,6 +74,7 @@ function AuthScreenImpl({ url, hint }: Props) {
             <span>{loading ? 'fetching pairing code...' : 'waiting for sign-in...'}</span>
           </div>
           {loading && hint ? <div className={styles.hint}>{hint}</div> : null}
+          {log ? <pre className={styles.log}>{log}</pre> : null}
         </div>
       </div>
     </SetupScene>

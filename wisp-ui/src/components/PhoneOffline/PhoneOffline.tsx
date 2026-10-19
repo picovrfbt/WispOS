@@ -1,12 +1,7 @@
-import { useEffect, useState } from 'react'
 import { SetupScene } from '@/components/Setup'
 import setup from '@/components/Setup/Setup.module.scss'
+import { usePhoneDaemonLog } from '@/hooks/usePhoneDaemonLog'
 import styles from './PhoneOffline.module.scss'
-
-// Wisp Phone's window.WispPhone (MainActivity's Bridge)
-interface PhoneBridge {
-  daemonLog(): string
-}
 
 // how long Wisp gets to start before the screen shows why it hasn't
 const DETAILS_AFTER_MS = 20000
@@ -19,19 +14,7 @@ const DETAILS_AFTER_MS = 20000
  */
 export function PhoneOffline({ online }: { online: boolean | null }) {
   const noInternet = online === false
-  const [log, setLog] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (noInternet) return
-    const bridge = (window as unknown as { WispPhone?: PhoneBridge }).WispPhone
-    const read = () => setLog(bridge ? bridge.daemonLog() : null)
-    const first = window.setTimeout(read, DETAILS_AFTER_MS)
-    const again = window.setInterval(read, 5000)
-    return () => {
-      window.clearTimeout(first)
-      window.clearInterval(again)
-    }
-  }, [noInternet])
+  const log = usePhoneDaemonLog(!noInternet, DETAILS_AFTER_MS)
 
   return (
     <SetupScene>

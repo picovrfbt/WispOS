@@ -40,4 +40,5 @@ func init() {
 	}
 }
 
-var publicDNS = []string{"1.1.1.1:53", "8.8.8.8:53"}
+// IPv6 too: some mobile networks give a phone no IPv4 to reach them over
+var publicDNS = []string{"1.1.1.1:53", "8.8.8.8:53", "[2606:4700:4700::1111]:53", "[2001:4860:4860::8888]:53"}

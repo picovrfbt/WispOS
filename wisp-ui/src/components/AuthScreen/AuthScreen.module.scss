@@ -84,3 +84,18 @@
   font-weight: $fw-bold;
   line-height: 1.2;
 }
+
+// Wisp Phone: what the background program said, when the code doesn't come
+.log {
+  margin-top: $s-3;
+  max-height: 150px;
+  overflow: auto;
+  padding: $s-2 $s-3;
+  border-radius: $r-md;
+  background: rgba(255, 255, 255, 0.06);
+  color: $text-secondary;
+  font-family: monospace;
+  font-size: $fs-xs;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
