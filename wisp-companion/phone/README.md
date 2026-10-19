@@ -27,10 +27,10 @@ out of git); Gradle runs it before every build of this app.
 
 `-Pwisp.skipParts` builds with what's already there.
 
+Where it stands and what's next: `PHONE-APP.md` at the top of the repo.
+
 ## Not yet
 
 - Hands-free "Okay Wisp" (the wake word and speech-to-text, for Android).
 - Directions, calls, notifications and Wisp's spoken voice, which the Car Thing
   gets from the Wisp app.
-- Settings that only mean something on a Car Thing (brightness, performance
-  mode) still show.

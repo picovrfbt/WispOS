@@ -15,7 +15,8 @@ import (
 const networkMonitorTarget = "1.1.1.1"
 
 // tried over TCP when the ping fails, so one blocked or slow address isn't "offline"
-var networkMonitorConfirm = []string{"1.1.1.1:443", "8.8.8.8:443"}
+// (and over IPv6, for a phone on a mobile network with no IPv4)
+var networkMonitorConfirm = []string{"1.1.1.1:443", "8.8.8.8:443", "[2606:4700:4700::1111]:443"}
 
 // linkUp reports whether a network interface exists and is up
 func linkUp(name string) bool {
