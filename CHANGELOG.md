@@ -3,11 +3,14 @@
 What changed in each Wisp release, newest first. Each version is on the
 [releases page](https://github.com/picovrfbt/WispOS/releases) with its downloads.
 
-## Unreleased
+## v1.0.6 (2026-10-19)
+
+The Car Thing finds your phone again by itself: when the car starts, and after a drop.
 
 - **Reconnects after the phone drops the link.** When the phone ended the Bluetooth link by itself mid-drive (phones do, to save power), the Car Thing took it as you disconnecting on purpose and waited 10 minutes before trying again. Now it tries again after a minute; disconnecting from the Car Thing's own Bluetooth menu still waits the full 10.
 - **Clearer setup on Samsung phones.** The Wisp app's "Never sleeping apps" step only shows when the app isn't already set to run in the background (Unrestricted): Samsung leaves Unrestricted apps out of that list, so the step sent you looking for something that wasn't there.
 - **No more "pick a connection" when the car starts.** If the screen asked for your paired phone before the Car Thing's Bluetooth was up, it never asked again and showed first-time setup until a phone connected. It now asks again, and says "Reconnecting…" meanwhile.
+- **Wisp app 1.0.5.**
 
 ## v1.0.5 (2026-10-18)
 
