@@ -354,7 +354,7 @@ class MainActivity : WispActivity() {
             { !PhoneViz.allowed(this) }) { requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), 5) }
         // so phones that clear background apps leave Wisp alone
         step(R.drawable.ic_w_battery, "battery", "Run in the background", "So the link to Wisp stays up", "Allow",
-            { getSystemService(android.os.PowerManager::class.java)?.isIgnoringBatteryOptimizations(packageName) != true }) {
+            { !unrestricted() }) {
             startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).setData(android.net.Uri.parse("package:$packageName")))
         }
         // with mobile data, a restricted app gets no internet in the background: no
@@ -363,9 +363,10 @@ class MainActivity : WispActivity() {
             { !backgroundDataOk() }) {
             startActivity(Intent(Settings.ACTION_IGNORE_BACKGROUND_DATA_RESTRICTIONS_SETTINGS).setData(android.net.Uri.parse("package:$packageName")))
         }
-        // Samsung puts apps to sleep on its own, battery setting or not
+        // Samsung puts Optimized apps to sleep on its own. An Unrestricted one (the
+        // step above) isn't, and Samsung leaves it out of that list, so only then
         step(R.drawable.ic_w_moon, "never sleeping", "Never sleeping apps", "Samsung: so Wisp isn't put to sleep", "Open",
-            { isSamsung && !Prefs.samsungSleepDone(this) }) { openSamsungSleeping() }
+            { isSamsung && !unrestricted() && !Prefs.samsungSleepDone(this) }) { openSamsungSleeping() }
         // Android only lets a background app open another one with this
         step(R.drawable.ic_w_open, "opening Spotify", "Opening Spotify for you", "When Wisp needs it playing", "Allow",
             { !Settings.canDrawOverlays(this) }) {
@@ -756,6 +757,10 @@ class MainActivity : WispActivity() {
     // ---------------------------------------------------------------- keeping it current
 
     private fun granted(p: String) = checkSelfPermission(p) == PackageManager.PERMISSION_GRANTED
+
+    // battery set to Unrestricted: Android's "always run in the background"
+    private fun unrestricted() =
+        getSystemService(android.os.PowerManager::class.java)?.isIgnoringBatteryOptimizations(packageName) == true
 
     private fun notificationAccess(): Boolean {
         val me = ComponentName(this, NavListenerService::class.java).flattenToString()
