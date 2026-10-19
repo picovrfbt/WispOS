@@ -42,11 +42,17 @@ describe('useConnectivity', () => {
     bt.devices = null
   })
 
-  it('reports no known devices until the list loads', () => {
+  it('counts a phone as known until the list loads, so boot never shows first-time setup', () => {
     const { result } = renderHook(() => useConnectivity())
-    expect(result.current.hasKnownDevice).toBe(false)
+    expect(result.current.hasKnownDevice).toBe(true)
     expect(result.current.btConnectedDevice).toBeNull()
     expect(result.current.topKnownDeviceName).toBeNull()
+  })
+
+  it('knows no phone once the list loads empty', () => {
+    bt.devices = []
+    const { result } = renderHook(() => useConnectivity())
+    expect(result.current.hasKnownDevice).toBe(false)
   })
 
   it('picks out the connected phone and the top of the list', () => {

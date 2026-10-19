@@ -229,12 +229,27 @@ func (m *Manager) topReconnectCandidate() string {
 	return ""
 }
 
-// manual-disconnect marks
+// manual-disconnect marks: until when each pauses auto-reconnect
 const manualDisconnectTTL = 10 * time.Minute
 
+// the phone ending the link was taken as the driver disconnecting on purpose,
+// but phones (Samsung's most) also drop it by themselves to save power, mid
+// drive: so a short pause, then the Car Thing pages it again
+const phoneSideDisconnectPause = time.Minute
+
+// markManualDisconnect: disconnected from the Car Thing's own Bluetooth menu
 func (m *Manager) markManualDisconnect(address string) {
+	m.markPause(address, manualDisconnectTTL)
+}
+
+// markPhoneSideDisconnect: the phone ended a link that was in use
+func (m *Manager) markPhoneSideDisconnect(address string) {
+	m.markPause(address, phoneSideDisconnectPause)
+}
+
+func (m *Manager) markPause(address string, d time.Duration) {
 	m.manualMu.Lock()
-	m.manualDisconnects[address] = time.Now()
+	m.manualDisconnects[address] = time.Now().Add(d)
 	m.manualMu.Unlock()
 }
 
@@ -247,12 +262,12 @@ func (m *Manager) clearManualDisconnect(address string) {
 func (m *Manager) isManualDisconnect(address string) bool {
 	m.manualMu.Lock()
 	defer m.manualMu.Unlock()
-	at, ok := m.manualDisconnects[address]
+	until, ok := m.manualDisconnects[address]
 	if !ok {
 		return false
 	}
 	// expired marks self-clear so auto-reconnect resumes
-	if time.Since(at) > manualDisconnectTTL {
+	if time.Now().After(until) {
 		delete(m.manualDisconnects, address)
 		return false
 	}

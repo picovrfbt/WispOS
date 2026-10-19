@@ -322,3 +322,31 @@ func TestParseMgmtEvent_RejectsShortAndUnrelated(t *testing.T) {
 		t.Error("unrelated opcodes must be ignored")
 	}
 }
+
+func TestHandleDisconnectReason_RemotePausesOnlyBriefly(t *testing.T) {
+	t.Parallel()
+
+	m := newWatcherTestManager("AA:BB:CC:DD:EE:FF")
+	m.manualMu.Lock()
+	m.connectedSince["AA:BB:CC:DD:EE:FF"] = time.Now().Add(-5 * time.Minute)
+	m.manualMu.Unlock()
+	m.setPanSessionUp("AA:BB:CC:DD:EE:FF")
+
+	// a phone dropping the link mid-drive isn't the driver saying goodbye
+	m.handleDisconnectReason("AA:BB:CC:DD:EE:FF", mgmtReasonRemote)
+	m.manualMu.Lock()
+	until := m.manualDisconnects["AA:BB:CC:DD:EE:FF"]
+	m.manualMu.Unlock()
+	if left := time.Until(until); left > phoneSideDisconnectPause || left < phoneSideDisconnectPause-5*time.Second {
+		t.Fatalf("phone-side pause should be about %s, got %s", phoneSideDisconnectPause, left)
+	}
+
+	// disconnecting from the Car Thing's own menu still pauses the long way
+	m.markManualDisconnect("AA:BB:CC:DD:EE:FF")
+	m.manualMu.Lock()
+	until = m.manualDisconnects["AA:BB:CC:DD:EE:FF"]
+	m.manualMu.Unlock()
+	if time.Until(until) < manualDisconnectTTL-5*time.Second {
+		t.Fatal("a disconnect from the Car Thing should pause for the full TTL")
+	}
+}
