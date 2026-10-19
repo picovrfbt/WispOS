@@ -3,6 +3,11 @@
 What changed in each Wisp release, newest first. Each version is on the
 [releases page](https://github.com/picovrfbt/WispOS/releases) with its downloads.
 
+## Unreleased
+
+- **Reconnects after the phone drops the link.** When the phone ended the Bluetooth link by itself mid-drive (phones do, to save power), the Car Thing took it as you disconnecting on purpose and waited 10 minutes before trying again. Now it tries again after a minute; disconnecting from the Car Thing's own Bluetooth menu still waits the full 10.
+- **No more "pick a connection" when the car starts.** If the screen asked for your paired phone before the Car Thing's Bluetooth was up, it never asked again and showed first-time setup until a phone connected. It now asks again, and says "Reconnecting…" meanwhile.
+
 ## v1.0.5 (2026-10-18)
 
 Pick up where you left off, see every update coming, and talk to Wisp over the music.
