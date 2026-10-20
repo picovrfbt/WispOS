@@ -137,15 +137,19 @@ func (o *ownNav) here() (*NavLocation, error) {
 
 // Start finds where and goes there the fastest way: "take me to …" by voice
 func (o *ownNav) Start(ctx context.Context, where string) (string, error) {
-	loc, err := o.here()
-	if err != nil {
-		return "", err
-	}
 	places, err := o.Search(ctx, where, "")
 	if err != nil {
 		return "", err
 	}
-	p := places[0]
+	return o.StartAt(ctx, places[0])
+}
+
+// StartAt goes to p the fastest way
+func (o *ownNav) StartAt(ctx context.Context, p NavPlace) (string, error) {
+	loc, err := o.here()
+	if err != nil {
+		return "", err
+	}
 	routes, err := o.fetchRoutes(ctx, loc.Lat, loc.Lng, p, nil, false)
 	if err != nil {
 		return "", err

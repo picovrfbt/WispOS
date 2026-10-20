@@ -48,6 +48,8 @@ import { usePrefetch } from '@/hooks/usePrefetch'
 import { resolveDropReason, useHeldStatus } from '@/hooks/useReconnect'
 import { useUpdateNotice } from '@/hooks/useUpdateNotice'
 import { useUtcOffset } from '@/hooks/useUtcOffset'
+import { subscribeEvents } from '@/api/eventBus'
+import { pushFind, type NavFind } from '@/components/Navigation/navFind'
 import { fetchSavedState, listenNow, resumeLastDevice, setSavedState } from '@/api/client'
 import type { ButtonAction } from '@/presets'
 import type { ObserverStatusActive } from '@/api/types'
@@ -468,6 +470,17 @@ function AppContent() {
   }, [statusActive, onPlayPauseActive, resumeLast])
 
   const openDebug = useCallback(() => openOverlay('debug'), [openOverlay])
+
+  // a place typed in the Wisp app, or said with more than one match: Where to? on it
+  useEffect(
+    () =>
+      subscribeEvents((evt) => {
+        if (evt.type !== 'nav/find') return
+        pushFind(evt.data as NavFind)
+        openOverlay('nav')
+      }),
+    [openOverlay],
+  )
 
   // back with nothing left to close goes up to the home screen, from Now Playing
   // or from idle (play then starts on the last device); not before sign-in

@@ -104,6 +104,9 @@ class MainActivity : WispActivity() {
 
         col.addView(sectionHead("Car Thing"))
         col.addView(group().apply {
+            addView(groupRow(null, "Find a place on the Car Thing", "Type an address here; pick it on the Car Thing", chevron()) {
+                findPlaceDialog()
+            })
             addView(groupRow(null, "Car Thing settings", "Brightness, night mode, lyrics, Wisp's voice and more", chevron()) {
                 startActivity(Intent(this@MainActivity, CarSettingsActivity::class.java))
             })
@@ -698,6 +701,38 @@ class MainActivity : WispActivity() {
             setPadding(0, dp(14), 0, 0)
             setOnClickListener { d.dismiss() }
         })
+    }
+
+    // an address typed on the phone, looked up on the Car Thing (its Where to?)
+    private fun findPlaceDialog() {
+        val input = field("An address or a place", "", secret = false).apply {
+            imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH
+        }
+        val box = LinearLayout(this).apply {
+            setPadding(dp(20), dp(8), dp(20), 0)
+            addView(input)
+        }
+        val send = {
+            val q = input.text.toString().trim()
+            if (q.isNotEmpty()) {
+                val msg = if (NavServer.sendFind(q)) "On your Car Thing: pick it there" else "Connect your Car Thing first"
+                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+            }
+        }
+        val dialog = android.app.AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+            .setTitle("Find a place on the Car Thing")
+            .setView(box)
+            .setPositiveButton("Send") { _, _ -> send() }
+            .setNegativeButton("Cancel", null)
+            .create()
+        input.setOnEditorActionListener { _, _, _ ->
+            send()
+            dialog.dismiss()
+            true
+        }
+        dialog.window?.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
+        dialog.show()
+        input.requestFocus()
     }
 
     // a large download: said plainly before it starts

@@ -861,3 +861,131 @@ $turn-green: #0f6b3f;
   border-color: #fff !important;
   background-color: #1ed760;
 }
+
+// Where to?: Search, and its keyboard for the knob
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  height: 56px;
+  padding: 0 18px;
+  border-radius: 18px;
+  border: 2px solid transparent;
+  background: rgba(255, 255, 255, 0.07);
+  color: $text-secondary;
+  font-size: 18px;
+  font-weight: $fw-semibold;
+}
+
+.typed {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 58px;
+  padding: 0 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 24px;
+  font-weight: $fw-semibold;
+}
+
+.typedIcon {
+  display: flex;
+  color: $text-tertiary;
+}
+
+.typedText {
+  white-space: pre;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.typedHint {
+  color: $text-tertiary;
+  font-weight: $fw-regular;
+}
+
+.caret {
+  width: 2px;
+  height: 28px;
+  margin-left: -10px;
+  background: #1ed760;
+  animation: caretBlink 1s steps(1) infinite;
+}
+
+@keyframes caretBlink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.keys {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(13, 1fr);
+  gap: 6px;
+}
+
+.key {
+  height: 52px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  background: rgba(255, 255, 255, 0.06);
+  color: $text-primary;
+  font: inherit;
+  font-size: 20px;
+  font-weight: $fw-semibold;
+}
+
+.keySpace,
+.keyDel {
+  color: $text-secondary;
+}
+
+.keySpace {
+  font-size: 14px;
+}
+
+.typedTip {
+  margin-left: auto;
+  font-size: 14px;
+  font-weight: $fw-regular;
+  color: $text-tertiary;
+  white-space: nowrap;
+}
+
+.matches {
+  margin-top: 12px;
+  display: grid;
+  gap: 6px;
+}
+
+.match {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 52px;
+  padding: 4px 16px;
+  border-radius: 14px;
+  border: 2px solid transparent;
+  background: rgba(255, 255, 255, 0.04);
+  color: $text-primary;
+  font: inherit;
+  text-align: left;
+
+  .resultText {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .resultName {
+    font-size: 18px;
+  }
+}
+
+.typeHint {
+  margin-top: 12px;
+  font-size: 15px;
+  color: $text-tertiary;
+}

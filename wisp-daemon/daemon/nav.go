@@ -45,7 +45,17 @@ const (
 	ApiEventTypeNav ApiEventType = "nav"
 	// just the NavLocation, about once a second while driving
 	ApiEventTypeNavLocation ApiEventType = "nav/location"
+	// a place to look up and pick from on Where to? (NavFind): typed in the
+	// Wisp app, or said with more than one match
+	ApiEventTypeNavFind ApiEventType = "nav/find"
 )
+
+// NavFind opens Where to? on what to look for, with the matches when they're
+// already found
+type NavFind struct {
+	Query  string     `json:"q"`
+	Places []NavPlace `json:"places,omitempty"`
+}
 
 type NavConfig struct {
 	Enabled bool
@@ -490,6 +500,16 @@ func (n *navRelay) session(ctx context.Context, url string) error {
 			n.applyRoute(data)
 			continue
 		}
+		// an address typed in the Wisp app, for the Car Thing to look up
+		if msg.Type == "find_place" {
+			var f struct {
+				Q string `json:"q"`
+			}
+			if err := json.Unmarshal(data, &f); err == nil {
+				n.find(NavFind{Query: f.Q})
+			}
+			continue
+		}
 		if msg.Type == "drive_state" {
 			n.applyDriveState(data)
 			continue
@@ -535,6 +555,15 @@ func (n *navRelay) session(ctx context.Context, url string) error {
 		}
 		n.apply(msg)
 	}
+}
+
+// find opens Where to? on the Car Thing at a place to look up
+func (n *navRelay) find(f NavFind) {
+	f.Query = clipRunes(strings.TrimSpace(f.Query), 120)
+	if f.Query == "" || n.emit == nil {
+		return
+	}
+	n.emit(&ApiEvent{Type: ApiEventTypeNavFind, Data: f})
 }
 
 // apply folds one validated message into the state

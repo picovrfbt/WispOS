@@ -713,7 +713,16 @@ func (v *voiceService) navigateTo(ctx context.Context, gen uint64, where string)
 	// Wisp's own directions when Settings says so; "home" is only the phone's to know
 	if ownNavFromSettings(v.app.GetSettings()) && !strings.EqualFold(strings.TrimSpace(where), "home") {
 		v.emit("thinking", "")
-		name, err := v.app.nav.own.Start(ctx, where)
+		places, err := v.app.nav.own.Search(ctx, where, "")
+		if err == nil && len(places) > 1 {
+			// more than one: the driver picks on Where to?
+			v.app.nav.find(NavFind{Query: where, Places: places})
+			return v.answer(gen, "Which one?")
+		}
+		name := ""
+		if err == nil {
+			name, err = v.app.nav.own.StartAt(ctx, places[0])
+		}
 		switch {
 		case err == nil:
 			return v.answer(gen, "Directions to "+name)

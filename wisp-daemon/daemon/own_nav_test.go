@@ -213,3 +213,23 @@ func TestOwnNavVoiceModes(t *testing.T) {
 		t.Error("setting")
 	}
 }
+
+// an address typed in the Wisp app opens Where to? on it; blank ones don't
+func TestNavFind(t *testing.T) {
+	var got []NavFind
+	n := newNavRelay(NavConfig{}, &librespot.NullLogger{}, func(e *ApiEvent) {
+		if e.Type == ApiEventTypeNavFind {
+			got = append(got, e.Data.(NavFind))
+		}
+	}, nil)
+	n.find(NavFind{Query: "  12 Oak Street  "})
+	n.find(NavFind{Query: "   "})
+	n.find(NavFind{Query: strings.Repeat("a", 300)})
+	if len(got) != 2 || got[0].Query != "12 Oak Street" || len([]rune(got[1].Query)) != 120 {
+		t.Fatalf("finds: %+v", got)
+	}
+	b, _ := json.Marshal(got[0])
+	if string(b) != `{"q":"12 Oak Street"}` {
+		t.Fatalf("json: %s", b)
+	}
+}

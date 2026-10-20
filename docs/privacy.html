@@ -36,9 +36,9 @@
 <div class="wrap">
 <article>
 <h1>Privacy policy</h1>
-<p class="updated">Last updated 16 October 2026</p>
+<p class="updated">Last updated 20 October 2026</p>
 
-<p class="short">Wisp has no servers and collects nothing. Everything stays on your own phone and your own Car Thing.</p>
+<p class="short">Wisp collects nothing. Your sign-ins and settings stay on your own phone and your own Car Thing.</p>
 
 <p>Wisp is free, open-source firmware for the Spotify Car Thing, with an Android
 companion app, Wisp Companion. This page explains what Wisp does with your
@@ -85,6 +85,14 @@ your phone or Car Thing, and talk directly to those services.</li>
 are passed from your phone to your Car Thing only, to show on its screen.</li>
 <li><strong>Voice commands</strong> are recognised on the Car Thing itself, not
 in the cloud.</li>
+<li><strong>Directions and address search</strong> use free OpenStreetMap
+services (Photon to find places, OSRM for the route, Overpass for nearby places
+like gas stations). They receive the places you search for and the start and
+end of your route, but no name or account.</li>
+<li><strong>Passengers picking the music</strong>: their searches, song picks and
+skip votes pass through Wisp's own message relay (on Cloudflare), or ntfy.sh
+if it's down, on a private, random channel. The relay holds messages for 15
+minutes at most and logs nothing; no one's account passes through it.</li>
 <li><strong>Updates</strong> are downloaded from GitHub, which sees the request
 like any download.</li>
 <li>Wisp has no analytics, ads or tracking.</li>

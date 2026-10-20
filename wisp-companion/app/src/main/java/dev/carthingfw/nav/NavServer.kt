@@ -232,6 +232,24 @@ class NavServer private constructor(private val app: Context) :
             return sent
         }
 
+        /**
+         * An address or place typed here, for the Car Thing to look up and show
+         * on its Where to?; false when none is connected to take it
+         */
+        fun sendFind(q: String): Boolean {
+            val s = instance ?: return false
+            val msg = org.json.JSONObject().put("type", "find_place").put("q", q.trim().take(120)).toString()
+            var sent = false
+            s.connections.forEach { c ->
+                val remote = c.remoteSocketAddress?.address
+                if (c.isOpen && remote != null && ClientFilter.allowed(remote, allowLan = Prefs.allowLan(s.app))) {
+                    c.send(msg)
+                    sent = true
+                }
+            }
+            return sent
+        }
+
         /** after the token is changed in the app */
         fun pushUpdateAuth() {
             val s = instance ?: return
