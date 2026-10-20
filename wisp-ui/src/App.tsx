@@ -794,11 +794,11 @@ function AppContent() {
     return (
       <div className={styles.app}>
         <UpdateCard
-          latest="0.2.28"
+          latest="1.0.5"
           highlights={[
-            'Drive Mode on Home and the power menu',
-            'Visualizer with more range',
-            'Settings opens from Home with the knob',
+            'Pick up where you left off',
+            'Quieter music while Wisp listens',
+            '"Play my liked songs" by voice',
           ]}
           onInstall={() => setForced(null)}
           onRemindLater={() => setForced(null)}
