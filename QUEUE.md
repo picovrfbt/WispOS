@@ -58,6 +58,30 @@ directions are on) should behave like an iPhone's:
 
 Show the owner a couple of looks before building.
 
+## Better voice: Wisp should understand more, and hear you out
+
+The owner: Wisp stops listening halfway through a request, and doesn't
+understand when something should play on YouTube Music (or SoundCloud).
+
+Leads:
+- **Stops listening halfway.** The listener ends a command after 0.6 s of
+  quiet (`voiceHangSecs` in `wisp-daemon/daemon/voice.go`, cut from 0.8 s to
+  answer faster), so a pause mid-sentence ("play… Midnight City") ends it.
+  Options: a longer pause again, a longer one only while the words so far
+  don't make a whole request, or Wisp's bar showing it's still listening so
+  the driver knows to carry on. Car-noise and music (see "Quieter music while
+  Wisp listens", 1.0.5) may also cut it off.
+- **YouTube Music / SoundCloud.** Only one shape is understood: a play word
+  first and the service last ("play X on YouTube Music",
+  `serviceVoiceRe` in `voice_services.go`). Not: "on YouTube Music play X",
+  "YouTube Music, play X", "play X in YT Music please now", or the service
+  misheard ("you two music", "u tube"). Also check the order in
+  `TriggerVoice`: Wisp's own rules (`understand`, e.g. "play my liked songs
+  on YouTube Music") run before the service check and can take the request
+  for Spotify. The phone's model could also be asked which service is meant.
+- **Generally better:** collect requests Wisp got wrong (the debug screen's
+  log, or a "that's not what I meant" by voice) to see what to teach it next.
+
 ## Also in progress
 
 - Wisp Phone, Wisp on a phone alone: on the `phone-app` branch, with where
