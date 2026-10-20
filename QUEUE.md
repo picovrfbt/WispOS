@@ -45,7 +45,7 @@ directions are on) should behave like an iPhone's:
   away; it should stay hidden until the next turn. Other notifications,
   swiped, stay gone.
 - **The turn banner goes by itself** (owner's call): it shows for a set time
-  (a setting, say 10 seconds) and hides, or hides once the turn is made,
+  (5 seconds by default, a setting) and hides, or hides once the turn is made,
   whichever comes first, and comes back for the next turn.
   The turn banner already means to (`dismissedFor` in
   `components/Navigation/NavBanner.tsx`, keyed to the turn): find why it
