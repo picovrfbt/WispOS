@@ -15,6 +15,14 @@ func TestParseServiceVoice(t *testing.T) {
 		{"play some m83 on soundcloud", serviceVoiceRequest{"soundcloud", "artist", "m83"}, true},
 		{"put on songs by fred again on sound cloud", serviceVoiceRequest{"soundcloud", "artist", "fred again"}, true},
 		{"play the song youtube on youtube music", serviceVoiceRequest{"ytmusic", "song", "youtube"}, true},
+		// the service first, in the middle, and misheard
+		{"On YouTube Music, play Midnight City", serviceVoiceRequest{"ytmusic", "song", "midnight city"}, true},
+		{"youtube music play the album random access memories", serviceVoiceRequest{"ytmusic", "album", "random access memories"}, true},
+		{"hey wisp youtube music play some daft punk", serviceVoiceRequest{"ytmusic", "artist", "daft punk"}, true},
+		{"play on soundcloud late night mix", serviceVoiceRequest{"soundcloud", "song", "late night mix"}, true},
+		{"can you put on starboy on u tube please", serviceVoiceRequest{"ytmusic", "song", "starboy"}, true},
+		{"play my liked songs on you two music", serviceVoiceRequest{"ytmusic", "song", "liked songs"}, true},
+		{"I wanna hear blinding lights on YouTube", serviceVoiceRequest{"ytmusic", "song", "blinding lights"}, true},
 		// Spotify's, as before
 		{"play midnight city", serviceVoiceRequest{}, false},
 		{"play music on my phone", serviceVoiceRequest{}, false},

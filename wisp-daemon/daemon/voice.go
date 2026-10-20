@@ -307,6 +307,12 @@ func (v *voiceService) TriggerVoice(ctx context.Context, transcript, clipPath st
 	if transcript != strings.ToLower(strings.TrimSpace(heard)) {
 		v.app.log.Infof("voice: %q reads as %q", heard, transcript)
 	}
+	// naming another music service sends it there, before Wisp's own rules can
+	// take "play my liked songs on YouTube Music" for Spotify
+	if req, ok := parseServiceVoice(heard); ok {
+		v.app.log.Infof("voice: transcript=%q -> %s %s %q", heard, req.Service, req.Kind, req.Query)
+		return v.playOnService(ctx, gen, req)
+	}
 	if u, ok := understand(transcript); ok {
 		return v.handleUnderstood(ctx, gen, u)
 	}
@@ -332,7 +338,8 @@ func (v *voiceService) TriggerVoice(ctx context.Context, transcript, clipPath st
 		return v.addToPlaylist(ctx, gen, name)
 	}
 
-	// naming another music service sends it there instead of Spotify
+	// naming another music service sends it there instead of Spotify (here
+	// too for what the phone's model or the meaning-matcher made of it)
 	if req, ok := parseServiceVoice(transcript); ok {
 		v.app.log.Infof("voice: transcript=%q -> %s %s %q", transcript, req.Service, req.Kind, req.Query)
 		return v.playOnService(ctx, gen, req)
@@ -738,10 +745,10 @@ func (v *voiceService) setWakeEnabled(on bool) {
 
 const wakeThresholdDebounce = 10 * time.Second
 
-// how long a pause ends a command: the wake listener's own default is 0.8 s,
-// which left Wisp waiting most of a second after every command. 0.6 s still
-// lets "play Midnight City … by M83" pause between the song and the artist
-const voiceHangSecs = 0.6
+// how long a pause ends a command. 0.6 s answered quicker but cut drivers off
+// mid-request ("play… Midnight City"), most of all over road noise; a second
+// lets them think, at the cost of Wisp answering a little later
+const voiceHangSecs = 1.0
 
 // the wake threshold for the current playback state
 func (v *voiceService) wakeThreshold() float64 {
