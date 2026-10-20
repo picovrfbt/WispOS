@@ -38,7 +38,7 @@
 <div class="wrap">
   <p class="eyebrow">How to use</p>
   <h1>Everything Wisp does, and how.</h1>
-  <p class="lead-doc">Wisp 1.0 on the Car Thing, part by part. Not set up yet? Start with the <a href="guide.html">setup guide</a>.</p>
+  <p class="lead-doc">Wisp on the Car Thing, part by part. Not set up yet? Start with the <a href="guide.html">setup guide</a>.</p>
 
   <nav class="toc" aria-label="On this page">
     <a href="#controls"><span>01</span>The knob and buttons</a>
@@ -162,7 +162,7 @@
           <li><b>The Car Thing does the searching and queueing,</b> so no one signs in to your Spotify. A note at the top says who added what.</li>
           <li><b>Done</b> hides the code and keeps the session going; <b>Stop</b> (or "stop passenger mode") ends it. Each session has a new code.</li>
         </ul>
-        <p class="note-doc">Phones reach the car through <a href="https://ntfy.sh">ntfy</a>, a free, open-source message relay, on a private, random channel. Only searches and song picks pass through it.</p>
+        <p class="note-doc">Phones reach the car through Wisp's own message relay, on a private, random channel, with <a href="https://ntfy.sh">ntfy</a>, a free, open-source relay, as the backup. Only searches and song picks pass through it.</p>
       </div>
       <img class="shot-doc" src="screenshots/jam.png" alt="The Car Thing showing a QR code for passengers, with who's joined" loading="lazy">
     </div>
@@ -198,7 +198,7 @@
     <div class="two align">
       <div>
         <p><b>Home → Settings</b>: brightness and auto brightness, night mode at sunset, accent colour, performance mode, lyrics, volume per turn, the top buttons, Wisp's voice, navigation, notifications and more. Your phone keeps a copy, so a reset or reflash doesn't lose them.</p>
-        <p><b>Updates</b> come over the air. When a new Wisp is out, the Car Thing tells you what's new and asks: install it now or later. Tick <b>Download and install updates automatically</b> on that card (or in Settings → Software update) and later ones install by themselves. A cloud pulses by the battery while one downloads.</p>
+        <p><b>Updates</b> come over the air. When a new Wisp is out, the Car Thing tells you what's new and asks: install it now or later. Tick <b>Download and install updates automatically</b> on that card (or turn on <b>Install updates automatically</b> in Settings → Software update) and later ones install by themselves. A cloud pulses by the battery while one downloads.</p>
         <p>When nothing's playing, the Car Thing shows the <b>last song you played</b>: press Resume to pick up where you left off, pick a phone or speaker to play it on, or press back for Home. After a while the <b>screensaver</b> shows the clock and the weather.</p>
       </div>
       <img class="shot-doc" src="screenshots/settings.png" alt="Settings" loading="lazy">
@@ -232,13 +232,14 @@
     <a class="brand" href="./"><img src="logo.svg" alt="">Wisp</a>
     <nav>
       <a href="guide.html">Set up</a>
-      <a href="use.html">How to use</a>
+      <a href="use.html" aria-current="page">How to use</a>
       <a href="updates.html">Updates</a>
       <a href="addons.html">Make an add-on</a>
       <a href="studio.html">Add-on Studio</a>
       <a href="privacy.html">Privacy</a>
       <a href="terms.html">Terms</a>
       <a href="https://github.com/picovrfbt/WispOS">GitHub</a>
+      <a href="mailto:support@picovr.store">Contact</a>
     </nav>
     <p class="legal">Wisp is not affiliated with, endorsed by or sponsored by Spotify, Google or YouTube. Spotify and Car Thing are trademarks of Spotify AB.</p>
   </div>

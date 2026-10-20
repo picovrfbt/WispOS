@@ -3,6 +3,15 @@
 What changed in each Wisp release, newest first. Each version is on the
 [releases page](https://github.com/picovrfbt/WispOS/releases) with its downloads.
 
+## Unreleased
+
+- **Spotify keeps playing while Maps is open.** With the Car Thing connected and Spotify playing, the Wisp app holds on to Spotify so Android is far less likely to close it to make room for Google Maps. If it's closed anyway mid-song, the Wisp app starts it again and carries on (up to 3 times in 10 minutes), instead of the Car Thing dropping to "Pick up where you left off".
+- **Wisp hears you out.** Wisp waits a full second of quiet before it takes your request, so a pause mid-sentence ("play… Midnight City") no longer cuts you off.
+- **YouTube Music and SoundCloud, however you say it.** "On YouTube Music play X", "YouTube Music, play X", "play X in YT Music please" and misheard names ("you two music", "u tube") all work, and asking for a service always goes to that service, even for "play my liked songs on YouTube Music".
+- **The turn banner gets out of the way.** While directions are on, the next turn shows at the top for 5 seconds when it comes up, and again as you near it. Swiped away, it stays away until the next turn. Choose 5 seconds, 10 seconds or until the turn in Settings → Navigation → Turn banner.
+- **Swipe notifications away any way**: up, left or right.
+- **Notifications stack.** Several at once pile up with the newest on top and a count; swipe them away one by one. Their icons follow your accent colour.
+
 ## v1.0.6 (2026-10-19)
 
 The Car Thing finds your phone again by itself: when the car starts, and after a drop.
