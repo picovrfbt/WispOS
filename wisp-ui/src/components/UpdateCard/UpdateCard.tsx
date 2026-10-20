@@ -1,5 +1,6 @@
 import { memo, useEffect, useState } from 'react'
-import { BRAND_NAME } from '@/brand'
+import { QRCodeSVG } from 'qrcode.react'
+import { BRAND_NAME, whatsNewUrl } from '@/brand'
 import styles from './UpdateCard.module.scss'
 import { useLeaving } from '@/overlays/leavingContext'
 import { updateSettings, useSettings } from '@/settings'
@@ -83,16 +84,32 @@ function UpdateCardImpl({
         <p className={`${styles.body} ${styles.bodyCenter}`}>
           {BRAND_NAME} {latest} is out.
         </p>
-        <div className={styles.body}>What's new</div>
-        {highlights.length > 0 ? (
-          <ul className={styles.highlights}>
-            {highlights.slice(0, MAX_HIGHLIGHTS).map((h) => (
-              <li key={h} className={styles.highlight}>
-                {h}
-              </li>
-            ))}
-          </ul>
-        ) : null}
+        <div className={styles.news}>
+          <div className={styles.newsText}>
+            <div className={styles.body}>What's new</div>
+            {highlights.length > 0 ? (
+              <ul className={styles.highlights}>
+                {highlights.slice(0, MAX_HIGHLIGHTS).map((h) => (
+                  <li key={h} className={styles.highlight}>
+                    {h}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+          {/* small, to the side: the whole of what's new on your phone */}
+          <div className={styles.qr} aria-label="Scan for everything that's new">
+            <QRCodeSVG
+              value={whatsNewUrl(latest)}
+              size={64}
+              bgColor="#ffffff"
+              fgColor="#0b0b0c"
+              level="L"
+              marginSize={1}
+            />
+            <span>Scan for more</span>
+          </div>
+        </div>
         <p className={styles.hint}>
           {onInstall ? (
             <>Downloads through your phone, then {BRAND_NAME} restarts. About a minute.</>

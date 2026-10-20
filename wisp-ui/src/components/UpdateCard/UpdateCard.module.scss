@@ -50,7 +50,7 @@
   list-style: none;
 }
 
-.card > .highlights {
+.newsText > .highlights {
   margin-top: $s-1;
 }
 
@@ -147,5 +147,31 @@
 @media (prefers-reduced-motion: reduce) {
   .overlay {
     animation: none;
+  }
+}
+
+// What's new beside a small QR to the full notes
+.news {
+  display: flex;
+  align-items: center;
+  gap: $s-4;
+}
+
+.newsText {
+  flex: 1;
+  min-width: 0;
+}
+
+.qr {
+  flex: none;
+  @include column;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: $text-tertiary;
+
+  svg {
+    display: block;
+    border-radius: 6px;
   }
 }
