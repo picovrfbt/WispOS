@@ -29,6 +29,8 @@ export interface Settings {
   navEngine: 'google' | 'wisp'
   /** Wisp's directions out loud: every turn with a heads-up, just the turns, or none */
   navVoice: NavVoice
+  /** how long the turn banner stays up for each turn, in seconds; 0 until the turn */
+  navBannerSecs: NavBannerSecs
   /** the colour of toggles, sliders and focus */
   accentTheme: AccentTheme
   /** updates install behind whatever is on screen, rather than taking the Car Thing over */
@@ -73,6 +75,8 @@ const LISTEN_MUSIC: readonly ListenMusic[] = ['lower', 'pause', 'off']
 
 export type ArrivalAction = 'none' | 'pause'
 export type NavVoice = 'all' | 'turns' | 'off'
+export type NavBannerSecs = 5 | 10 | 0
+const NAV_BANNER_SECS: readonly NavBannerSecs[] = [5, 10, 0]
 
 export type NightMode = 'off' | 'on' | 'auto'
 const NIGHT_MODES: readonly NightMode[] = ['off', 'on', 'auto']
@@ -106,6 +110,7 @@ const DEFAULTS: Settings = {
   arrivalAction: 'none',
   navEngine: 'google',
   navVoice: 'all',
+  navBannerSecs: 5,
   accentTheme: 'green',
   updateInBackground: true,
   wispVoice: 'confirmations',
@@ -209,6 +214,9 @@ function coerce(raw: Partial<Settings> | null | undefined): Settings {
     navEngine: partial?.navEngine === 'wisp' ? 'wisp' : 'google',
     navVoice:
       partial?.navVoice === 'turns' || partial?.navVoice === 'off' ? partial.navVoice : 'all',
+    navBannerSecs: NAV_BANNER_SECS.includes(partial?.navBannerSecs as NavBannerSecs)
+      ? (partial?.navBannerSecs as NavBannerSecs)
+      : DEFAULTS.navBannerSecs,
     accentTheme: ACCENT_ORDER.includes(partial?.accentTheme as AccentTheme)
       ? (partial?.accentTheme as AccentTheme)
       : DEFAULTS.accentTheme,

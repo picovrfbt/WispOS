@@ -86,3 +86,37 @@ it('reuses the picker device types and does not retain the previous device icon'
   fireEvent.click(screen.getByRole('button', { name: 'Info' }))
   expect(icon()).toBe('info')
 })
+
+it('stacks a new notification on the ones still up, and a swipe shows the next', () => {
+  vi.useFakeTimers()
+  function Buttons() {
+    const notify = useNotify()
+    return (
+      <>
+        <button onClick={() => notify('Message from Sam', { durationMs: 6000 })}>First</button>
+        <button onClick={() => notify('Message from Alex', { durationMs: 6000 })}>Second</button>
+      </>
+    )
+  }
+  render(
+    <NotifyProvider>
+      <Buttons />
+    </NotifyProvider>,
+  )
+  fireEvent.click(screen.getByText('First'))
+  fireEvent.click(screen.getByText('Second'))
+  const banner = screen.getByRole('status')
+  expect(banner).toHaveTextContent('Message from Alex')
+  expect(screen.getByLabelText('2 notifications')).toBeInTheDocument()
+
+  // swiped up: the one underneath is next
+  fireEvent.pointerDown(banner, { pointerId: 1, clientY: 100 })
+  fireEvent.pointerMove(banner, { pointerId: 1, clientY: 60 })
+  fireEvent.pointerUp(banner, { pointerId: 1, clientY: 20 })
+  expect(banner).toHaveTextContent('Message from Sam')
+  expect(screen.queryByLabelText(/notifications/)).toBeNull()
+
+  // and goes on its own time
+  act(() => void vi.advanceTimersByTime(6100))
+  expect(banner.className).not.toMatch(/visible/)
+})

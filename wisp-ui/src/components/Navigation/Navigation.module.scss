@@ -260,7 +260,7 @@ $nav-blue: #4285f4;
   touch-action: none;
   // backwards, not both: once in, the drag transform below takes over
   animation: bannerIn $dur-slow $ease-emphasized backwards;
-  transform: translateY(var(--drag-y, 0px));
+  transform: translate(var(--drag-x, 0px), var(--drag-y, 0px));
   opacity: var(--drag-fade, 1);
   transition:
     transform $dur-base $ease-standard,

@@ -50,4 +50,20 @@ describe('useSwipeDismiss', () => {
     fireEvent.click(el)
     expect(onTap).toHaveBeenCalled()
   })
+
+  it('dismisses on a swipe left or right too, but not a short sideways nudge', () => {
+    const onDismiss = vi.fn()
+    render(<Banner onDismiss={onDismiss} onTap={vi.fn()} />)
+    const el = screen.getByText('banner')
+    const sideways = (to: number) => {
+      fireEvent.pointerDown(el, { pointerId: 1, clientX: 300, clientY: 50 })
+      fireEvent.pointerMove(el, { pointerId: 1, clientX: (300 + to) / 2, clientY: 52 })
+      fireEvent.pointerUp(el, { pointerId: 1, clientX: to, clientY: 52, timeStamp: 10_000 })
+    }
+    sideways(340)
+    expect(onDismiss).not.toHaveBeenCalled()
+    sideways(150)
+    sideways(450)
+    expect(onDismiss).toHaveBeenCalledTimes(2)
+  })
 })
