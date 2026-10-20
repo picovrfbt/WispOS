@@ -177,6 +177,8 @@ object WispVoice {
             .setAudioAttributes(attrs)
             .build()
         am.requestAudioFocus(focus)
+        // music lowered while Wisp listened comes back first, or Wisp would be quiet too
+        WispHush.beforeSpeaking()
         val track = AudioTrack.Builder()
             .setAudioAttributes(attrs)
             .setAudioFormat(
