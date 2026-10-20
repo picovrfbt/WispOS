@@ -37,6 +37,24 @@ To decide with the owner (show options first):
   knob, voice with a list of matches to pick from, typing it on the phone
   in the Wisp app, or a contact's address from the phone's contacts.
 
+## Better notifications on the Car Thing
+
+The banners at the top (the phone's notifications, and the turn banner while
+directions are on) should behave like an iPhone's:
+- **Swiped away stays away.** The turn banner, swiped, comes back straight
+  away; it should stay hidden until the next turn (or, to decide with the
+  owner, for the rest of the trip). Other notifications, swiped, stay gone.
+  The turn banner already means to (`dismissedFor` in
+  `components/Navigation/NavBanner.tsx`, keyed to the turn): find why it
+  doesn't hold, likely the key changing while the instruction updates.
+- **Swipe left or right** to dismiss, not only up (`hooks/useSwipeDismiss.ts`,
+  used by `components/TopBanner` and `NavBanner`).
+- **Icons in the theme's colour** (Settings → Accent colour), not each app's own.
+- **Several at once stack** instead of replacing one another, with the newest
+  on top and a count; swipe them away one by one or together.
+
+Show the owner a couple of looks before building.
+
 ## Also in progress
 
 - Wisp Phone, Wisp on a phone alone: on the `phone-app` branch, with where
