@@ -42,8 +42,11 @@ To decide with the owner (show options first):
 The banners at the top (the phone's notifications, and the turn banner while
 directions are on) should behave like an iPhone's:
 - **Swiped away stays away.** The turn banner, swiped, comes back straight
-  away; it should stay hidden until the next turn (or, to decide with the
-  owner, for the rest of the trip). Other notifications, swiped, stay gone.
+  away; it should stay hidden until the next turn. Other notifications,
+  swiped, stay gone.
+- **The turn banner goes by itself** (owner's call): it shows for a set time
+  (a setting, say 10 seconds) and hides, or hides once the turn is made,
+  whichever comes first, and comes back for the next turn.
   The turn banner already means to (`dismissedFor` in
   `components/Navigation/NavBanner.tsx`, keyed to the turn): find why it
   doesn't hold, likely the key changing while the instruction updates.
