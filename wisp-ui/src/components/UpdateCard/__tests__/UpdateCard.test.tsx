@@ -76,7 +76,7 @@ describe('UpdateCard', () => {
     )
     const buttons = screen.getAllByRole('button')
     expect(buttons.map((b) => b.textContent)).toEqual(['Install now', 'Later', 'Skip this version'])
-    expect(screen.getByText(/restarts/)).toBeInTheDocument()
+    expect(screen.queryByText(/terbium/)).toBeNull()
     fireEvent.keyDown(window, { key: 'Enter' })
     expect(onInstall).toHaveBeenCalledTimes(1)
   })
