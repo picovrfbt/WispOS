@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Planner } from '../Planner'
+import { pushFind } from '../navFind'
 
 const api = vi.hoisted(() => ({
   fetchRecentPlaces: vi.fn(async () => [
@@ -47,7 +48,8 @@ describe('Planner', () => {
     expect(screen.getByText('Where to?')).toBeInTheDocument()
     expect(screen.getByText('The Beach Café')).toBeInTheDocument()
 
-    press() // Gas
+    knob(60) // past Search to Gas
+    press()
     await settle()
     expect(api.searchPlaces).toHaveBeenCalledWith({ cat: 'gas' })
     expect(screen.getByText('Shell')).toBeInTheDocument()
@@ -84,7 +86,7 @@ describe('Planner', () => {
   it('re-plans when an avoid option is pressed', async () => {
     render(<Planner location={undefined} onClose={() => {}} />)
     await settle()
-    for (let i = 0; i < 6; i++) knob(60) // past the six kinds to the recent place
+    for (let i = 0; i < 7; i++) knob(60) // past Search and the six kinds to the recent place
     press()
     await settle()
     knob(60)
@@ -95,5 +97,76 @@ describe('Planner', () => {
       highways: true,
       tolls: false,
     })
+  })
+
+  it('types an address with the keys and picks a match', async () => {
+    render(<Planner location={undefined} onClose={() => {}} />)
+    await settle()
+    press() // Search
+    await settle()
+    expect(screen.getByText('An address or a place')).toBeInTheDocument()
+    for (const k of ['O', 'A', 'K', 'Space', 'S', 'Delete', 'S', 'T'])
+      fireEvent.click(screen.getByRole('button', { name: k }))
+    expect(screen.getByText('OAK ST')).toBeInTheDocument()
+    // looked up once typing stops
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 800))
+    })
+    expect(api.searchPlaces).toHaveBeenCalledWith({ q: 'OAK ST' })
+    fireEvent.click(screen.getByText('Chevron'))
+    await settle()
+    expect(api.planRoutes).toHaveBeenCalledWith(expect.objectContaining({ name: 'Chevron' }), {
+      highways: false,
+      tolls: false,
+    })
+    // back to the keyboard, with what was typed
+    back()
+    expect(screen.getByText('OAK ST')).toBeInTheDocument()
+    back()
+    expect(screen.getByText('Where to?')).toBeInTheDocument()
+  })
+
+  it('the knob types too, and goes round from A back to the matches', async () => {
+    render(<Planner location={undefined} onClose={() => {}} />)
+    await settle()
+    press() // Search
+    knob(60)
+    press() // B
+    knob(-60)
+    press() // A
+    knob(60)
+    knob(60)
+    press() // C
+    expect(screen.getByText('BAC')).toBeInTheDocument()
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 800))
+    })
+    expect(screen.getByText('Shell')).toBeInTheDocument()
+    knob(-60)
+    knob(-60) // from C: B, A
+    knob(-60) // round to the last match
+    press()
+    await settle()
+    expect(api.planRoutes).toHaveBeenLastCalledWith(
+      expect.objectContaining({ name: 'Chevron' }),
+      expect.anything(),
+    )
+  })
+
+  it('opens on a place sent from the phone or said', async () => {
+    pushFind({
+      q: '12 Oak Street',
+      places: [{ name: '12 Oak Street', address: 'Long Beach', lat: 1, lng: 1 }],
+    })
+    render(<Planner location={undefined} onClose={() => {}} />)
+    await settle()
+    expect(screen.getByText('“12 Oak Street”')).toBeInTheDocument()
+    expect(screen.getByText('Long Beach')).toBeInTheDocument()
+    expect(api.searchPlaces).not.toHaveBeenCalled()
+    // typed in the Wisp app while it's open: looked up here
+    act(() => pushFind({ q: 'pier' }))
+    await settle()
+    expect(api.searchPlaces).toHaveBeenCalledWith({ q: 'pier' })
+    expect(screen.getByText('Shell')).toBeInTheDocument()
   })
 })
