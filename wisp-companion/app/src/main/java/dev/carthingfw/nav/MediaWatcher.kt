@@ -151,8 +151,10 @@ object MediaWatcher {
 
     // follow every session, so whichever one starts playing takes over
     private fun track(sessions: List<MediaController>) {
-        // Spotify reaches the Car Thing its own way, and Drive Mode is this app's own
-        // session (the Car Thing shows it on its Drive Mode screen)
+        // Spotify reaches the Car Thing its own way (SpotifyKeeper keeps it going),
+        // and Drive Mode is this app's own session (the Car Thing shows it on its
+        // Drive Mode screen)
+        SpotifyKeeper.spotifySession(sessions.firstOrNull { it.packageName == SpotifyWaker.SPOTIFY })
         val wanted = sessions.filter { it.packageName != SpotifyWaker.SPOTIFY && it.packageName != DriveMedia.OWN_PACKAGE }
         val gone = callbacks.keys.filter { k -> wanted.none { it.sessionToken == k.sessionToken } }
         gone.forEach { c -> callbacks.remove(c)?.let(c::unregisterCallback) }

@@ -36,6 +36,8 @@ class NavServer private constructor(private val app: Context) :
         Log.i(TAG, "Car Thing connected from $remote")
         // with the screen off the phone would sleep, and the tether with it
         TetherAwake.hold(app)
+        // and Spotify with it, while it plays for the Car Thing
+        SpotifyKeeper.carLinked(app)
         LinkService.update(app)
         lastConnected = "$remote (${ClientFilter.ifaceFor(remote) ?: "?"})"
         NavStore.snapshot().forEach(conn::send)
@@ -83,6 +85,7 @@ class NavServer private constructor(private val app: Context) :
         if (clients.decrementAndGet() <= 0) {
             clients.set(0)
             TetherAwake.letGoSoon()
+            SpotifyKeeper.carGone()
             PhoneCalls.stop()
             PhoneBattery.stop()
             PhoneViz.disconnected()
