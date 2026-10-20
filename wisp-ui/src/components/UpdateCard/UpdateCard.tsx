@@ -101,24 +101,19 @@ function UpdateCardImpl({
           <div className={styles.qr} aria-label="Scan for everything that's new">
             <QRCodeSVG
               value={whatsNewUrl(latest)}
-              size={64}
+              size={84}
               bgColor="#ffffff"
               fgColor="#0b0b0c"
               level="L"
               marginSize={1}
             />
-            <span>Scan for more</span>
           </div>
         </div>
-        <p className={styles.hint}>
-          {onInstall ? (
-            <>Downloads through your phone, then {BRAND_NAME} restarts. About a minute.</>
-          ) : (
-            <>
-              Flash from <span className={styles.hintUrl}>terbium.app</span> on your computer
-            </>
-          )}
-        </p>
+        {onInstall ? null : (
+          <p className={styles.hint}>
+            Flash from <span className={styles.hintUrl}>terbium.app</span> on your computer
+          </p>
+        )}
         <div className={styles.buttons}>
           {choices.map((c, i) => (
             <button
