@@ -23,7 +23,13 @@ import type { NightMode } from '@/settings'
 import { ACCENT_LABEL, ACCENT_ORDER } from '@/theme'
 import { useNav } from '@/hooks/navContext'
 import { sayNow } from '@/voice/speak'
-import { VOICE_SPEED_MAX, VOICE_SPEED_MIN, type ListenMusic, type WispVoiceMode } from '@/settings'
+import {
+  VOICE_SPEED_MAX,
+  VOICE_SPEED_MIN,
+  type ListenMusic,
+  type NavBannerSecs,
+  type WispVoiceMode,
+} from '@/settings'
 import { clearSavedData, fetchSavedData, type SavedData } from '@/api/savedData'
 import { useNotify } from '@/notify/notifyContext'
 import { formatTemp, HOT_C, useThermal, zoneName } from '@/api/thermal'
@@ -296,6 +302,7 @@ export function SettingsPanel({ active, phoneVolume = false, onOpenBluetooth }: 
       </div>
       <NavEngineRow />
       <NavVoiceRow />
+      <NavBannerRow />
       <ArrivalRow />
 
       {/* the four buttons along the top of the Car Thing */}
@@ -475,6 +482,31 @@ function NavVoiceRow() {
       </span>
       <span className={styles.label}>Spoken directions</span>
       <span className={styles.value}>{NAV_VOICE_LABEL[navVoice]}</span>
+    </button>
+  )
+}
+
+const NAV_BANNER_LABEL: Record<NavBannerSecs, string> = {
+  5: '5 seconds',
+  10: '10 seconds',
+  0: 'Until the turn',
+}
+const NAV_BANNER_NEXT: Record<NavBannerSecs, NavBannerSecs> = { 5: 10, 10: 0, 0: 5 }
+
+// how long the turn over other screens stays up, each turn and again near it
+function NavBannerRow() {
+  const { navBannerSecs } = useSettings()
+  return (
+    <button
+      type="button"
+      className={styles.buttonRow}
+      onClick={() => updateSettings({ navBannerSecs: NAV_BANNER_NEXT[navBannerSecs] })}
+    >
+      <span className={`${styles.chip} ${styles.chipOn}`} aria-hidden>
+        <FlagIcon />
+      </span>
+      <span className={styles.label}>Turn banner</span>
+      <span className={styles.value}>{NAV_BANNER_LABEL[navBannerSecs]}</span>
     </button>
   )
 }

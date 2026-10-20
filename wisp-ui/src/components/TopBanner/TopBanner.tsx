@@ -71,7 +71,9 @@ interface Props {
   icon?: BannerIcon
   lowered?: boolean
   deviceType?: string
-  /** a swipe up hides it early */
+  /** how many are up, this one included: more than one peek out underneath */
+  count?: number
+  /** a swipe up, left or right hides it early */
   onDismiss?: () => void
 }
 
@@ -83,6 +85,7 @@ export function TopBanner({
   icon = variant,
   lowered = false,
   deviceType,
+  count = 1,
   onDismiss,
 }: Props) {
   const ref = useRef<HTMLDivElement>(null)
@@ -118,6 +121,13 @@ export function TopBanner({
         )}
       </span>
       <span className={styles.message}>{message}</span>
+      {count > 1 ? (
+        <span className={styles.count} aria-label={`${count} notifications`}>
+          {count}
+        </span>
+      ) : null}
+      {count > 1 ? <span className={styles.peek} aria-hidden /> : null}
+      {count > 2 ? <span className={`${styles.peek} ${styles.peek2}`} aria-hidden /> : null}
     </div>
   )
 }
