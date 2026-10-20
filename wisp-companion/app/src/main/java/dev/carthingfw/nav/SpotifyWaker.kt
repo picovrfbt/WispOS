@@ -82,7 +82,7 @@ object SpotifyWaker {
     }
 
     // a play key sent straight to Spotify starts it without opening it
-    private fun pressPlay(ctx: Context) {
+    fun pressPlay(ctx: Context) {
         for (action in listOf(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.ACTION_UP)) {
             ctx.sendBroadcast(
                 Intent(Intent.ACTION_MEDIA_BUTTON).setPackage(SPOTIFY).putExtra(
