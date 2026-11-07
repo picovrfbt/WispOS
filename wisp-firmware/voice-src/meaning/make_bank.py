@@ -63,12 +63,15 @@ def main(model_dir, out_dir):
     session = ort.InferenceSession(os.path.join(model_dir, "model_quantized.onnx"))
     examples = load_examples()
     vecs = embed(session, tok, [e[0] for e in examples])
-    with open(os.path.join(out_dir, "bank.bin"), "wb") as f:
-        f.write(b"WMB1" + struct.pack("<II", len(examples), vecs.shape[1]))
-        for (said, command), v in zip(examples, vecs):
-            b = command.encode("utf-8")
-            f.write(struct.pack("<H", len(b)) + b)
-            f.write(np.clip(np.round(v * 127), -127, 127).astype(np.int8).tobytes())
+    bank = bytearray(b"WMB1" + struct.pack("<II", len(examples), vecs.shape[1]))
+    for (said, command), v in zip(examples, vecs):
+        b = command.encode("utf-8")
+        bank += struct.pack("<H", len(b)) + b
+        bank += np.clip(np.round(v * 127), -127, 127).astype(np.int8).tobytes()
+    # here, and in the daemon, which carries it so updates bring it (voice_meaning.go)
+    for path in (os.path.join(out_dir, "bank.bin"), os.path.join(HERE, "..", "..", "..", "wisp-daemon", "daemon", "meaning_bank.bin")):
+        with open(path, "wb") as f:
+            f.write(bank)
     samples = [e[0] for e in examples[:20]] + [
         "Play Midnight City by M83", "what's the weather, today?", "I'm feeling sleepy... wake me up!",
         "Beyoncé's new album", "rock'n'roll", "unbelievable", "turn it up 2 notches",

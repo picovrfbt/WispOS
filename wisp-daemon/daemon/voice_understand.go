@@ -156,6 +156,8 @@ type understood struct {
 	what string
 	// navigate: where; call: who; night_mode/lyrics/auto_brightness: on|off|auto
 	arg string
+	// the command as it was matched, for the ones that read more of it (seconds to skip)
+	said string
 }
 
 var understandRules = []struct {
@@ -165,7 +167,7 @@ var understandRules = []struct {
 	arg int
 }{
 	// questions
-	{regexp.MustCompile(`^(?:what(?:'?s| is) (?:this|playing|this song|the song|that song|this track|on|this one)|what song is (?:this|playing|that)|what am i listening to|what are we listening to|name (?:of )?this song|what'?s the name of this song)$`), askNowPlaying, 0},
+	{regexp.MustCompile(`^(?:what(?:'?s| is) (?:this|playing|this song|the song|that song|this track|on|this one)|what song is (?:this|playing|that|on)|what am i listening to|what are we listening to|name (?:of )?this song|what'?s the name of this song)$`), askNowPlaying, 0},
 	{regexp.MustCompile(`^(?:who(?:'?s| is)? (?:singing|sings|sang|this|singing this|the artist|playing)|who (?:sings|sang|made|wrote|is) (?:this|it|this song|that)|what artist is this|who'?s this by|who is this by)$`), askArtist, 0},
 	{regexp.MustCompile(`^(?:what|which) album (?:is (?:this|it|that)(?: from| on)?|is this song (?:from|on)|are we (?:on|in))$`), askAlbum, 0},
 	{regexp.MustCompile(`^(?:what(?:'?s| is) the time|what time is it|the time|time|what'?s the time now)$`), askTime, 0},
@@ -202,7 +204,7 @@ func understand(t string) (understood, bool) {
 		if m == nil {
 			continue
 		}
-		u := understood{what: r.what}
+		u := understood{what: r.what, said: t}
 		switch {
 		case r.arg > 0 && r.arg < len(m):
 			u.arg = strings.TrimSpace(m[r.arg])
@@ -220,6 +222,11 @@ func understand(t string) (understood, bool) {
 		}
 		if u.what == doCall && !plausibleName(u.arg) {
 			continue
+		}
+		if u.what == doVolumeTo && u.arg != "" {
+			if _, ok := spokenNumber(u.arg); !ok {
+				continue
+			}
 		}
 		return u, true
 	}
@@ -252,6 +259,9 @@ func plausibleName(s string) bool {
 // handleUnderstood runs a command understand() recognised
 func (v *voiceService) handleUnderstood(ctx context.Context, gen uint64, u understood) (string, error) {
 	v.app.log.Infof("voice: understood %s %q", u.what, u.arg)
+	if out, err, ok := v.handleMore(ctx, gen, u, u.said); ok {
+		return out, err
+	}
 	switch u.what {
 	case askNowPlaying, askArtist, askAlbum:
 		return v.answerNowPlaying(ctx, gen, u.what)

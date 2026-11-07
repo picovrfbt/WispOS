@@ -1,12 +1,20 @@
 import { lazy, Suspense, useState } from 'react'
 import { stopNav } from '@/api/nav'
 import { useNav } from '@/hooks/navContext'
-import { updateSettings, useSettings, type NavVoice } from '@/settings'
+import {
+  NAV_ZOOM_MAX,
+  NAV_ZOOM_MIN,
+  updateSettings,
+  useSettings,
+  type NavView,
+  type NavVoice,
+} from '@/settings'
 import { useNavRoute } from './useNavRoute'
 import { ManeuverIcon } from './ManeuverIcon'
 import { Planner } from './Planner'
 import { parseTrip } from './trip'
 import { Speedo } from './TripInfo'
+import { distanceMetres } from './zoom'
 import styles from './Navigation.module.scss'
 
 // Leaflet is a sizeable script the Car Thing would otherwise parse at every boot
@@ -18,6 +26,13 @@ interface Props {
   /** the song underneath, so the map doesn't hide what's playing */
   nowPlaying: { title: string; artist: string } | null
 }
+
+// the view button steps through these
+const VIEWS: { id: NavView; label: string; short: string }[] = [
+  { id: '3d', label: '3D view', short: '3D' },
+  { id: 'heading', label: 'Heading up', short: 'HDG' },
+  { id: 'north', label: 'North up', short: 'N' },
+]
 
 const VOICE: { id: NavVoice; label: string; sub: string }[] = [
   { id: 'all', label: 'Every turn', sub: 'A heads-up, then the turn' },
@@ -35,7 +50,7 @@ const VOICE: { id: NavVoice; label: string; sub: string }[] = [
 export function NavScreen({ onClose, nowPlaying }: Props) {
   const nav = useNav()
   const route = useNavRoute(nav.route_rev)
-  const { navVoice } = useSettings()
+  const { navVoice, navView, navZoom } = useSettings()
   const [soundOpen, setSoundOpen] = useState(false)
 
   if (nav.connected && !nav.active) return <Planner location={nav.location} onClose={onClose} />
@@ -50,7 +65,13 @@ export function NavScreen({ onClose, nowPlaying }: Props) {
     <div className={styles.screen} role="dialog" aria-label="Navigation">
       {nav.connected ? (
         <Suspense fallback={<div className={styles.mapOff} />}>
-          <NavMap location={nav.location} route={route?.points} />
+          <NavMap
+            location={nav.location}
+            route={route?.points}
+            view={navView}
+            turnDistance={distanceMetres(nav.title)}
+            zoomNudge={navZoom}
+          />
         </Suspense>
       ) : (
         <div className={styles.mapOff} />
@@ -61,6 +82,39 @@ export function NavScreen({ onClose, nowPlaying }: Props) {
           <path d="M15.4 4.6a1 1 0 0 1 0 1.4L9.4 12l6 6a1 1 0 1 1-1.4 1.4l-6.7-6.7a1 1 0 0 1 0-1.4L14 4.6a1 1 0 0 1 1.4 0z" />
         </svg>
       </button>
+
+      {nav.connected ? (
+        <>
+          <ViewButton view={navView} />
+          <div className={styles.zoomBtns}>
+            <button
+              type="button"
+              aria-label="Zoom in"
+              disabled={navZoom >= NAV_ZOOM_MAX}
+              onClick={() => updateSettings({ navZoom: Math.min(NAV_ZOOM_MAX, navZoom + 0.5) })}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden>
+                <path
+                  d="M12 5v14M5 12h14"
+                  stroke="currentColor"
+                  strokeWidth="2.6"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+            <button
+              type="button"
+              aria-label="Zoom out"
+              disabled={navZoom <= NAV_ZOOM_MIN}
+              onClick={() => updateSettings({ navZoom: Math.max(NAV_ZOOM_MIN, navZoom - 0.5) })}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden>
+                <path d="M5 12h14" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" />
+              </svg>
+            </button>
+          </div>
+        </>
+      ) : null}
 
       {!nav.connected ? (
         <div className={styles.hintCard}>
@@ -154,6 +208,29 @@ export function NavScreen({ onClose, nowPlaying }: Props) {
         </>
       )}
     </div>
+  )
+}
+
+/** steps the map's view: 3D, heading up, north up */
+function ViewButton({ view }: { view: NavView }) {
+  const at = Math.max(
+    0,
+    VIEWS.findIndex((v) => v.id === view),
+  )
+  const next = VIEWS[(at + 1) % VIEWS.length]
+  return (
+    <button
+      type="button"
+      className={styles.viewBtn}
+      onClick={() => updateSettings({ navView: next.id })}
+      aria-label={`Map view: ${VIEWS[at].label}. Switch to ${next.label}`}
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
+        <path d="M12 2 L17 13 H7 Z" fill="#e5484d" />
+        <path d="M12 22 L7 11 H17 Z" fill="currentColor" opacity="0.7" />
+      </svg>
+      {VIEWS[at].short}
+    </button>
   )
 }
 

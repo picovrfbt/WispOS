@@ -19,3 +19,14 @@ build:
 # where the flashable zip lands
 artifact:
     @ls -1 {{work}}/os/build/tmp/deploy/images/superbird/*wisp-image*flashthing.zip
+
+# the system update for a release, named as the daemon looks for it: just ota v1.0.6
+# (upload all four output/wisp-os-<version>* files to the release; the workflow
+# carries them forward): the whole system, and the delta with its two piece files
+ota VERSION:
+    mkdir -p ../output
+    cp -L {{work}}/os/build/tmp/deploy/images/superbird/wisp-os-update-superbird.swu ../output/wisp-os-{{VERSION}}.swu
+    cp -L {{work}}/os/build/tmp/deploy/images/superbird/wisp-os-update-delta-superbird.swu ../output/wisp-os-{{VERSION}}-delta.swu
+    cp -L {{work}}/os/build/tmp/deploy/images/superbird/wisp-image-superbird.ext4.zck ../output/wisp-os-{{VERSION}}-system.zck
+    cp -L {{work}}/os/build/tmp/deploy/images/superbird/boot.vfat.zck ../output/wisp-os-{{VERSION}}-boot.zck
+    ls -la ../output/wisp-os-{{VERSION}}*

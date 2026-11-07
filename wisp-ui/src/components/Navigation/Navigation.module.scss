@@ -24,6 +24,7 @@ $nav-blue: #4285f4;
 // the map fills the screen; the panel floats over its left edge
 .map {
   @include absolute-fill;
+  overflow: hidden;
   background: #0e0e10;
 
   :global(.leaflet-control-attribution) {
@@ -34,9 +35,43 @@ $nav-blue: #4285f4;
   }
 }
 
-// night mode for the light OSM tiles: invert, then turn the hues back around
-.tiles {
-  filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.85) saturate(0.6);
+// the Leaflet map inside .map; turned and tilted by NavMap for those views
+.mapStage {
+  position: absolute;
+  background: #0e0e10;
+}
+
+.mapTurning {
+  // a fix comes about once a second: the turn glides between them
+  transition: transform 0.9s linear;
+  will-change: transform;
+}
+
+.map3d {
+  perspective: 800px;
+}
+
+// the tilted map's far edge, faded into the night like a horizon
+.mapSky {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 170px;
+  background: linear-gradient(#0e0e10 40%, rgba(14, 14, 16, 0));
+  pointer-events: none;
+}
+
+// the map's credit, kept still and upright while the map turns
+.mapCredit {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 500;
+  padding: 0 5px;
+  background: rgba(0, 0, 0, 0.5);
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 9px;
+  line-height: 1.4;
+  pointer-events: none;
 }
 
 // the map fills the screen; the turn card and trip bar float over it
@@ -307,6 +342,57 @@ $nav-blue: #4285f4;
 // ---------------------------------------------------------------- driving
 
 $turn-green: #0f6b3f;
+
+// the map's view: north up, turning with the car, tilted; above Back
+.viewBtn {
+  position: absolute;
+  left: 16px;
+  bottom: 164px;
+  z-index: 600;
+  @include flex-center;
+  flex-direction: column;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(14, 14, 16, 0.9);
+  color: $text-primary;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+// zoom in and out, under the speed sign on the right
+.zoomBtns {
+  position: absolute;
+  right: 26px;
+  top: 112px;
+  z-index: 600;
+  display: flex;
+  flex-direction: column;
+  border-radius: 32px;
+  background: rgba(14, 14, 16, 0.9);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+
+  button {
+    @include flex-center;
+    @include hit-slop(10px, 4px);
+    width: 64px;
+    height: 64px;
+    border: 0;
+    background: none;
+    color: $text-primary;
+  }
+
+  button + button {
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  button:disabled {
+    opacity: 0.35;
+  }
+}
 
 .back {
   position: absolute;

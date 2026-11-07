@@ -46,6 +46,17 @@ export const GENRES: GenreLook[] = [
     glow: ['#6fd3b8', '#ffd59e'],
     glowRgb: '150, 215, 190',
   },
+  {
+    id: 'backwoods',
+    name: 'Backwoods',
+    blurb: 'Gritty guitars and stomping drums for the back roads',
+    cover:
+      'radial-gradient(circle at 72% 24%, rgba(242, 166, 74, 0.88) 0%, rgba(242, 166, 74, 0) 42%),' +
+      'radial-gradient(circle at 25% 82%, rgba(140, 58, 30, 0.7) 0%, rgba(140, 58, 30, 0) 54%),' +
+      'linear-gradient(155deg, #4e6b2e 0%, #2b3d22 50%, #171a12 100%)',
+    glow: ['#c8892f', '#e9d27a'],
+    glowRgb: '220, 160, 80',
+  },
 ]
 
 export function genreLook(id: DriveGenre): GenreLook {

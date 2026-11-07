@@ -22,7 +22,7 @@ const (
 	driveMaxStateBytes = 2 << 10
 )
 
-var driveGenres = map[string]bool{"ethereal": true, "cinematic": true, "lofi": true}
+var driveGenres = map[string]bool{"ethereal": true, "cinematic": true, "lofi": true, "backwoods": true}
 
 var ErrBadDriveCommand = errors.New("unknown drive command")
 

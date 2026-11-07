@@ -234,3 +234,234 @@ drive mode on	start drive mode
 play music that follows the car	start drive mode
 end drive mode	stop drive mode
 turn off the driving music	stop drive mode
+
+# --- shuffle and repeat
+mix up the songs	shuffle
+play them in a random order	shuffle
+randomize the playlist	shuffle
+put it on random	shuffle
+jumble the songs up	shuffle
+switch on shuffle	shuffle
+i want shuffle	shuffle
+turn shuffling on	shuffle
+stop mixing up the songs	shuffle off
+play the songs in order	shuffle off
+no more random order	shuffle off
+turn shuffling off	shuffle off
+switch off shuffle	shuffle off
+go back to the normal order	shuffle off
+play this song over and over	repeat this song
+keep playing this one	repeat this song
+loop this track	repeat this song
+i want this song on loop	repeat this song
+play it on repeat	repeat this song
+don't stop playing this song	repeat this song
+loop the whole playlist	repeat the playlist
+keep the album going round	repeat the playlist
+start the playlist again when it ends	repeat the playlist
+turn on repeat	repeat the playlist
+stop looping	stop repeating
+no more repeat	stop repeating
+turn repeat off	stop repeating
+don't loop it	stop repeating
+let it move on after this	stop repeating
+
+# --- volume as loud as it goes
+all the way up	max volume
+as loud as it goes	max volume
+crank it all the way	max volume
+full blast	max volume
+maximum volume please	max volume
+blast it	max volume
+
+# --- moving within the song
+skip forward a bit	fast forward
+jump ahead in the song	fast forward
+skip this part	fast forward
+get past this bit	fast forward
+move forward in the track	fast forward
+go forward a little	fast forward
+go back a bit in the song	rewind
+i missed that part	rewind
+play that part again	rewind
+back up a little	rewind
+jump back a few seconds	rewind
+what did they just say	rewind
+
+# --- screens
+take me to settings	open settings
+i want to change a setting	open settings
+show the settings	open settings
+where are the settings	open settings
+open the options	open settings
+show me the map	show me the map
+i want to see the map	show me the map
+open directions	show me the map
+where am i	show me the map
+show navigation	show me the map
+go to the main menu	go to the home screen
+take me home on the screen	go to the home screen
+show me my music	go to the home screen
+open my library	go to the home screen
+browse my music	go to the home screen
+what's coming up next	pull up the queue
+show me what's next	pull up the queue
+what's in the queue	pull up the queue
+which songs are coming	pull up the queue
+show the up next list	pull up the queue
+show the visualizer	open the visualizer
+make the screen dance to the music	open the visualizer
+show the music bars	open the visualizer
+show me the song	open now playing
+back to the song	open now playing
+show what's playing	open now playing
+close this screen	open now playing
+open the quick menu	open menu
+show the menu	open menu
+
+# --- my library
+play the songs i liked	play my likes
+play my favorite songs	play my likes
+play my saved music	play my likes
+put on my liked music	play my likes
+play the songs i've hearted	play my likes
+play everything i've liked	play my likes
+shuffle the songs i like	shuffle my liked songs
+mix up my favorites	shuffle my liked songs
+random songs from my likes	shuffle my liked songs
+play my weekly discoveries	play my discover weekly
+play my new music mix	play my discover weekly
+my weekly playlist	play my discover weekly
+play the new releases for me	play my release radar
+new songs from artists i follow	play my release radar
+play my daily playlist	play my daylist
+put on my day list	play my daylist
+
+# --- passengers, directions, calls
+let my friends add songs	start a jam
+let everyone pick the music	start a jam
+the passengers want to choose	start a jam
+share the music control	start a jam
+let the kids pick songs	start a jam
+take the music back	stop the jam
+no more passenger picks	stop the jam
+end the jam	stop the jam
+cancel the directions	stop navigation
+i don't need directions anymore	stop navigation
+stop the route	stop navigation
+end navigation	stop navigation
+quit guiding me	stop navigation
+
+# --- the screen, more
+change the brightness by itself	turn on auto brightness
+let the screen adjust itself	turn on auto brightness
+stop changing the brightness	turn off auto brightness
+keep the brightness fixed	turn off auto brightness
+make it dark for night	turn on night mode
+the screen should be darker at night	turn on night mode
+light mode please	turn off night mode
+normal colors	turn off night mode
+turn on the words	show the lyrics
+put the lyrics up	show the lyrics
+take the lyrics away	hide the lyrics
+get rid of the words	hide the lyrics
+
+# --- playback, more
+next track please	next
+play something else	next
+skip that	next
+nope next	next
+change it	next
+go to the next song	next
+go back a track	previous
+the last song again	previous
+previous track please	previous
+rewind to the last song	previous
+pause the music	pause
+stop it for now	pause
+quiet please	pause
+shut it off	pause
+hold on	pause
+play the music	resume
+keep it going	resume
+okay go ahead	resume
+turn the music back on	resume
+louder please	turn it up
+pump up the volume	turn it up
+raise the volume	turn it up
+up a bit	turn it up
+quieter please	turn it down
+turn the volume down	turn it down
+down a bit	turn it down
+too loud	turn it down
+heart this song	like this
+favorite this	like this
+this one's a keeper	like this
+add it to my liked songs	like this
+from the top	start it over
+restart it	start it over
+play the album this song is on	play the album
+play the whole thing	play the album
+play this artist	more by them
+more from this band	more by them
+more of this singer	more by them
+wrong one	no the other one
+not that song	no the other one
+the other version	no the other one
+
+# --- questions, more
+what's the name of this	what's playing
+what am i hearing	what's playing
+song name	what's playing
+who's this	who sings this
+who made this song	who sings this
+what's the artist	who sings this
+which album	what album is this from
+what album	what album is this from
+how long till we arrive	when will we get there
+what's my arrival time	when will we get there
+how many miles left	when will we get there
+when do i turn	what's my next turn
+next direction please	what's my next turn
+what's my battery at	how's my battery
+phone battery	how's my battery
+is it raining	what's the weather
+what's the forecast	what's the weather
+how hot is it	what's the weather
+current time	what time is it
+what's the clock say	what time is it
+
+# --- fixes from testing on unseen wordings
+put the songs in random order	shuffle
+random order please	shuffle
+play them randomly	shuffle
+play this one again and again	repeat this song
+play it over and over	repeat this song
+keep repeating this track	repeat this song
+make it as loud as possible	max volume
+as loud as it can go	max volume
+skip past the intro	fast forward
+skip the intro	fast forward
+get past this part	fast forward
+carry on playing	resume
+keep on playing	resume
+go back to the player	open now playing
+return to the song screen	open now playing
+show the player	open now playing
+make the screen brighter	make it brighter
+brighter screen please	make it brighter
+open the settings menu	open settings
+bring up settings	open settings
+show me what songs are next	pull up the queue
+what's playing after this	pull up the queue
+play the tracks i liked	play my likes
+play the songs i saved	play my likes
+let the passengers choose	start a jam
+give the passengers control	start a jam
+i'm taking the music back	stop the jam
+stop telling me where to go	stop navigation
+no more directions	stop navigation
+play my discover playlist	play my discover weekly
+play the discover mix	play my discover weekly
+what song is on	what's playing
+what's on right now	what's playing

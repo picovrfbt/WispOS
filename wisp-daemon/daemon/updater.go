@@ -93,6 +93,12 @@ type UpdateState struct {
 	// an update didn't come up and was undone; the UI says so once, then
 	// POST /update/rolled-back clears it
 	RolledBack *RollBack `json:"rolled_back,omitempty"`
+	// Wisp OS: the system running now, a newer one the release carries (what
+	// Available installs first), and one already written that takes over at
+	// the next restart (POST /update/restart)
+	OS             string        `json:"os,omitempty"`
+	System         *SystemUpdate `json:"system,omitempty"`
+	RestartPending string        `json:"restart_pending,omitempty"`
 }
 
 // RollBack is an update that didn't come up and what took its place
@@ -102,6 +108,8 @@ type RollBack struct {
 	To  string `json:"to"`
 	Why string `json:"why"`
 	At  int64  `json:"at"`
+	// "system" for a system update (From and To are system versions), else an app update
+	Kind string `json:"kind,omitempty"`
 }
 
 type ghAsset struct {
@@ -139,6 +147,19 @@ type updater struct {
 	restart func()
 	// the companion app, which can download an update for the Car Thing (update_relay.go)
 	relay phoneRelay
+
+	// system updates (updater_system.go): on Wisp OS, where they're kept, and
+	// the system calls they make (tests swap them)
+	systemOS    bool
+	osDir       string
+	osVersion   func() string
+	bootID      func() string
+	slot        func() string
+	applySystem func(ctx context.Context, swu, slot string) error
+	switchSlot  func(slot string) error
+	reboot      func()
+	// where swupdate asks for a delta's pieces (updater_delta.go)
+	deltaAddr string
 	// how long a broken download waits before it resumes (tests shorten it)
 	resumeWait time.Duration
 	// "download directly" was asked for: no more going through the phone this run
@@ -150,6 +171,8 @@ type updater struct {
 	phoneRepo  string
 	phoneToken string
 	release    *ghRelease
+	// the system update the release offers, when there is one
+	system     *systemOffer
 	state      UpdateState
 	confirmed  chan struct{}
 	confirmOne sync.Once
@@ -169,9 +192,22 @@ func newUpdater(cfg UpdateConfig, log librespot.Logger, emit func(*ApiEvent), pu
 		version:    appVersion,
 		confirmed:  make(chan struct{}),
 		resumeWait: 2 * time.Second,
+
+		systemOS:    wispOS,
+		osDir:       updateOSDir,
+		osVersion:   runningOSVersion,
+		bootID:      currentBootID,
+		slot:        runningSlot,
+		applySystem: writeSystemSlot,
+		switchSlot:  switchSlotEnv,
+		reboot:      rebootNow,
+		deltaAddr:   deltaProxyAddr,
 	}
 	u.restart = u.restartServices
 	u.state = UpdateState{Current: u.version(), Phase: "idle"}
+	if u.systemOS {
+		u.state.OS = u.osVersion()
+	}
 	return u
 }
 
@@ -311,21 +347,24 @@ func (u *updater) maybeAutoInstall() {
 		return
 	}
 	u.mu.Lock()
-	rel, available, tried := u.release, u.state.Available, u.autoTried
+	rel, sys, available, tried := u.release, u.system, u.state.Available, u.autoTried
 	u.mu.Unlock()
-	if rel == nil || !available || rel.TagName == tried || !validTag(rel.TagName) {
+	if rel == nil || !available || !validTag(rel.TagName) {
 		return
 	}
-	if fileExists(filepath.Join(u.appDir, rel.TagName, ".bad")) {
+	key := rel.TagName
+	if sys != nil {
+		key = "system " + sys.version
+	} else if fileExists(filepath.Join(u.appDir, rel.TagName, ".bad")) {
 		return
 	}
-	if !u.autoOK() {
+	if key == tried || !u.autoOK() {
 		return
 	}
 	u.mu.Lock()
-	u.autoTried = rel.TagName
+	u.autoTried = key
 	u.mu.Unlock()
-	u.log.Infof("update: installing %s automatically", rel.TagName)
+	u.log.Infof("update: installing %s automatically", key)
 	if err := u.Install(); err != nil {
 		u.log.Infof("update: automatic install skipped: %v", err)
 	}
@@ -360,12 +399,27 @@ func (u *updater) Check(ctx context.Context) {
 	cur := u.version()
 	available := versionLess(normalizeVersion(cur), normalizeVersion(rel.TagName)) && (coreAsset(rel) != nil || bundleAsset(rel) != nil)
 	highlights := releaseHighlights(rel.Body)
+	// a newer system goes first: it carries its own daemon and UI, and an app
+	// update newer still is offered once it's running
+	offer := u.systemOfferFor(rel)
+	var sys *SystemUpdate
 	u.mu.Lock()
-	u.release = rel
+	if offer != nil && normalizeVersion(offer.version) == normalizeVersion(u.state.RestartPending) {
+		// already written, waiting for the restart
+		offer = nil
+	}
+	if offer != nil {
+		sys = &SystemUpdate{Version: offer.version, Size: offer.asset.Size, Delta: deltaAssetsFor(rel, offer.version) != nil}
+		available = true
+	} else if u.state.RestartPending != "" {
+		available = false
+	}
+	u.release, u.system = rel, offer
 	u.mu.Unlock()
 	u.setState(func(s *UpdateState) {
 		s.Phase, s.Error, s.Percent = "idle", "", 0
 		s.Current, s.Latest, s.Available, s.Highlights = cur, rel.TagName, available, highlights
+		s.System = sys
 		s.CheckedAt = time.Now().UnixMilli()
 	})
 	if u.publish != nil {
@@ -374,6 +428,10 @@ func (u *updater) Check(ctx context.Context) {
 		} else {
 			u.publish("", nil)
 		}
+	}
+	if offer != nil {
+		u.log.Infof("update: running %s on system %s, latest release %s carries system %s", cur, u.osVersion(), rel.TagName, offer.version)
+		return
 	}
 	u.log.Infof("update: running %s, latest release %s (available=%v)", cur, rel.TagName, available)
 }
@@ -498,6 +556,12 @@ func (u *updater) Install() error {
 }
 
 func (u *updater) install(ctx context.Context, rel *ghRelease) error {
+	u.mu.Lock()
+	sys := u.system
+	u.mu.Unlock()
+	if sys != nil {
+		return u.installSystem(ctx, rel, sys, u.focusMode == nil || u.focusMode())
+	}
 	// the split release when there is one: the core, and fonts only if needed
 	if core := coreAsset(rel); core != nil {
 		if free := diskFreeMB(u.appDir); free > 0 && int64(free)<<20 < (core.Size+30<<20)*2 {
@@ -786,6 +850,7 @@ func (u *updater) Focused() bool {
 // startupChecks runs once at boot: a flash at least as new as the update wins,
 // and an unconfirmed update gets updateConfirmWindow to prove itself
 func (u *updater) startupChecks(ctx context.Context) {
+	u.systemStartup(ctx)
 	cur := filepath.Join(u.appDir, "current")
 	tag, err := os.Readlink(cur)
 	if err != nil {
@@ -865,6 +930,8 @@ type UpdateHandler interface {
 	Relay()
 	// the UI has told the user an update was undone
 	ClearRolledBack()
+	// restarts into a system update written to the other slot
+	Restart() error
 }
 
 func (s *ConcreteApiServer) registerUpdateRoutes(m *http.ServeMux) {
@@ -924,6 +991,19 @@ func (s *ConcreteApiServer) registerUpdateRoutes(m *http.ServeMux) {
 			h.Confirm()
 		}
 		w.WriteHeader(http.StatusNoContent)
+	})
+	// 202 when restarting; 409 with no system update waiting for one
+	m.HandleFunc("POST /update/restart", func(w http.ResponseWriter, r *http.Request) {
+		h := handler()
+		if h == nil {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+		if err := h.Restart(); err != nil {
+			w.WriteHeader(http.StatusConflict)
+			return
+		}
+		w.WriteHeader(http.StatusAccepted)
 	})
 	m.HandleFunc("POST /update/rolled-back", func(w http.ResponseWriter, r *http.Request) {
 		if h := handler(); h != nil {

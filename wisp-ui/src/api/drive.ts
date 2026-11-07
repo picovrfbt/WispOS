@@ -5,7 +5,7 @@ import { subscribeEvents } from './eventBus'
 // Drive Mode: music that follows the driving. The phone (the Wisp Companion)
 // plays it and reads the drive; the Car Thing picks the genre and shows it.
 
-export type DriveGenre = 'ethereal' | 'cinematic' | 'lofi'
+export type DriveGenre = 'ethereal' | 'cinematic' | 'lofi' | 'backwoods'
 
 /** the parts of the track, each 0..1 as loud as it is right now */
 export interface DriveParts {
@@ -98,16 +98,41 @@ function simulate(genre: DriveGenre, set: (s: DriveState) => void): () => void {
   const t0 = Date.now()
   const id = window.setInterval(() => {
     const t = ((Date.now() - t0) / 1000) % 40
-    const speed = t < 5 ? 0 : t < 14 ? ((t - 5) / 9) * 45 : t < 24 ? 45 + (t > 18 ? (t - 18) * 3.3 : 0) : t < 30 ? 65 - (t - 24) * 10.8 : 0
+    const speed =
+      t < 5
+        ? 0
+        : t < 14
+          ? ((t - 5) / 9) * 45
+          : t < 24
+            ? 45 + (t > 18 ? (t - 18) * 3.3 : 0)
+            : t < 30
+              ? 65 - (t - 24) * 10.8
+              : 0
     const push = t > 18 && t < 24 ? 1 : t > 5 && t < 10 ? 0.6 : 0
     const s = Math.min(speed / 50, 1)
-    const beat = 0.5 + 0.5 * Math.sin((Date.now() / 1000) * Math.PI * 2 * (genre === 'ethereal' ? 1.67 : genre === 'lofi' ? 1.33 : 1.5))
+    const beat =
+      0.5 +
+      0.5 *
+        Math.sin(
+          (Date.now() / 1000) *
+            Math.PI *
+            2 *
+            (genre === 'ethereal'
+              ? 1.67
+              : genre === 'lofi'
+                ? 1.33
+                : genre === 'backwoods'
+                  ? 1.6
+                  : 1.5),
+        )
     const clarity = Math.min(0.03 + 0.72 * s + 0.35 * push, 1)
     const parts = {
       melody: 0.35 + 0.55 * clarity,
       choir: 0.4 + 0.5 * s,
       bass: Math.min(0.06 + 0.94 * Math.min(speed / 30, 1) + 0.3 * push, 1),
-      drums: Math.max(0, Math.min(0.8 * Math.max(0, (speed - 10) / 35) + 0.6 * push, 1)) * (0.75 + 0.25 * beat),
+      drums:
+        Math.max(0, Math.min(0.8 * Math.max(0, (speed - 10) / 35) + 0.6 * push, 1)) *
+        (0.75 + 0.25 * beat),
     }
     set({
       genre,

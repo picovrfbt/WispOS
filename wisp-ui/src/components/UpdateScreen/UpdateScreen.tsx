@@ -24,6 +24,8 @@ function UpdateScreenImpl({ update, onRetry, onClose }: Props) {
   const pct = overallPercent(update)
   const detail = failed ? update.error : (downloadDetail(update) ?? update.step)
   const version = update.installing ?? update.latest
+  // a whole-system update (Wisp OS) rather than just Wisp's own software
+  const system = !!update.system || (update.step ?? '').includes('system')
   // the other route, while one is downloading: the Car Thing's own, or back through the phone
   const downloading = !failed && update.phase === 'downloading'
   const switchTo =
@@ -43,7 +45,7 @@ function UpdateScreenImpl({ update, onRetry, onClose }: Props) {
     ? "The update didn't finish"
     : update.phase === 'restarting'
       ? 'Starting the new version'
-      : `Updating${version ? ` to ${version}` : ''}`
+      : `Updating${system ? ' the system' : ''}${version ? ` to ${version}` : ''}`
 
   return (
     <div className={styles.screen} role="dialog" aria-label="Updating">

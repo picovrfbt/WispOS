@@ -52,6 +52,34 @@ import { SteeringIcon } from '@/components/DriveMode/SteeringIcon'
 const PREFETCH_CARDS = 5
 // card width + gap, kept in step with .card in Home.module.scss
 const CARD_STRIDE = 276
+
+/**
+ * Slides a track inside its box to v px along, kept within its ends, and says
+ * where it went. A transform rather than scrolling: the Car Thing's Chrome
+ * repaints a scrolled box on every frame, but slides a transformed layer on
+ * the GPU, so the glide (.railTrack and .track's transition) costs nothing.
+ * A finger on it moves it exactly, with no glide.
+ */
+function slideTrack(
+  box: HTMLElement | null,
+  track: HTMLElement | null,
+  axis: 'x' | 'y',
+  v: number,
+  dragging: boolean,
+): number {
+  if (!box || !track) return 0
+  const cs = getComputedStyle(box)
+  const room =
+    axis === 'x'
+      ? box.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)
+      : box.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)
+  const length = axis === 'x' ? track.offsetWidth : track.offsetHeight
+  const at = Math.max(0, Math.min(v, length - room))
+  track.style.transition = dragging ? 'none' : ''
+  track.style.transform =
+    axis === 'x' ? `translate3d(${-at}px, 0, 0)` : `translate3d(0, ${-at}px, 0)`
+  return at
+}
 // rail row height, kept in step with .railItem
 const RAIL_STRIDE = 96
 // how long the dial rests on a card before its artwork is baked for the background
@@ -277,6 +305,11 @@ export function Home({
   }, [catIndex, focus, cardIndexes, opened, source])
   const railRef = useRef<HTMLDivElement>(null)
   const cardsRef = useRef<HTMLDivElement>(null)
+  const railTrackRef = useRef<HTMLDivElement>(null)
+  const cardTrackRef = useRef<HTMLDivElement>(null)
+  // where each track is slid to (px along it)
+  const railAt = useRef(0)
+  const cardsAt = useRef(0)
 
   const category = categories[Math.min(catIndex, categories.length - 1)]
   const cardIndex = cardIndexes[category.id] ?? 0
@@ -338,27 +371,40 @@ export function Home({
 
   // drag the cards sideways and the rail up and down; the cards settle on the
   // nearest one and the dial carries on from there
+  const slideCards = useCallback((v: number, dragging = false) => {
+    cardsAt.current = slideTrack(cardsRef.current, cardTrackRef.current, 'x', v, dragging)
+  }, [])
+  const slideRail = useCallback((v: number, dragging = false) => {
+    railAt.current = slideTrack(railRef.current, railTrackRef.current, 'y', v, dragging)
+  }, [])
   useDragScroll(cardsRef, {
     axis: 'x',
     enabled: opened === null,
+    get: () => cardsAt.current,
+    set: slideCards,
     onRelease: (rest) => {
       const i = Math.max(0, Math.min(cards.length - 1, Math.round(rest / CARD_STRIDE)))
-      if (cardsRef.current) cardsRef.current.scrollLeft = i * CARD_STRIDE
+      slideCards(i * CARD_STRIDE)
       setCardIndex(i)
       setFocus('cards')
     },
   })
-  useDragScroll(railRef, { axis: 'y', enabled: opened === null })
+  useDragScroll(railRef, {
+    axis: 'y',
+    enabled: opened === null,
+    get: () => railAt.current,
+    set: slideRail,
+  })
 
   // keep the rail cursor and the focused card in view, and page ahead of the cards
   useEffect(() => {
-    if (railRef.current) railRef.current.scrollTop = Math.max(0, (catIndex - 1) * RAIL_STRIDE)
-  }, [catIndex])
+    slideRail(Math.max(0, (catIndex - 1) * RAIL_STRIDE))
+  }, [catIndex, categories.length, slideRail])
   useEffect(() => {
-    if (cardsRef.current) cardsRef.current.scrollLeft = cardIndex * CARD_STRIDE
+    slideCards(cardIndex * CARD_STRIDE)
     if (category.source && cardIndex >= cards.length - PREFETCH_CARDS)
       lists.loadMore(category.source)
-  }, [cardIndex, cards.length, category.source, lists])
+  }, [cardIndex, cards.length, category.id, category.source, lists, slideCards])
 
   // the cards just past the screen, into the cover cache before the dial gets there
   const aheadKey = cards
@@ -541,7 +587,7 @@ export function Home({
       ) : (
         <div className={styles.layout}>
           <nav className={styles.rail} ref={railRef} aria-label="Categories">
-            <div className={styles.railTrack}>
+            <div className={styles.railTrack} ref={railTrackRef}>
               {categories.map((c, i) => {
                 const current = i === Math.min(catIndex, categories.length - 1)
                 if (c.id === 'source') {
@@ -621,7 +667,7 @@ export function Home({
             </button>
           ) : (
             <div className={styles.cards} ref={cardsRef}>
-              <div className={styles.track}>
+              <div className={styles.track} ref={cardTrackRef}>
                 {cards.slice(0, cardIndex + CARDS_AHEAD + 1).map((item, i) => (
                   // memoised: a dial notch re-renders the two cards it moves between, not the row
                   <Card

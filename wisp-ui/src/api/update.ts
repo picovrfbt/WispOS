@@ -34,6 +34,20 @@ export interface UpdateState {
   can_relay?: boolean
   /** an update didn't come up and was undone; said once, then clearRolledBack() */
   rolled_back?: RolledBack
+  /** Wisp OS: the system running now */
+  os?: string
+  /** Wisp OS: a newer system on offer, which installUpdate() installs first */
+  system?: SystemUpdate
+  /** Wisp OS: a system written and waiting; it starts at the next restart (restartForUpdate) */
+  restart_pending?: string
+}
+
+export interface SystemUpdate {
+  version: string
+  /** the whole system's download, bytes */
+  size: number
+  /** only what changed comes down, usually far less than size */
+  delta?: boolean
 }
 
 export interface RolledBack {
@@ -42,6 +56,8 @@ export interface RolledBack {
   to: string
   why: string
   at: number
+  /** 'system': from and to are Wisp OS versions */
+  kind?: 'system'
 }
 
 /** the user has been told an update was undone */
@@ -55,6 +71,8 @@ export async function clearRolledBack(): Promise<void> {
 
 /** the banner for an undone update */
 export function rolledBackMessage(r: RolledBack): string {
+  if (r.kind === 'system')
+    return `The system update to ${r.from} didn't start properly, so the Car Thing went back to ${r.to || 'the system it had'}`
   const back = r.to ? r.to : 'the version installed over USB'
   return `${r.from} didn't start properly, so Wisp went back to ${back}`
 }
@@ -86,6 +104,21 @@ export async function installUpdate(): Promise<boolean> {
   } catch {
     return false
   }
+}
+
+/** restarts into a system update that's waiting; false when none is */
+export async function restartForUpdate(): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE}/update/restart`, { method: 'POST' })
+    return res.status === 202
+  } catch {
+    return false
+  }
+}
+
+/** "215 MB" */
+export function sizeMB(bytes: number): string {
+  return `${Math.max(1, Math.round(bytes / 1_048_576))} MB`
 }
 
 /** tells the daemon this version's UI came up, so it keeps the update */

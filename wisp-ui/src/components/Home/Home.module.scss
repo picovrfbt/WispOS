@@ -43,7 +43,6 @@ $rail-gap: 12px;
   // pointer events drive the drag (useDragScroll), not the browser's own panning
   touch-action: none;
   padding: 28px 0 28px 22px;
-  scroll-behavior: smooth;
 }
 
 // what the rail and the cards scroll: a layer of its own, so a glide moves
@@ -52,6 +51,8 @@ $rail-gap: 12px;
 // every frame of every knob step
 .railTrack {
   will-change: transform;
+  // the glide between categories (slideTrack in Home.tsx moves it)
+  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
   @include flex-gap-y($rail-gap);
 }
 
@@ -66,8 +67,16 @@ $rail-gap: 12px;
   text-align: left;
 }
 
-// the bar beside the category the cards belong to
+// the bar beside the category the cards belong to: it grows in as the cursor arrives
+@keyframes railBarIn {
+  from {
+    transform: scaleY(0.2);
+    opacity: 0;
+  }
+}
+
 .railCurrent::before {
+  animation: railBarIn 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
   content: '';
   position: absolute;
   left: 0;
@@ -118,7 +127,7 @@ $rail-gap: 12px;
   overflow-x: auto;
   @include hide-scrollbar;
   padding: 44px 40px 0 16px;
-  scroll-behavior: smooth;
+  overflow: hidden;
   touch-action: none;
 }
 
@@ -127,6 +136,7 @@ $rail-gap: 12px;
   flex: 0 0 auto;
   align-items: flex-start;
   will-change: transform;
+  transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
   @include flex-gap-x($card-gap);
 }
 

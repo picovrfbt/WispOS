@@ -15,7 +15,7 @@ import {
 } from '@/settings'
 import { cyclePreset, describePreset, getPreset, PRESET_SLOTS } from '@/presets'
 import { NotchedSlider } from './NotchedSlider'
-import { checkForUpdate, installUpdate } from '@/api/update'
+import { checkForUpdate, installUpdate, restartForUpdate, sizeMB } from '@/api/update'
 import { useUpdateState } from '@/hooks/useUpdateState'
 import { useNightMode } from '@/hooks/useNightMode'
 import { formatUtcOffset } from '@/hooks/useUtcOffset'
@@ -366,8 +366,14 @@ function SoftwareUpdate() {
   if (u.phase === 'downloading') value = `Downloading ${u.percent ?? 0}%`
   else if (u.phase === 'installing') value = 'Installing...'
   else if (u.phase === 'restarting') value = 'Restarting...'
-  else if (checking || u.phase === 'checking') value = 'Checking...'
-  else if (u.available && u.latest) {
+  else if (u.restart_pending) {
+    value = 'Restart to finish'
+    action = () => void restartForUpdate()
+  } else if (checking || u.phase === 'checking') value = 'Checking...'
+  else if (u.available && u.system) {
+    value = `Install ${u.system.version}`
+    action = () => void installUpdate()
+  } else if (u.available && u.latest) {
     value = `Install ${u.latest}`
     action = () => void installUpdate()
   } else {
@@ -380,11 +386,17 @@ function SoftwareUpdate() {
   const note =
     u.phase === 'error' && u.error
       ? u.error
-      : u.available
-        ? null
-        : u.latest
-          ? `Up to date (${u.current})`
-          : null
+      : u.restart_pending
+        ? `System ${u.restart_pending} starts next time the Car Thing turns on`
+        : u.available && u.system
+          ? u.system.delta
+            ? `System update, only what changed (at most ${sizeMB(u.system.size)})`
+            : `System update, ${sizeMB(u.system.size)}`
+          : u.available
+            ? null
+            : u.latest
+              ? `Up to date (${u.current}${u.os ? `, system ${u.os}` : ''})`
+              : null
   return (
     <>
       <div className={styles.sectionHead}>
@@ -1018,7 +1030,7 @@ function StorageSection() {
     return () => window.clearTimeout(t)
   }, [confirming])
 
-  const total = saved ? saved.covers_bytes + saved.lyrics_bytes : null
+  const total = saved ? saved.covers_bytes + saved.lyrics_bytes + (saved.map_bytes ?? 0) : null
   const press = () => {
     if (busy) return
     if (!confirming) {
@@ -1029,7 +1041,7 @@ function StorageSection() {
     setBusy(true)
     void clearSavedData().then((ok) => {
       setBusy(false)
-      notify(ok ? 'Saved covers and lyrics cleared' : "Couldn't clear everything", {
+      notify(ok ? 'Saved covers, lyrics and maps cleared' : "Couldn't clear everything", {
         variant: ok ? undefined : 'error',
       })
       void fetchSavedData().then(setSaved)
@@ -1041,17 +1053,30 @@ function StorageSection() {
       <div className={styles.sectionHead}>
         <div className={styles.section}>Storage</div>
       </div>
+      <button
+        type="button"
+        className={styles.buttonRow}
+        onClick={() => updateSettings({ tutorialDone: false })}
+      >
+        <span className={styles.chip} aria-hidden>
+          <TutorialIcon />
+        </span>
+        <span className={styles.labelStack}>
+          <span className={styles.label}>Learn the controls</span>
+          <span className={styles.sublabel}>The dial, buttons and swipes, one at a time</span>
+        </span>
+      </button>
       <button type="button" className={styles.buttonRow} onClick={press} disabled={busy}>
         <span className={styles.chip} aria-hidden>
           <TrashIcon />
         </span>
         <span className={styles.labelStack}>
           <span className={styles.label}>
-            {confirming ? 'Press again to clear' : 'Clear saved covers & lyrics'}
+            {confirming ? 'Press again to clear' : 'Clear saved covers, lyrics & maps'}
           </span>
           <span className={styles.sublabel}>
             {saved
-              ? `Covers ${mbOf(saved.covers_bytes)} · Lyrics ${mbOf(saved.lyrics_bytes)}`
+              ? `Covers ${mbOf(saved.covers_bytes)} · Lyrics ${mbOf(saved.lyrics_bytes)} · Maps ${mbOf(saved.map_bytes ?? 0)}`
               : 'Kept to load faster; they come back as you play'}
           </span>
         </span>
@@ -1157,5 +1182,24 @@ function TemperaturesRow() {
         </div>
       ) : null}
     </>
+  )
+}
+
+function TutorialIcon() {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 3v3" />
+    </svg>
   )
 }

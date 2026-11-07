@@ -49,7 +49,7 @@ class DriveStems private constructor(
     companion object {
         private const val TAG = "WispDrive"
         val PARTS = listOf("drums", "bass", "other", "vocals", "haze")
-        val GENRES = setOf("ethereal", "cinematic", "lofi")
+        val GENRES = setOf("ethereal", "cinematic", "lofi", "backwoods")
 
         /** where songs are kept decoded, ready to play */
         fun cacheDir(ctx: Context) = File(ctx.cacheDir, "drive")

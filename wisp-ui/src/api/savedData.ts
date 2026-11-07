@@ -8,6 +8,8 @@ import { readJson } from './client'
 export interface SavedData {
   covers_bytes: number
   lyrics_bytes: number
+  /** map tiles (older Car Thing software leaves it out) */
+  map_bytes?: number
 }
 
 export async function fetchSavedData(): Promise<SavedData | null> {

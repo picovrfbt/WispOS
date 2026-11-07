@@ -23,6 +23,7 @@ export type DevForcedScreen =
   | 'phone-soundcloud'
   | 'phone-local'
   | 'home-services'
+  | 'tutorial'
   | 'nav'
   | 'nav-live'
   | 'jam'

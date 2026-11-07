@@ -22,7 +22,10 @@ BAD_RECOMMENDATIONS += "kernel-modules udev-hwdb wpa-supplicant wireless-regdb w
 
 # read-only ext4 root, as the board layer's production kiosk image
 EXTRA_IMAGECMD:ext4 = "-i 16384 -m 0 -O ^has_journal -O ^huge_file"
-IMAGE_FSTYPES = "wic ext4 ext4.zck ext4.zck.zckheader"
+IMAGE_FSTYPES = "wic ext4 ext4.zck ext4.zck.zckheader ext4.zst"
+# ext4.zst is the root partition in the system update (wisp-os-update); the
+# smallest download is worth the build minute
+ZSTD_COMPRESSION_LEVEL = "19"
 IMAGE_CLASSES += "image_types_zchunk"
 IMAGE_OVERHEAD_FACTOR = "1.0"
 IMAGE_ROOTFS_EXTRA_SPACE = "4096"

@@ -27,6 +27,32 @@ The daemon knows which system it's on from `/etc/wisp-os`
 ([`platform.go`](../../wisp-daemon/daemon/platform.go)), and over-the-air updates
 fetch the 64-bit bundle (`wisp-core-<tag>-arm64.tar.gz`) there.
 
+## System updates
+
+Wisp OS updates over the air as a whole system too, not only Wisp's own
+software. The build also makes `wisp-os-update-superbird.swu`
+([`wisp-os-update`](meta-wisp/recipes-core/wisp-os-update)): the boot and root
+partitions, zstd-compressed (about 215 MB). Uploaded to a release as
+`wisp-os-<version>.swu`, it reaches every Car Thing on an older Wisp OS:
+
+1. The daemon finds it on the latest release (the release workflow carries it forward to later releases) and offers it before any app update.
+2. **Only what changed**, when the release has the delta ([`wisp-os-update-delta`](meta-wisp/recipes-core/wisp-os-update-delta)): `swupdate` compares the new system's chunk lists with the running slot, keeps every chunk it already has, and asks for the rest by byte range. The daemon answers on `127.0.0.1:8893`, fetching those ranges from the release's `.zck` files and keeping them, so a drive that ends mid-update loses nothing ([`updater_delta.go`](../../wisp-daemon/daemon/updater_delta.go)). Every chunk's hash is checked; a delta that fails for any reason but the connection falls back to step 3's whole download.
+3. **The whole system** otherwise: it downloads to the data partition, carrying on next time when the car turns off part way, and after the checksum `swupdate` writes it.
+4. Either way it goes to the slot that isn't running, and u-boot points at that slot. It takes over at the next start: right away from the update screen, otherwise next time the Car Thing turns on (or Settings → Restart to finish).
+
+If the new system doesn't boot, or boots but Wisp's screen never comes up
+within three minutes, the Car Thing goes back to the slot it came from, and that
+version isn't offered again. See
+[`updater_system.go`](../../wisp-daemon/daemon/updater_system.go).
+
+```sh
+just ota v1.0.6                  # after a build: the whole system, the delta, and its two piece files
+gh release upload v1.0.6 ../output/wisp-os-v1.0.6.swu ../output/wisp-os-v1.0.6-delta.swu \
+  ../output/wisp-os-v1.0.6-system.zck ../output/wisp-os-v1.0.6-boot.zck
+```
+
+The original firmware has one slot, so it only takes Wisp's own updates.
+
 ## Building
 
 On Linux or in WSL, with Docker, [kas](https://kas.readthedocs.io/) and a
@@ -56,5 +82,5 @@ relying on it.
 
 ## Recovery
 
-- The system has two slots. If a new one fails to boot three times, u-boot goes back to the other.
+- The system has two slots. If a new one fails to boot three times, u-boot goes back to the other; if it boots but Wisp doesn't come up, the daemon switches back.
 - Settings → Reset (or `uenv set firstboot 1`) wipes the data partition on the next boot.

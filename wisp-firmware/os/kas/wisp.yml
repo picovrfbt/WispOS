@@ -14,6 +14,10 @@ distro: wisp
 
 target:
   - wisp-image
+  # the same system as an over-the-air update (wisp-os-update-superbird.swu)
+  - wisp-os-update
+  # and as only what changed (wisp-os-update-delta-superbird.swu + the .zck files)
+  - wisp-os-update-delta
 
 repos:
   yocto-superbird:

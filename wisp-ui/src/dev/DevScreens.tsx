@@ -99,6 +99,11 @@ const SCREENS: ScreenDef[] = [
     hint: 'A local song in VLC, with the optional lyrics (sample)',
   },
   {
+    id: 'tutorial',
+    label: 'Controls tutorial',
+    hint: 'The first-boot walkthrough of the dial, buttons and gestures',
+  },
+  {
     id: 'home-services',
     label: 'Home: 3 libraries',
     hint: 'Home with YouTube Music and SoundCloud signed in (sample)',

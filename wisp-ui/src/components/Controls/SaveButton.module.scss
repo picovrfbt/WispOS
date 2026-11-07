@@ -1,5 +1,5 @@
 .save {
-  position: relative;
+  @include hit-slop(14px, 10px);
   @include flex-center;
   width: 56px;
   height: 56px;

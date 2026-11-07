@@ -1005,6 +1005,7 @@ func (s *ConcreteApiServer) serve() {
 	s.registerPhoneMediaRoutes(m)
 	s.registerUpdateRoutes(m)
 	s.registerCoverRoutes(m)
+	s.registerMapRoutes(m)
 	s.registerSavedDataRoutes(m)
 	s.registerWeatherRoutes(m)
 	s.registerAddonRoutes(m, func() *addonStore {

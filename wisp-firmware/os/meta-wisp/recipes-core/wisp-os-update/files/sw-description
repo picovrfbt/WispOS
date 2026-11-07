@@ -1,0 +1,65 @@
+# Wisp OS system update: boot_X + root_X of the slot that isn't running,
+# streamed straight from zstd onto the partitions, then the boot env switches
+# to that slot with three tries (u-boot goes back to the other slot if all three
+# fail; superbird-slot-ok resets the count once a boot lasts a minute).
+# The daemon picks the slot: swupdate -e stable,slot_a|slot_b
+
+software =
+{
+    version = "@@VERSION@@";
+    description = "Wisp OS";
+
+    # matched against /etc/hwrevision (`superbird 1.0`)
+    hardware-compatibility: [ "1.0" ];
+
+    stable: {
+        slot_a: {
+            images: (
+                {
+                    filename = "boot.vfat.zst";
+                    type = "raw";
+                    compressed = "zstd";
+                    sha256 = "$swupdate_get_sha256(boot.vfat.zst)";
+                    device = "/dev/disk/by-partlabel/boot_a";
+                    installed-directly = true;
+                },
+                {
+                    filename = "system.img.zst";
+                    type = "raw";
+                    compressed = "zstd";
+                    sha256 = "$swupdate_get_sha256(system.img.zst)";
+                    device = "/dev/disk/by-partlabel/root_a";
+                    installed-directly = true;
+                }
+            );
+            bootenv: (
+                { name = "slot_active";  value = "a"; },
+                { name = "slot_a_tries"; value = "3"; }
+            );
+        };
+        slot_b: {
+            images: (
+                {
+                    filename = "boot.vfat.zst";
+                    type = "raw";
+                    compressed = "zstd";
+                    sha256 = "$swupdate_get_sha256(boot.vfat.zst)";
+                    device = "/dev/disk/by-partlabel/boot_b";
+                    installed-directly = true;
+                },
+                {
+                    filename = "system.img.zst";
+                    type = "raw";
+                    compressed = "zstd";
+                    sha256 = "$swupdate_get_sha256(system.img.zst)";
+                    device = "/dev/disk/by-partlabel/root_b";
+                    installed-directly = true;
+                }
+            );
+            bootenv: (
+                { name = "slot_active";  value = "b"; },
+                { name = "slot_b_tries"; value = "3"; }
+            );
+        };
+    };
+};

@@ -28,7 +28,7 @@ vi.mock('../NavMap', () => ({
 import { NavProvider } from '@/hooks/NavProvider'
 import { NavBanner } from '../NavBanner'
 import { NavScreen } from '../NavScreen'
-import { zoomForSpeed } from '../zoom'
+import { distanceMetres, zoomFor, zoomForSpeed } from '../zoom'
 
 const TURN: NavState = {
   connected: true,
@@ -121,5 +121,25 @@ describe('zoomForSpeed', () => {
     expect(zoomForSpeed(3)).toBe(17)
     expect(zoomForSpeed(15)).toBe(16)
     expect(zoomForSpeed(30)).toBe(15)
+  })
+})
+
+describe('zoomFor', () => {
+  it('zooms out with speed and in on a coming turn', () => {
+    expect(zoomFor(0)).toBeGreaterThan(zoomFor(30))
+    expect(zoomFor(30, 50)).toBeGreaterThan(zoomFor(30, 450))
+    expect(zoomFor(30, 2000)).toBe(zoomFor(30))
+  })
+  it('sits closer in 3D and takes the driver nudge', () => {
+    expect(zoomFor(10, null, '3d')).toBeGreaterThan(zoomFor(10, null, 'north'))
+    expect(zoomFor(10, null, 'north', 1)).toBe(zoomFor(10, null, 'north') + 1)
+    expect(zoomFor(0, 0, '3d', 9)).toBe(19)
+  })
+  it('reads turn distances', () => {
+    expect(distanceMetres('500 ft')).toBeCloseTo(152.4)
+    expect(distanceMetres('0.3 mi')).toBeCloseTo(482.8, 0)
+    expect(distanceMetres('200 m')).toBe(200)
+    expect(distanceMetres('1,2 km')).toBe(1200)
+    expect(distanceMetres('Turn left')).toBeNull()
   })
 })

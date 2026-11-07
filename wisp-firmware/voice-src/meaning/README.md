@@ -26,3 +26,8 @@ quiet minute. A match must be close (0.6) and clearly ahead of any other
 command (0.03), and a few word checks stop it mixing up opposites ("too loud"
 is never "turn it up"). On 35 new phrasings it hadn't seen, it got 25 right,
 passed on 9 and got 1 slightly wrong.
+
+In November 2026 the bank grew to every command Wisp acts on (74, about 430
+examples; `voice_examples_test.go` in the daemon checks each one is a real
+command), and the Car Thing now asks it before the phone's model. On 35 fresh
+phrasings it got 25 right where the old bank got 6.

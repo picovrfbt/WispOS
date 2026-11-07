@@ -2,15 +2,33 @@ import { memo, useEffect, useRef } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import type { NavLocation } from '@/api/nav'
+import { API_BASE } from '@/config'
+import type { NavView } from '@/settings'
 import styles from './Navigation.module.scss'
-import { zoomForSpeed } from './zoom'
+import { zoomFor } from './zoom'
 import { remainingRoute } from './route'
 
-// OpenStreetMap's own tiles: free with attribution and no key (CARTO's dark
-// set now wants one). They are light, so .tiles darkens them with a filter.
-// One device's driving is the light use the OSM tile policy allows.
-const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
-const ATTRIBUTION = '© OpenStreetMap contributors'
+// OpenStreetMap's own tiles, through the Car Thing (map_tiles.go): it keeps
+// them, darkens them once and fetches the ones around the car ahead of time
+const TILE_URL = `${API_BASE}/map/tile/{z}/{x}/{y}`
+
+/**
+ * Where the map sits for each view. The car stays put on screen, right of the
+ * turn card; turning and tilting views draw a map bigger than the screen so
+ * its corners never show as it swings. Leaflet draws flat into the stage and
+ * CSS turns and tilts it, which the Car Thing's GPU does without redrawing.
+ */
+const STAGES: Record<NavView, { w: number; h: number; carX: number; carY: number; tilt: number }> =
+  {
+    // north up fills the screen, the car in the middle
+    north: { w: 0, h: 0, carX: 0, carY: 0, tilt: 0 },
+    heading: { w: 1200, h: 1200, carX: 500, carY: 300, tilt: 0 },
+    // square, so it covers the screen whichever way it's turned; the last bit
+    // of distance fades into .mapSky
+    '3d': { w: 1600, h: 1600, carX: 500, carY: 370, tilt: 45 },
+  }
+// below this (m/s, ~3 mph) the phone's heading wanders: the map holds still
+const TURN_MIN_SPEED = 1.5
 
 const PUCK_HTML =
   '<div class="nav-puck"><svg viewBox="0 0 40 40" width="40" height="40">' +
@@ -28,6 +46,12 @@ interface Props {
   dest?: [number, number] | null
   /** the route planner: the whole trip in view, instead of following the car */
   overview?: boolean
+  /** north up, turning with the car, or tilted (the planner is always north up) */
+  view?: NavView
+  /** metres to the next turn, for zooming in on it */
+  turnDistance?: number | null
+  /** the driver's zoom in or out on top of the automatic one */
+  zoomNudge?: number
 }
 
 // the route as Google Maps draws it: blue, with a dark edge that holds it off the darkened map
@@ -53,8 +77,21 @@ const ALT_LINE: L.PolylineOptions = { ...ROUTE_LINE, color: '#6b7380', weight: 6
 const DEST_HTML =
   '<svg viewBox="0 0 24 24" width="30" height="30"><circle cx="12" cy="12" r="8" fill="#e5484d" stroke="#fff" stroke-width="3.5"/></svg>'
 
-function NavMapImpl({ location, route, alternatives, dest, overview = false }: Props) {
+function NavMapImpl({
+  location,
+  route,
+  alternatives,
+  dest,
+  overview = false,
+  view = 'north',
+  turnDistance,
+  zoomNudge = 0,
+}: Props) {
+  const mode: NavView = overview ? 'north' : view
+  const stage = STAGES[mode]
   const elRef = useRef<HTMLDivElement>(null)
+  // the turn as one running angle, so 359° to 1° is a small step, not a spin back
+  const turnRef = useRef(0)
   const mapRef = useRef<L.Map | null>(null)
   const puckRef = useRef<L.Marker | null>(null)
   const routeRef = useRef<{ edge: L.Polyline; line: L.Polyline } | null>(null)
@@ -71,13 +108,20 @@ function NavMapImpl({ location, route, alternatives, dest, overview = false }: P
       doubleClickZoom: false,
       boxZoom: false,
       keyboard: false,
-      attributionControl: true,
+      // drawn outside the stage below, so it doesn't turn with the map
+      attributionControl: false,
       fadeAnimation: false,
+      // smooth zoom: tiles at the nearest level, scaled between
+      zoomSnap: 0.25,
     })
-    map.attributionControl.setPrefix(false)
-    L.tileLayer(TILE_URL, { attribution: ATTRIBUTION, maxZoom: 19, className: styles.tiles }).addTo(
-      map,
-    )
+    L.tileLayer(TILE_URL, {
+      maxZoom: 19,
+      // keep a wide ring of tiles loaded, so turning and going back are instant
+      keepBuffer: 6,
+      // fetch as the map moves rather than once it stops (it never stops while driving)
+      updateWhenIdle: false,
+      updateWhenZooming: false,
+    }).addTo(map)
     // somewhere sensible until the first fix
     map.setView([39.5, -98.35], 4)
     mapRef.current = map
@@ -144,9 +188,15 @@ function NavMapImpl({ location, route, alternatives, dest, overview = false }: P
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [overview, route, alternatives, dest])
 
+  // a new view: the stage changed size
+  useEffect(() => {
+    mapRef.current?.invalidateSize({ animate: false })
+  }, [mode])
+
   useEffect(() => {
     const map = mapRef.current
     if (!map || !location) return
+    const zoom = zoomFor(location.speed, turnDistance, mode, zoomNudge)
     const at = L.latLng(location.lat, location.lng)
     if (!puckRef.current) {
       puckRef.current = L.marker(at, {
@@ -154,16 +204,50 @@ function NavMapImpl({ location, route, alternatives, dest, overview = false }: P
         interactive: false,
         keyboard: false,
       }).addTo(map)
-      if (!overview) map.setView(at, zoomForSpeed(location.speed), { animate: false })
+      if (!overview) map.setView(at, zoom, { animate: false })
     } else {
       puckRef.current.setLatLng(at)
-      if (!overview) map.setView(at, zoomForSpeed(location.speed), { animate: true })
+      if (!overview) map.setView(at, zoom, { animate: true })
     }
     const arrow = puckRef.current.getElement()?.querySelector<HTMLElement>('.nav-puck')
     if (arrow) arrow.style.transform = `rotate(${location.bearing}deg)`
-  }, [location, overview])
+    // the map turns so the way ahead is up, the shortest way round
+    if (mode !== 'north' && location.speed >= TURN_MIN_SPEED) {
+      const cur = turnRef.current
+      const diff = ((((location.bearing - cur) % 360) + 540) % 360) - 180
+      turnRef.current = cur + diff
+    }
+    const el = elRef.current
+    if (el) {
+      el.style.transform =
+        mode === 'north' ? '' : `rotateX(${stage.tilt}deg) rotate(${-turnRef.current}deg)`
+    }
+  }, [location, overview, turnDistance, mode, stage.tilt, zoomNudge])
 
-  return <div className={styles.map} ref={elRef} data-testid="nav-map" />
+  return (
+    <div
+      className={`${styles.map} ${mode === '3d' ? styles.map3d : ''}`}
+      style={mode === '3d' ? { perspectiveOrigin: `${stage.carX}px ${stage.carY}px` } : undefined}
+    >
+      <div
+        className={`${styles.mapStage} ${mode !== 'north' ? styles.mapTurning : ''}`}
+        ref={elRef}
+        data-testid="nav-map"
+        style={
+          mode === 'north'
+            ? { inset: 0 }
+            : {
+                width: stage.w,
+                height: stage.h,
+                left: stage.carX - stage.w / 2,
+                top: stage.carY - stage.h / 2,
+              }
+        }
+      />
+      {mode === '3d' ? <div className={styles.mapSky} /> : null}
+      <div className={styles.mapCredit}>© OpenStreetMap contributors</div>
+    </div>
+  )
 }
 
 export const NavMap = memo(NavMapImpl)

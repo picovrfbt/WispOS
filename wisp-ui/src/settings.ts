@@ -29,6 +29,12 @@ export interface Settings {
   navEngine: 'google' | 'wisp'
   /** Wisp's directions out loud: every turn with a heads-up, just the turns, or none */
   navVoice: NavVoice
+  /** the driving map: north up, turning with the car, or tilted like Google's */
+  navView: NavView
+  /** the driver's zoom in or out on top of the automatic zoom, in levels */
+  navZoom: number
+  /** the controls tutorial has been through (or skipped); false right after a flash */
+  tutorialDone: boolean
   /** the colour of toggles, sliders and focus */
   accentTheme: AccentTheme
   /** updates install behind whatever is on screen, rather than taking the Car Thing over */
@@ -66,6 +72,10 @@ export const VOICE_SPEED_MAX = 2
 
 export type ArrivalAction = 'none' | 'pause'
 export type NavVoice = 'all' | 'turns' | 'off'
+export type NavView = 'north' | 'heading' | '3d'
+/** how far the map's + and - go from the automatic zoom */
+export const NAV_ZOOM_MIN = -3
+export const NAV_ZOOM_MAX = 2
 
 export type NightMode = 'off' | 'on' | 'auto'
 const NIGHT_MODES: readonly NightMode[] = ['off', 'on', 'auto']
@@ -99,6 +109,9 @@ const DEFAULTS: Settings = {
   arrivalAction: 'none',
   navEngine: 'google',
   navVoice: 'all',
+  navView: '3d',
+  navZoom: 0,
+  tutorialDone: false,
   accentTheme: 'green',
   updateInBackground: true,
   wispVoice: 'confirmations',
@@ -192,6 +205,14 @@ function coerce(raw: Partial<Settings> | null | undefined): Settings {
     navEngine: partial?.navEngine === 'wisp' ? 'wisp' : 'google',
     navVoice:
       partial?.navVoice === 'turns' || partial?.navVoice === 'off' ? partial.navVoice : 'all',
+    navView:
+      partial?.navView === 'north' || partial?.navView === 'heading' ? partial.navView : '3d',
+    // settings from before the tutorial existed are a Car Thing already in use
+    tutorialDone: partial ? partial.tutorialDone !== false : false,
+    navZoom:
+      typeof partial?.navZoom === 'number' && Number.isFinite(partial.navZoom)
+        ? Math.min(NAV_ZOOM_MAX, Math.max(NAV_ZOOM_MIN, partial.navZoom))
+        : 0,
     accentTheme: ACCENT_ORDER.includes(partial?.accentTheme as AccentTheme)
       ? (partial?.accentTheme as AccentTheme)
       : DEFAULTS.accentTheme,
@@ -300,6 +321,26 @@ export function useSettings(): Settings {
   return useSyncExternalStore(subscribeSettings, () => current)
 }
 
+// whether the daemon has been asked yet (or couldn't be), so the first-boot
+// tutorial doesn't flash up on a Car Thing whose settings are still coming
+let checked = false
+const checkedListeners = new Set<() => void>()
+function markChecked(): void {
+  checked = true
+  for (const l of checkedListeners) l()
+}
+export function useSettingsChecked(): boolean {
+  return useSyncExternalStore(
+    (cb) => {
+      checkedListeners.add(cb)
+      return () => {
+        checkedListeners.delete(cb)
+      }
+    },
+    () => checked,
+  )
+}
+
 // check with the daemon once at startup
 let initialized = false
 export async function initSettings(): Promise<void> {
@@ -321,6 +362,8 @@ export async function initSettings(): Promise<void> {
     }
   } catch {
     // offline
+  } finally {
+    markChecked()
   }
 }
 

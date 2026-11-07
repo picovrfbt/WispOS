@@ -28,7 +28,8 @@ import java.util.concurrent.Executors
 object UpdateRelay {
     const val PORT = 3680
     private const val TAG = "WispUpdateRelay"
-    private const val MAX_BYTES = 200L shl 20
+    // a Wisp OS system update is about 215 MB
+    private const val MAX_BYTES = 400L shl 20
     private const val ATTEMPTS = 8
 
     private val work = Executors.newSingleThreadExecutor()

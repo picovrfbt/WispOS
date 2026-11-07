@@ -6,6 +6,8 @@
 /go-librespot-config.yml
 /ui.zip
 /voice-artifacts/
+# the meaning model, fetched by os/scripts/prepare.sh
+/voice-models/
 
 
 # asset generators

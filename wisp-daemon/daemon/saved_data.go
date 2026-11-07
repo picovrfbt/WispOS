@@ -14,6 +14,7 @@ import (
 type savedData struct {
 	CoversBytes int64 `json:"covers_bytes"`
 	LyricsBytes int64 `json:"lyrics_bytes"`
+	MapBytes    int64 `json:"map_bytes"`
 }
 
 func dirBytes(dir string) int64 {
@@ -42,11 +43,13 @@ func (s *ConcreteApiServer) registerSavedDataRoutes(m *http.ServeMux) {
 		_ = json.NewEncoder(w).Encode(savedData{
 			CoversBytes: dirBytes(coverCacheDir()),
 			LyricsBytes: dirBytes(lyricsStoreDir()),
+			MapBytes:    dirBytes(tileCacheDir()),
 		})
 	})
 	m.HandleFunc("POST /system/saved-data/clear", func(w http.ResponseWriter, r *http.Request) {
 		clearDir(coverCacheDir())
 		clearDir(lyricsStoreDir())
+		clearDir(tileCacheDir())
 		if lp := activeLyrics.Load(); lp != nil {
 			lp.ClearCache()
 		}

@@ -12,6 +12,10 @@ const FLING_MS = 220
  * ends a drag is swallowed so dragging over a card doesn't open it.
  *
  * onRelease gets where the scroll would come to rest, so a carousel can snap.
+ *
+ * get/set swap the scroll position for one of the caller's own, such as a
+ * track slid with a transform; set is told whether a finger is on it, so it
+ * can follow exactly rather than glide.
  */
 export function useDragScroll<T extends HTMLElement>(
   ref: React.RefObject<T | null>,
@@ -19,11 +23,21 @@ export function useDragScroll<T extends HTMLElement>(
     axis,
     onRelease,
     enabled = true,
-  }: { axis: 'x' | 'y'; onRelease?: (rest: number) => void; enabled?: boolean },
+    get,
+    set,
+  }: {
+    axis: 'x' | 'y'
+    onRelease?: (rest: number) => void
+    enabled?: boolean
+    get?: () => number
+    set?: (v: number, dragging: boolean) => void
+  },
 ): void {
   const releaseRef = useRef(onRelease)
+  const posRef = useRef({ get, set })
   useEffect(() => {
     releaseRef.current = onRelease
+    posRef.current = { get, set }
   })
 
   useEffect(() => {
@@ -31,9 +45,11 @@ export function useDragScroll<T extends HTMLElement>(
     if (!el || !enabled) return
 
     const pos = (e: PointerEvent) => (axis === 'x' ? e.clientX : e.clientY)
-    const getScroll = () => (axis === 'x' ? el.scrollLeft : el.scrollTop)
+    const getScroll = () =>
+      posRef.current.get ? posRef.current.get() : axis === 'x' ? el.scrollLeft : el.scrollTop
     const setScroll = (v: number) => {
-      if (axis === 'x') el.scrollLeft = v
+      if (posRef.current.set) posRef.current.set(v, dragging)
+      else if (axis === 'x') el.scrollLeft = v
       else el.scrollTop = v
     }
 

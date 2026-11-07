@@ -23,6 +23,7 @@ const apiProxy = {
   '/settings': API_TARGET,
   '/debug': API_TARGET,
   '/img': API_TARGET,
+  '/map/': API_TARGET,
   '/services': API_TARGET,
   '/update': API_TARGET,
   '/weather': API_TARGET,

@@ -56,6 +56,8 @@ var thinkActions = map[string]bool{
 	"volume_up": true, "volume_down": true, "like": true, "answer": true, "navigate": true,
 	"call": true, "drive_start": true, "drive_stop": true, "night_on": true, "night_off": true,
 	"brighter": true, "dimmer": true, "restart": true, "none": true,
+	"shuffle_on": true, "shuffle_off": true, "repeat_on": true, "repeat_one": true, "repeat_off": true,
+	"volume_set": true, "open": true, "liked": true,
 }
 
 var thinkKinds = map[string]bool{"": true, "track": true, "artist": true, "album": true, "playlist": true, "mood": true}
@@ -291,6 +293,19 @@ func (v *voiceService) doThought(ctx context.Context, gen uint64, a thinkAction)
 		return v.driveMode(ctx, gen, a.Action == "drive_start")
 	case "night_on", "night_off":
 		return v.handleUnderstood(ctx, gen, understood{what: doNight, arg: strings.TrimPrefix(a.Action, "night_")})
+	case "shuffle_on", "shuffle_off", "repeat_one", "repeat_off":
+		return v.handleUnderstood(ctx, gen, understood{what: a.Action})
+	case "repeat_on":
+		return v.handleUnderstood(ctx, gen, understood{what: doRepeatAll})
+	case "volume_set":
+		if _, ok := spokenNumber(a.Query); !ok {
+			return v.fail(gen, "Say a volume from 0 to 100")
+		}
+		return v.handleUnderstood(ctx, gen, understood{what: doVolumeTo, arg: a.Query})
+	case "open":
+		return v.handleUnderstood(ctx, gen, understood{what: doOpen, arg: strings.ToLower(strings.TrimSpace(a.Query))})
+	case "liked":
+		return v.handleUnderstood(ctx, gen, understood{what: doLiked, said: strings.ToLower(a.Query)})
 	case "brighter":
 		return v.stepBrightness(gen, true)
 	case "dimmer":

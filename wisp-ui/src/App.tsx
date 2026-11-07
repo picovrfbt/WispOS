@@ -49,7 +49,8 @@ import { useUpdateNotice } from '@/hooks/useUpdateNotice'
 import { useUtcOffset } from '@/hooks/useUtcOffset'
 import { fetchSavedState, listenNow, resumeLastDevice, setSavedState } from '@/api/client'
 import type { ButtonAction } from '@/presets'
-import type { ObserverStatusActive } from '@/api/types'
+import type { ApiEvent, ObserverStatusActive } from '@/api/types'
+import { subscribeEvents } from '@/api/eventBus'
 import { Home } from '@/components/Home'
 import { PhoneMediaPage } from '@/components/PhoneMedia'
 import { usePhoneMedia } from '@/hooks/usePhoneMedia'
@@ -58,7 +59,8 @@ import { confirmUpdate, installUpdate, type UpdateState } from '@/api/update'
 import { takesOver, UpdateScreen } from '@/components/UpdateScreen'
 import type { PhoneMedia } from '@/api/phoneMedia'
 import { NavScreen } from '@/components/Navigation'
-import { initSettings, useSettings } from '@/settings'
+import { initSettings, updateSettings, useSettings, useSettingsChecked } from '@/settings'
+import { Tutorial } from '@/components/Tutorial'
 import type { Weather } from '@/api/weather'
 import styles from './App.module.scss'
 
@@ -245,6 +247,10 @@ function AppContent() {
   })
 
   const settings = useSettings()
+  const settingsChecked = useSettingsChecked()
+  // the controls tutorial: first thing after a flash, or replayed from Settings
+  const tutorialOpen =
+    forced === 'tutorial' || (!forced && settingsChecked && !settings.tutorialDone)
   const showLyricsReal = settings.showLyrics
 
   // get settings from the daemon
@@ -363,6 +369,14 @@ function AppContent() {
       notify(`Update failed: ${updateState.error}`, { variant: 'error' })
     // only on a change of phase
   }, [updatePhase]) // eslint-disable-line react-hooks/exhaustive-deps
+  // a system update written in the background takes over at the next start
+  const restartPending = updateState?.restart_pending
+  useEffect(() => {
+    if (restartPending && !updateState?.focus)
+      notify('System update ready. It starts next time the Car Thing turns on', {
+        variant: 'success',
+      })
+  }, [restartPending]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const openUpdateCard = useCallback(() => openOverlay('updateCard'), [openOverlay])
   const closeUpdateCard = useCallback(() => closeOverlay('updateCard'), [closeOverlay])
@@ -532,6 +546,43 @@ function AppContent() {
     [statusActive, status, signedIn, openOverlay, notify, onHardwarePlayPause, controls],
   )
 
+  // "Okay Wisp, open settings": the daemon names the page (voice_more.go); and
+  // wind on the mic during a command gets a small heads-up (voice_wind.go)
+  useEffect(() => {
+    const PAGES: Record<string, 'home' | 'settings' | 'menu' | 'nav' | 'queue' | 'viz'> = {
+      home: 'home',
+      settings: 'settings',
+      menu: 'menu',
+      map: 'nav',
+      queue: 'queue',
+      viz: 'viz',
+    }
+    return subscribeEvents((evt: ApiEvent) => {
+      if (evt.type === 'voice/wind') {
+        const strong = (evt.data as { level?: string } | null)?.level === 'strong'
+        notify(
+          strong
+            ? 'Too windy for Wisp to hear you well. Try closing a window'
+            : 'A bit windy for the mic. Wisp may mishear you',
+          { variant: strong ? 'warning' : 'info' },
+        )
+        return
+      }
+      if (evt.type !== 'voice/open') return
+      const page = (evt.data as { page?: string } | null)?.page ?? ''
+      if (page === 'player') {
+        // Now Playing is underneath everything: close what's over it
+        for (const id of ['home', 'settings', 'menu', 'nav', 'queue', 'viz'] as const)
+          closeOverlay(id)
+        return
+      }
+      const id = PAGES[page]
+      if (!id || (id === 'home' && !signedIn)) return
+      if (id !== 'home') closeOverlay('home')
+      openOverlay(id)
+    })
+  }, [openOverlay, closeOverlay, signedIn, notify])
+
   useHardwareButtons({
     status: status && status.active ? status : null,
     onPlayPause: onHardwarePlayPause,
@@ -573,7 +624,8 @@ function AppContent() {
       forced === 'phone-ytmusic' ||
       forced === 'phone-soundcloud' ||
       forced === 'phone-local' ||
-      phoneShown,
+      phoneShown ||
+      tutorialOpen,
     onButtonAction,
   })
 
@@ -624,6 +676,19 @@ function AppContent() {
       }
     />
   )
+
+  if (tutorialOpen) {
+    return (
+      <div className={styles.app}>
+        <Tutorial
+          onDone={() => {
+            if (forced === 'tutorial') setForced(null)
+            else updateSettings({ tutorialDone: true })
+          }}
+        />
+      </div>
+    )
+  }
 
   if (forced === 'updating') {
     return (

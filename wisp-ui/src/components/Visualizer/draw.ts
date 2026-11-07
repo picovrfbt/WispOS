@@ -47,7 +47,11 @@ function rgba(c: RGB, a: number) {
 
 // a second colour from the first: its complement, softened, for the treble
 function partner(c: RGB): RGB {
-  return [(255 - c[0]) * 0.55 + c[0] * 0.45, (255 - c[1]) * 0.55 + c[1] * 0.45, (255 - c[2]) * 0.55 + c[2] * 0.45]
+  return [
+    (255 - c[0]) * 0.55 + c[0] * 0.45,
+    (255 - c[1]) * 0.55 + c[1] * 0.45,
+    (255 - c[2]) * 0.55 + c[2] * 0.45,
+  ]
 }
 
 function avg(b: number[], from: number, to: number) {
@@ -100,16 +104,25 @@ export function drawViz(
       ctx.fillStyle = g2
       ctx.fillRect(0, 0, w, h)
     } else if (style === 'bars') {
-      // bars standing out from the cover's edge, bass at the top, mirrored left and right
+      // bars standing out from the cover's edge: bass at the bottom, rising up both
+      // sides to the treble at the top, mirrored left and right
       const count = n * 2
-      const inner = r0 * 1.08
+      // the whole ring jumps out on a kick
+      const inner = r0 * (1.08 + 0.07 * s.kick)
+      // as long as the screen allows, so a bar never runs off it
+      const room = Math.max(r0 * 0.3, Math.min(cx, cy) - inner - 6)
       ctx.lineCap = 'round'
       ctx.lineWidth = Math.max(2, ((2 * Math.PI * inner) / count) * 0.45)
       for (let i = 0; i < count; i++) {
-        const band = i < n ? i : count - 1 - i
+        const band = i < n ? i : i - n
+        const side = i < n ? -1 : 1 // right side, then left (y points down: pi/2 is the bottom)
         const v = s.bands[band]
-        const a = -Math.PI / 2 + (i / count) * Math.PI * 2
-        const len = r0 * (0.04 + 0.5 * v + 0.1 * s.kick * (band < 4 ? 1 : 0))
+        const a = Math.PI / 2 + side * ((band + 0.5) / n) * Math.PI
+        // exaggerated: louder bands reach much further than quiet ones
+        const len = Math.min(
+          room,
+          r0 * (0.04 + 1.05 * Math.pow(v, 1.3) + 0.3 * s.kick * (band < 6 ? 1 : 0.35)),
+        )
         const cos = Math.cos(a)
         const sin = Math.sin(a)
         ctx.strokeStyle = rgba(band < n / 2 ? c1 : c2, 0.45 + 0.55 * v)
@@ -119,17 +132,18 @@ export function drawViz(
         ctx.stroke()
       }
     } else if (style === 'wave') {
-      // a soft ring that breathes with the music, turning slowly
+      // a soft ring that breathes with the music: bass at the bottom, treble at the top
       for (let layer = 0; layer < 2; layer++) {
-        const base = r0 * (1.1 + layer * 0.12)
+        const base = r0 * (1.1 + layer * 0.12 + 0.06 * s.kick)
         ctx.beginPath()
         const steps = 96
         for (let k = 0; k <= steps; k++) {
           const a = (k / steps) * Math.PI * 2
-          const pos = (Math.sin(a * 2 + s.t * (0.6 + layer * 0.3)) * 0.5 + 0.5) * (n - 1)
+          // sin(a) is 1 at the bottom (y points down) and -1 at the top
+          const pos = ((1 - Math.sin(a)) / 2) * (n - 1)
           const i0 = Math.floor(pos)
           const v = s.bands[i0] + (s.bands[Math.min(n - 1, i0 + 1)] - s.bands[i0]) * (pos - i0)
-          const r = base + r0 * (0.28 * v + 0.12 * s.kick)
+          const r = base + r0 * (0.62 * Math.pow(v, 1.2) + 0.22 * s.kick)
           const x = cx + Math.cos(a) * r
           const y = cy + Math.sin(a) * r
           if (k === 0) ctx.moveTo(x, y)
@@ -137,7 +151,10 @@ export function drawViz(
         }
         ctx.closePath()
         ctx.lineWidth = layer === 0 ? 3 : 2
-        ctx.strokeStyle = rgba(layer === 0 ? c1 : c2, layer === 0 ? 0.55 + 0.4 * s.level : 0.35 + 0.3 * treble)
+        ctx.strokeStyle = rgba(
+          layer === 0 ? c1 : c2,
+          layer === 0 ? 0.55 + 0.4 * s.level : 0.35 + 0.3 * treble,
+        )
         ctx.stroke()
       }
     } else {
@@ -150,9 +167,19 @@ export function drawViz(
   if (style === 'glow') {
     // three soft lights drifting, each swelling with its part of the music
     const spots: Array<[number, number, number, RGB]> = [
-      [0.3 + 0.08 * Math.sin(s.t * 0.21), 0.55 + 0.1 * Math.cos(s.t * 0.17), 0.18 + 0.6 * bass + 0.2 * s.kick, c1],
+      [
+        0.3 + 0.08 * Math.sin(s.t * 0.21),
+        0.55 + 0.1 * Math.cos(s.t * 0.17),
+        0.18 + 0.6 * bass + 0.2 * s.kick,
+        c1,
+      ],
       [0.7 + 0.07 * Math.cos(s.t * 0.19), 0.45 + 0.1 * Math.sin(s.t * 0.23), 0.14 + 0.5 * mid, c2],
-      [0.5 + 0.12 * Math.sin(s.t * 0.13), 0.35 + 0.08 * Math.sin(s.t * 0.29), 0.08 + 0.45 * treble, c1],
+      [
+        0.5 + 0.12 * Math.sin(s.t * 0.13),
+        0.35 + 0.08 * Math.sin(s.t * 0.29),
+        0.08 + 0.45 * treble,
+        c1,
+      ],
     ]
     for (const [x, y, size, c] of spots) {
       const R = Math.max(w, h) * size

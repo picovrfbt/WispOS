@@ -75,6 +75,10 @@ func (n *navRelay) setRoute(kind string, pts [][2]float64) {
 	rev := n.route.Rev + 1
 	n.route = NavRoute{Kind: kind, Rev: rev, Points: pts}
 	n.mu.Unlock()
+	// the whole trip: its map is fetched ahead (the road to the next turn is near the car anyway)
+	if t := activeTiles.Load(); kind == "full" && t != nil {
+		t.alongRoute(pts)
+	}
 	n.update(func(s *NavState) {
 		s.RouteRev = rev
 		s.RouteKind = kind

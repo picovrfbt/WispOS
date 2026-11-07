@@ -900,13 +900,24 @@ func (m *Manager) tryActiveReconnect(addrs []string) {
 				continue
 			}
 
+			m.log.Infof("bluetooth: actively paging %s for reconnect", addr)
+
+			// page straight for the tether: Device1.Connect only brings up profiles
+			// bluez auto-connects, and PANU isn't one, so against an Android phone it
+			// fails with profile-unavailable and drops the link before PAN can follow
+			napErr := m.connectNetworkTimeout(addr, false, activePageTimeout)
+			if napErr == nil {
+				m.log.Infof("bluetooth: active reconnect to %s succeeded over PAN", addr)
+				return
+			}
+			m.log.WithError(napErr).Debugf("bluetooth: PAN page to %s failed, trying a plain connect", addr)
+
 			// bounded so one absent device cant eat the whole attempt
-			ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), activePageTimeout)
 
 			devicePath := formatDevicePath(m.adapter, addr)
 			obj := m.conn.Object(bluezBusName, devicePath)
 
-			m.log.Infof("bluetooth: actively paging %s for reconnect", addr)
 			err := obj.CallWithContext(ctx, bluezDeviceInterface+".Connect", 0).Err
 			cancel()
 			if err != nil {
@@ -1384,6 +1395,15 @@ func (m *Manager) ConnectNetworkForced(address string) error {
 }
 
 func (m *Manager) connectNetworkInternal(address string, force bool) error {
+	return m.connectNetworkTimeout(address, force, dbusCallTimeout)
+}
+
+// how long paging a phone that isn't connected may take
+const activePageTimeout = 20 * time.Second
+
+// connectNetworkTimeout is ConnectNetwork with room for the nap connect to page
+// a phone that isn't connected yet, which takes longer than a normal dbus call
+func (m *Manager) connectNetworkTimeout(address string, force bool, timeout time.Duration) error {
 	m.log.Debugf("bluetooth: ConnectNetwork(%s, force=%v) entry", address, force)
 	m.networkMu.Lock()
 	defer m.networkMu.Unlock()
@@ -1411,7 +1431,10 @@ func (m *Manager) connectNetworkInternal(address string, force bool) error {
 		}
 	}
 
-	if err := m.dbusCall(obj, bluezNetworkInterface+".Connect", "nap").Err; err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	err := obj.CallWithContext(ctx, bluezNetworkInterface+".Connect", 0, "nap").Err
+	cancel()
+	if err != nil {
 		return fmt.Errorf("network connect (nap): %w", err)
 	}
 

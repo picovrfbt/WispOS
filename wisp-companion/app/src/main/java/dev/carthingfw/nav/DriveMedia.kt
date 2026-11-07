@@ -113,6 +113,15 @@ class DriveMedia(
                 c.drawRect(0f, 0f, s, s, p)
                 radial(0.28f, 0.24f, 0.55f, 0xFFDEAA, 215)
                 radial(0.78f, 0.78f, 0.65f, 0xE88FA0, 180)
+            } else if (genre == "backwoods") {
+                p.shader = LinearGradient(
+                    0.15f * s, 0f, 0.85f * s, s,
+                    intArrayOf(0xFF4E6B2E.toInt(), 0xFF2B3D22.toInt(), 0xFF171A12.toInt()),
+                    floatArrayOf(0f, 0.5f, 1f), Shader.TileMode.CLAMP,
+                )
+                c.drawRect(0f, 0f, s, s, p)
+                radial(0.72f, 0.24f, 0.55f, 0xF2A64A, 225)
+                radial(0.25f, 0.82f, 0.68f, 0x8C3A1E, 180)
             } else {
                 p.shader = LinearGradient(
                     0.1f * s, 0f, 0.9f * s, s,

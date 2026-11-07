@@ -3,6 +3,7 @@ package daemon
 import (
 	"bufio"
 	"context"
+	_ "embed"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -75,7 +76,11 @@ func (m *meaningMatcher) available() bool {
 	if m == nil || m.dir == "" {
 		return false
 	}
-	for _, f := range []string{"model_quantized.onnx", "vocab.txt", "bank.bin"} {
+	files := []string{"model_quantized.onnx", "vocab.txt"}
+	if len(embeddedMeaningBank) == 0 {
+		files = append(files, "bank.bin")
+	}
+	for _, f := range files {
 		if !fileExists(filepath.Join(m.dir, f)) {
 			return false
 		}
@@ -206,11 +211,31 @@ func meaningFits(text, cmd string) bool {
 	case "pause":
 		return !has("carry on", "continue", "resume", "keep", "again", "unpause")
 	case "resume":
-		return !has("stop", "pause", "hold", "wait", "mute")
+		return !has("stop", "pause", "hold", "wait", "mute", "player", "screen", "taking back", "take the music back")
 	case "next":
-		return !has("previous", "before", "back", "last")
+		return !has("previous", "before", "back", "last", "carry on", "keep playing", "continue", "intro", "part", "bit")
 	case "previous":
-		return !has("next", "skip", "ahead")
+		return !has("next", "skip", "ahead", "again and again", "over and over", "loop")
+	case "shuffle off":
+		return !(has("random", "randomly", "mix") && !has("no", "not", "stop", "don't", "no more"))
+	case "shuffle":
+		return !has("off", "stop", "order", "no more", "don't")
+	case "repeat this song", "repeat the playlist":
+		return !has("stop", "off", "no more", "don't", "move on")
+	case "stop repeating":
+		return !has("over and over", "on loop", "keep playing", "loop this", "loop it")
+	case "fast forward":
+		return !has("back", "again", "missed", "rewind", "before")
+	case "rewind":
+		return !has("forward", "ahead", "past", "skip this")
+	case "max volume":
+		return !has("down", "quiet", "quieter", "lower", "softer", "too loud")
+	case "turn on night mode", "turn on auto brightness":
+		return !has("off", "stop", "normal", "light mode")
+	case "turn off night mode", "turn off auto brightness":
+		return !has("dark for night", "darker at night")
+	case "start a jam":
+		return !has("stop", "end", "no more", "take the music back")
 	}
 	if strings.HasPrefix(cmd, "play something") && questionLead.MatchString(text) {
 		return false
@@ -323,11 +348,26 @@ func loadVocab(path string) (map[string]int32, error) {
 	return v, sc.Err()
 }
 
+// The bank built from examples.tsv, carried in the daemon itself: updates only
+// replace the daemon and the screen, not the system image the model and its
+// files live in, so a bank there would only change with a reflash. This one
+// arrives with every update, and always matches the commands this daemon knows.
+//
+//go:embed meaning_bank.bin
+var embeddedMeaningBank []byte
+
 func loadMeaningBank(path string) ([]meaningEntry, int, error) {
+	if len(embeddedMeaningBank) > 0 {
+		return parseMeaningBank(embeddedMeaningBank)
+	}
 	b, err := os.ReadFile(path)
 	if err != nil {
 		return nil, 0, err
 	}
+	return parseMeaningBank(b)
+}
+
+func parseMeaningBank(b []byte) ([]meaningEntry, int, error) {
 	if len(b) < 12 || string(b[:4]) != "WMB1" {
 		return nil, 0, errors.New("meaning: not a bank file")
 	}

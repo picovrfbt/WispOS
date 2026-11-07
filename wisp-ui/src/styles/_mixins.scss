@@ -55,6 +55,22 @@
   }
 }
 
+// an invisible margin around a control that still counts as pressing it, so a
+// tap while driving needn't land dead on the icon. Keep $x under half the gap
+// to the next control, or it takes that one's taps. Uses ::before
+@mixin hit-slop($x: 12px, $y: 12px) {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -$y;
+    right: -$x;
+    bottom: -$y;
+    left: -$x;
+  }
+}
+
 // a control the daemon says we cannot act on: dimmed, and no press transform
 @mixin disabled-control {
   opacity: 0.35;

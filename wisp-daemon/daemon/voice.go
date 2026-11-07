@@ -32,6 +32,8 @@ type voiceService struct {
 	flowStart time.Time
 
 	bannerSeq atomic.Uint64
+	// how windy the command being handled was (a windLevel), for its messages
+	wind atomic.Int32
 
 	// cascade resolver + g2p
 	g2p      *g2p
@@ -224,6 +226,9 @@ func (v *voiceService) syncProgressSnapshot() *catalogProgress {
 const ApiEventTypeVoiceLevel ApiEventType = "voice/level"
 
 func (v *voiceService) emit(state, text string) {
+	if state == "error" {
+		text = v.windyMessage(text)
+	}
 	v.bannerSeq.Add(1)
 	v.app.server.Emit(&ApiEvent{Type: ApiEventTypeVoice, Data: ApiEventDataVoice{State: state, Text: text}})
 }
@@ -250,6 +255,7 @@ func (v *voiceService) TriggerVoice(ctx context.Context, transcript, clipPath st
 
 	// "listening" is emitted by the wake loop the instant the wake word wakes
 	v.emit("thinking", "")
+	v.checkWind(clipPath)
 
 	// 1. ASR
 	if transcript == "" && clipPath != "" {
@@ -281,19 +287,19 @@ func (v *voiceService) TriggerVoice(ctx context.Context, transcript, clipPath st
 	if u, ok := understand(transcript); ok {
 		return v.handleUnderstood(ctx, gen, u)
 	}
-	// not a command Wisp's own rules know the shape of: the phone's model if it's
-	// there, else the meaning-matcher on the Car Thing
+	// not a command Wisp's own rules know the shape of: the Car Thing's own
+	// meaning-matcher first, so every command works with no phone at all; the
+	// phone's model only for what that doesn't know
 	if !looksLikeCommand(transcript) {
-		if v.phoneCanThink() {
-			if out, err, ok := v.thinkOnPhone(ctx, gen, transcript); ok {
-				return out, err
-			}
-		}
 		if cmd := v.meaningOf(ctx, transcript); cmd != "" {
 			if u, ok := understand(normalizeLoose(cmd)); ok {
 				return v.handleUnderstood(ctx, gen, u)
 			}
 			transcript = normalizeLoose(cmd)
+		} else if v.phoneCanThink() {
+			if out, err, ok := v.thinkOnPhone(ctx, gen, transcript); ok {
+				return out, err
+			}
 		}
 	}
 
@@ -325,16 +331,16 @@ func (v *voiceService) TriggerVoice(ctx context.Context, transcript, clipPath st
 		case "abstain":
 			// the library matcher gave up: the phone's model, or the meaning-matcher,
 			// may still make sense of it
-			if v.phoneCanThink() {
-				if out, err, ok := v.thinkOnPhone(ctx, gen, transcript); ok {
-					return out, err
-				}
-			} else if cmd := v.meaningOf(ctx, transcript); cmd != "" {
+			if cmd := v.meaningOf(ctx, transcript); cmd != "" {
 				if u, ok := understand(normalizeLoose(cmd)); ok {
 					return v.handleUnderstood(ctx, gen, u)
 				}
 				if action, ok := v.resolver.matchControl(ctx, strings.Fields(normalizeLoose(cmd))); ok {
 					return v.handleControl(ctx, gen, action)
+				}
+			} else if v.phoneCanThink() {
+				if out, err, ok := v.thinkOnPhone(ctx, gen, transcript); ok {
+					return out, err
 				}
 			}
 			// do nothing on purpose

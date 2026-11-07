@@ -20,6 +20,16 @@
   @include flex-gap-x(4px);
 }
 
+// the transport buttons are 36px apart: each takes 17px of it, and some above and below
+.center .btn {
+  @include hit-slop(17px, 10px);
+}
+
+// queue and more sit 4px apart: their margin is mostly above and below
+.right .btn {
+  @include hit-slop(2px, 10px);
+}
+
 .left {
   display: flex;
   justify-content: flex-start;

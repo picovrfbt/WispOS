@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -143,9 +144,15 @@ func (u *updater) canRelay() bool {
 
 // downloadFrom fetches src into dst, resuming with a Range request after a
 // dropped connection, and returns the whole file's sha256. auth sends the
-// GitHub token (an asset URL); the phone's own server needs none
+// GitHub token (an asset URL); the phone's own server needs none. A dst
+// ending in .part (a system update) keeps what an earlier run got and carries
+// on from there; the checksum at the end catches one that went wrong
 func (u *updater) downloadFrom(ctx context.Context, src string, auth bool, total int64, dst string) (string, error) {
-	f, err := os.Create(dst)
+	flags := os.O_RDWR | os.O_CREATE
+	if !strings.HasSuffix(dst, ".part") {
+		flags |= os.O_TRUNC
+	}
+	f, err := os.OpenFile(dst, flags, 0o644)
 	if err != nil {
 		return "", err
 	}
@@ -153,6 +160,13 @@ func (u *updater) downloadFrom(ctx context.Context, src string, auth bool, total
 	h := sha256.New()
 	var done int64
 	p := &dlProgress{u: u, total: total, lastAt: time.Now()}
+	if n, err := resumeHash(f, h, total); err != nil {
+		return "", err
+	} else if n > 0 {
+		done = n
+		p.lastDone = n
+		u.log.Infof("update: carrying on %s from %d of %d bytes", filepath.Base(dst), n, total)
+	}
 
 	fails := 0
 	for {
@@ -231,7 +245,7 @@ func (u *updater) downloadOnce(ctx context.Context, src string, auth bool, f *os
 	for {
 		n, rerr := resp.Body.Read(buf)
 		if n > 0 {
-			if done+int64(n) > updateMaxBundle {
+			if done+int64(n) > max(updateMaxBundle, p.total) {
 				return done, fmt.Errorf("%w: bundle too large", errDownloadFatal)
 			}
 			if _, err := f.Write(buf[:n]); err != nil {
@@ -260,6 +274,26 @@ func restartHash(f *os.File, h hash.Hash) error {
 	}
 	h.Reset()
 	return nil
+}
+
+// resumeHash takes in what a kept file already has: hashes it and leaves f at
+// its end. One longer than the download can be isn't the same file: emptied
+func resumeHash(f *os.File, h hash.Hash, total int64) (int64, error) {
+	st, err := f.Stat()
+	if err != nil || st.Size() == 0 {
+		return 0, err
+	}
+	if total > 0 && st.Size() > total {
+		return 0, restartHash(f, h)
+	}
+	if _, err := f.Seek(0, io.SeekStart); err != nil {
+		return 0, err
+	}
+	n, err := io.Copy(h, f)
+	if err != nil {
+		return 0, restartHash(f, h)
+	}
+	return n, nil
 }
 
 // dlProgress sends progress at most every half second, with a smoothed speed

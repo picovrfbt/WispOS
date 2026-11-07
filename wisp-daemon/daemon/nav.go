@@ -594,6 +594,9 @@ func (n *navRelay) apply(msg navMessage) {
 		if n.own != nil {
 			n.own.onFix(*loc)
 		}
+		if t := activeTiles.Load(); t != nil {
+			t.nearCar(loc.Lat, loc.Lng)
+		}
 	}
 }
 
