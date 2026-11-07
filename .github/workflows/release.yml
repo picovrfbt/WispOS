@@ -1,7 +1,8 @@
 # Builds a release when a version tag is pushed (git tag v0.2.7 && git push --tags),
 # and only then, so ordinary pushes cost no Actions minutes. It publishes what
 # Wisp's over-the-air updater installs (the daemon + UI bundle) and, when the
-# signing key secret is set, the companion app. The full USB firmware image
+# signing key secrets are set (wisp-companion/scripts/make-release-key.ps1),
+# the companion app and the Drive Recorder. The full USB firmware image
 # needs the voice files kept out of the repo, so it's still built locally and
 # can be added to the same release by hand.
 name: release
@@ -46,9 +47,12 @@ jobs:
         working-directory: wisp-daemon
         run: go test ./daemon/ ./ap/ ./apresolve/
 
-      - name: Build the daemon for the Car Thing
+      - name: Build the daemon for the Car Thing (both systems)
         working-directory: wisp-daemon
-        run: bash ./crosscompile.sh armv6 && cp go-librespot-armv6 ../wisp-firmware/
+        run: |
+          bash ./crosscompile.sh armv6 && cp go-librespot-armv6 ../wisp-firmware/
+          # Wisp OS's 64-bit daemon, for its -arm64 update bundles
+          bash ./crosscompile.sh arm64 && cp go-librespot-arm64 ../wisp-firmware/
 
       - name: Test and build the UI
         working-directory: wisp-ui
@@ -69,7 +73,13 @@ jobs:
           gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "Wisp $TAG" --notes "Wisp $TAG"
           gh release upload "$TAG" --clobber \
             "wisp-firmware/output/wisp-app-$TAG.tar.gz" \
-            "wisp-firmware/output/wisp-app-$TAG.tar.gz.sha256"             "wisp-firmware/output/wisp-core-$TAG.tar.gz"             wisp-firmware/output/wisp-fonts-*.tar
+            "wisp-firmware/output/wisp-app-$TAG.tar.gz.sha256" \
+            "wisp-firmware/output/wisp-core-$TAG.tar.gz" \
+            wisp-firmware/output/wisp-fonts-*.tar \
+            "wisp-firmware/output/wisp-app-$TAG-arm64.tar.gz" \
+            "wisp-firmware/output/wisp-app-$TAG-arm64.tar.gz.sha256" \
+            "wisp-firmware/output/wisp-core-$TAG-arm64.tar.gz" \
+            "wisp-firmware/output/wisp-core-$TAG-arm64.tar.gz.sha256"
 
   companion:
     runs-on: ubuntu-latest
@@ -90,19 +100,21 @@ jobs:
           fi
           echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/wisp.keystore"
           echo "WISP_KEYSTORE=$RUNNER_TEMP/wisp.keystore" >> "$GITHUB_ENV"
+          echo "WISP_KEY_ALIAS=wisp" >> "$GITHUB_ENV"
           echo "have=true" >> "$GITHUB_OUTPUT"
 
       # carry what this build doesn't make forward from earlier releases, so the
       # app (which looks at recent releases) always finds them: Wisp's voice pack,
-      # Drive Mode's music, the Drive Recorder for testers, Wisp OS's system update
-      # (built in WSL, not here), and the companion APK when there's no signing key to build one
+      # Drive Mode's music, Wisp OS's system update (built in WSL, not here: the whole
+      # system, its delta and the delta's pieces, never the flash image), and the
+      # companion APK and Drive Recorder when there's no signing key to build them
       - name: Carry files forward
         env:
           GH_TOKEN: ${{ github.token }}
           BUILDS_APK: ${{ steps.key.outputs.have }}
         run: |
-          patterns="wisp-voice-*.zip wisp-drive-recorder-v*.apk wisp-drive-ethereal-v*.zip wisp-drive-cinematic-v*.zip wisp-drive-lofi-v*.zip wisp-drive-backwoods-v*.zip wisp-os-v*.swu wisp-os-v*.zck"
-          [ "$BUILDS_APK" = "true" ] || patterns="$patterns wisp-companion-v*.apk"
+          patterns="wisp-voice-*.zip wisp-drive-ethereal-v*.zip wisp-drive-cinematic-v*.zip wisp-drive-lofi-v*.zip wisp-drive-backwoods-v*.zip wisp-os-v*.swu wisp-os-v*.zck"
+          [ "$BUILDS_APK" = "true" ] || patterns="$patterns wisp-companion-v*.apk wisp-drive-recorder-v*.apk"
           for pattern in $patterns; do
             mkdir -p "$RUNNER_TEMP/carry" && rm -f "$RUNNER_TEMP"/carry/*
             for tag in $(gh release list --limit 15 --json tagName -q '.[].tagName'); do
@@ -122,17 +134,23 @@ jobs:
           java-version: 17
           cache: gradle
 
-      - name: Test and build the companion app
+      - name: Test and build the companion app and the Drive Recorder
         if: steps.key.outputs.have == 'true'
         working-directory: wisp-companion
+        env:
+          WISP_KEYSTORE_PASSWORD: ${{ secrets.WISP_KEYSTORE_PASSWORD }}
+          # YouTube Music sign-in (google.com/device); the app builds without it
+          WISP_GOOGLE_CLIENT_ID: ${{ secrets.WISP_GOOGLE_CLIENT_ID }}
+          WISP_GOOGLE_CLIENT_SECRET: ${{ secrets.WISP_GOOGLE_CLIENT_SECRET }}
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon -q testDebugUnitTest assembleDebug
-          VERSION=$(grep -m1 'versionName' app/build.gradle.kts | sed 's/.*"\(.*\)".*/\1/')
-          cp app/build/outputs/apk/debug/app-debug.apk "$RUNNER_TEMP/wisp-companion-v$VERSION.apk"
+          ./gradlew --no-daemon -q testDebugUnitTest :app:assembleRelease :drive-recorder:assembleRelease
+          version() { grep -m1 'versionName' "$1/build.gradle.kts" | sed 's/.*"\(.*\)".*/\1/'; }
+          cp app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/wisp-companion-v$(version app).apk"
+          cp drive-recorder/build/outputs/apk/release/drive-recorder-release.apk "$RUNNER_TEMP/wisp-drive-recorder-v$(version drive-recorder).apk"
 
       - name: Publish
         if: steps.key.outputs.have == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload "$TAG" --clobber "$RUNNER_TEMP"/wisp-companion-v*.apk
+        run: gh release upload "$TAG" --clobber "$RUNNER_TEMP"/wisp-companion-v*.apk "$RUNNER_TEMP"/wisp-drive-recorder-v*.apk
