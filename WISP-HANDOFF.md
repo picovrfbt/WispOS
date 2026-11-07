@@ -59,6 +59,16 @@ served from `docs/`.
 - `QUEUE.md`: things the owner asked for but hasn't said to start.
 - Debug screen on the Car Thing: hold buttons 1 and 4.
 
+## Keep one copy
+
+Work only in a git checkout that's up to date with `origin/main` (`git pull`
+first, every session). On the owner's PC that's `Documents/carthing-fw`, a
+clone since 2026-11-07. Before 1.1 it was a plain folder that had stopped at
+1.0.4 while 1.0.5-1.0.7 were made on GitHub; merging it brought back an old
+`release.yml`, and v1.1.0 first shipped a Wisp app without YouTube Music
+sign-in and no update for Wisp OS. Never copy files over the repo; commit
+and merge.
+
 ## How to release
 
 1. In CHANGELOG.md, turn "Unreleased" into `## vX.Y.Z (date)` with a
@@ -72,7 +82,12 @@ served from `docs/`.
 6. Commit and push main, then create the tag: push it, or run
    `.github/workflows/release.yml` by hand with input `tag: vX.Y.Z`, which
    creates the tag and the release. (Cloud sessions couldn't push tags.)
-7. Give the owner the release notes as text in a code block, and ask them to
+7. Wait for the workflow's **check** job: `tools/check_release.sh` fails the
+   run if anything is missing (both systems' bundles, the Wisp app at its
+   new version with Google sign-in, every Drive Mode sound, the voice pack,
+   complete Wisp OS deltas). After uploading files by hand (Wisp OS, a new
+   Drive Mode sound), run it again: `bash tools/check_release.sh vX.Y.Z`.
+8. Give the owner the release notes as text in a code block, and ask them to
    set the release title to "Wisp X.Y.Z" (no "v").
 
 ## Wisp OS system updates (since 1.1)
