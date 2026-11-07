@@ -75,42 +75,44 @@ served from `docs/`.
 7. Give the owner the release notes as text in a code block, and ask them to
    set the release title to "Wisp X.Y.Z" (no "v").
 
-## Where it stands (2026-10-22)
+## Wisp OS system updates (since 1.1)
 
-- **Wisp 1.0.7 is released.** The release build succeeded on main (9d3fe33).
-  The owner was asked to set the title to "Wisp 1.0.7" and paste the notes;
-  check that's done.
-- The Wisp app is at 1.0.6 (versionCode 41).
-- What 1.0.7 brought:
-  - Address search: a knob keyboard on Where to? → Search; voice "take me
-    to…" with a list of matches to pick from; and "Find a place on the Car
-    Thing" in the Wisp app.
-  - Spotify kept awake while Maps is open (`SpotifyKeeper.kt`).
-  - Music turned right down while Wisp listens (`WispHush.kt` sets the music
-    volume to 30%).
-  - Better voice: waits 1 second of quiet before acting, and understands
-    YouTube Music and SoundCloud in any word order.
-  - Notifications: the turn banner shows for 5 seconds and again near the
-    turn; swipe any way; stacking; icons in the accent colour.
-  - A small QR code on the update card that opens the What's new page.
-  - The website was checked for inconsistencies: pictures added to the
-    What's new pages, menus and footers made the same everywhere, and the
-    privacy policy now mentions the OpenStreetMap services and the relay.
-- The `next` branch is the same as main. Work on a new branch, or on main
-  when the owner says.
-- **Wisp Phone** (Wisp on a phone alone, a separate app) is on the
-  `phone-app` branch. Stage 1 is built; see `PHONE-APP.md` there. Stage 2 is
-  hands-free "Okay Wisp".
-- `QUEUE.md` is empty apart from Wisp Phone.
+A Wisp OS release can carry the whole system. After building the image in
+WSL (`wisp-firmware/os`, see its README), `just ota vX.Y.Z` puts four files in
+`wisp-firmware/output`; upload all four to the release (the workflow carries
+them forward to later releases):
+
+- `wisp-os-vX.Y.Z.swu`: the whole system (about 220 MB).
+- `wisp-os-vX.Y.Z-delta.swu`: the chunk lists (about 1 MB).
+- `wisp-os-vX.Y.Z-system.zck` and `-boot.zck`: fetched by byte range, only
+  the chunks that changed (`wisp-daemon/daemon/updater_delta.go`).
+
+Only Car Things on Wisp OS take these; the original firmware gets Wisp's own
+updates as before.
+
+## Where it stands (2026-11-07)
+
+- **Wisp 1.1.0** brought: a 3D map that closes in at turns (+/− zoom, view
+  button, kept map tiles), every voice command on the Car Thing (the
+  meaning-matcher's bank is built into the daemon), more voice commands,
+  wind warnings, a first-boot tutorial, Bluetooth that connects at start,
+  bigger player buttons, a smoother Home, bolder visualizers, Backwoods,
+  and whole-system OTA with deltas. The Wisp app is 1.1.0 (versionCode 42).
+- 1.1's work was done in a local copy that had stopped at 1.0.4, then merged
+  with 1.0.5–1.0.7 here. 1.0.7's library command replaced 1.1's own
+  liked-songs rule.
 
 ## Not yet checked on real hardware
 
 These pass their tests but haven't been tried in the car:
 
-- Spotify kept awake.
-- The quieter music while Wisp listens: is 30% right?
-- Address search end to end.
-- Whether the QR code on the update card scans from the Car Thing's screen.
-- The turn banner timing.
+- A system update (whole and delta) on a Car Thing, and going back when one
+  fails.
+- The 3D map and its zoom at real speeds; the tile cache.
+- Wind warning levels (tuned on made-up clips; real ones are logged as
+  "voice: wind ...").
+- Bluetooth connecting at start.
+- From 1.0.7: Spotify kept awake, the quieter music while Wisp listens,
+  address search end to end, the update card's QR code, the turn banner.
 
 Ask the owner how these went.
