@@ -98,4 +98,40 @@ object UpdateNotice {
     fun clear(ctx: Context) {
         ctx.getSystemService(NotificationManager::class.java)?.cancel(ID)
     }
+
+    /** what the app says while Android waits for a yes */
+    const val FINISH_TEXT = "Tap \"Finish updating Wisp\" in your notifications"
+    private const val FINISH_ID = 3691
+
+    /** Android wants a yes for a downloaded update: a notification that opens its question */
+    fun askToFinish(ctx: Context, confirm: Intent) {
+        val nm = ctx.getSystemService(NotificationManager::class.java) ?: return
+        nm.createNotificationChannel(
+            NotificationChannel(CHANNEL, "App updates", NotificationManager.IMPORTANCE_DEFAULT).apply {
+                description = "When a new Wisp app is out"
+            },
+        )
+        val tap = PendingIntent.getActivity(
+            ctx, FINISH_ID,
+            Intent(confirm).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+        val n = Notification.Builder(ctx, CHANNEL)
+            .setSmallIcon(R.drawable.ic_w_update)
+            .setContentTitle("Finish updating Wisp")
+            .setContentText("The new Wisp app is downloaded. Tap to install it")
+            .setContentIntent(tap)
+            .setAutoCancel(true)
+            .build()
+        try {
+            nm.notify(FINISH_ID, n)
+        } catch (e: SecurityException) {
+            // notifications not allowed: the app says to try again
+        }
+    }
+
+    /** the update finished, or was turned down: nothing left to finish */
+    fun clearFinish(ctx: Context) {
+        ctx.getSystemService(NotificationManager::class.java)?.cancel(FINISH_ID)
+    }
 }

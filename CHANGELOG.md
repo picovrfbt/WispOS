@@ -19,7 +19,7 @@ A map that drives like Google's, every voice command on the Car Thing itself, an
 - **Bolder visualizers.** Bars and Wave put the bass at the bottom, rising up both sides to the treble at the top, mirrored like YouTube Music's, and they move a lot more with the music.
 - **Backwoods**, a new Drive Mode sound.
 - **Wisp OS updates over the air as a whole system** (Car Things on Wisp OS, not the original firmware). Only what changed comes down, often a few MB rather than 220; a download cut short when the car turns off carries on next time. The new system is written beside the one running and starts the next time the Car Thing turns on (or Settings → Software update → Restart to finish). If it doesn't start properly, the Car Thing goes back to the one it had.
-- **Wisp app 1.1.1**: update it from inside the app (Backwoods, the phone's model knows the new commands).
+- **Wisp app 1.1.2**: update it from inside the app (Backwoods, the phone's model knows the new commands). When Android wants you to confirm an app update, a "Finish updating Wisp" notification now asks, instead of the update sitting on "Installing" if you'd left the app.
 
 ## v1.0.7 (2026-10-20)
 

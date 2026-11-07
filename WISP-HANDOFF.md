@@ -112,7 +112,7 @@ updates as before.
   meaning-matcher's bank is built into the daemon), more voice commands,
   wind warnings, a first-boot tutorial, Bluetooth that connects at start,
   bigger player buttons, a smoother Home, bolder visualizers, Backwoods,
-  and whole-system OTA with deltas. The Wisp app is 1.1.1 (versionCode 43; 1.1.0 was built without the Google sign-in ID because a stale release.yml slipped into the merge).
+  and whole-system OTA with deltas. The Wisp app is 1.1.2 (versionCode 44; its self-update now always asks by notification when Android wants a yes. 1.1.0 was built without the Google sign-in ID because a stale release.yml slipped into the merge).
 - 1.1's work was done in a local copy that had stopped at 1.0.4, then merged
   with 1.0.5–1.0.7 here. 1.0.7's library command replaced 1.1's own
   liked-songs rule.

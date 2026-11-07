@@ -207,6 +207,8 @@ class MainActivity : WispActivity() {
         if (::servicesList.isInitialized) showServices()
         if (driveMusicSub != null) refreshDriveMusic()
         handler.post(tick)
+        // a fresh start (as after an update installs): no update left to finish
+        if (AppUpdater.state is AppUpdater.State.Idle) UpdateNotice.clearFinish(this)
     }
 
     override fun onPause() {

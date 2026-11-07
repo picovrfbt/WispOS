@@ -253,21 +253,46 @@ class InstallResultReceiver : BroadcastReceiver() {
     override fun onReceive(ctx: Context, intent: Intent) {
         when (val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE)) {
             PackageInstaller.STATUS_PENDING_USER_ACTION -> {
-                if (intent.getBooleanExtra(BACKGROUND, false)) {
-                    // Android wants a yes and nobody's in the app: the notification asks
-                    AppUpdater.finished(false, "waiting for you to confirm")
-                    AppUpdater.check(ctx) { UpdateNotice.offerIfNew(ctx) }
+                @Suppress("DEPRECATION")
+                val confirm = intent.getParcelableExtra<Intent>(Intent.EXTRA_INTENT)
+                if (confirm == null) {
+                    AppUpdater.finished(false, "Android didn't say how to finish. Try again")
                     return
                 }
-                @Suppress("DEPRECATION")
-                val confirm = intent.getParcelableExtra<Intent>(Intent.EXTRA_INTENT) ?: return
-                ctx.startActivity(confirm.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                // Android wants a yes. A notification always asks: Android quietly
+                // refuses to open its question from here unless the app is on screen
+                // (switching away during the download was enough to leave the update
+                // stuck on "Installing")
+                UpdateNotice.askToFinish(ctx, confirm)
+                if (intent.getBooleanExtra(BACKGROUND, false) || !onScreen(ctx)) {
+                    AppUpdater.finished(false, UpdateNotice.FINISH_TEXT)
+                    return
+                }
+                try {
+                    ctx.startActivity(Intent(confirm).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                } catch (e: Exception) {
+                    Log.w("WispUpdate", "couldn't open Android's install question", e)
+                    AppUpdater.finished(false, UpdateNotice.FINISH_TEXT)
+                }
             }
-            PackageInstaller.STATUS_SUCCESS -> AppUpdater.finished(true, null)
-            else -> AppUpdater.finished(
-                false,
-                intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE) ?: "status $status",
-            )
+            PackageInstaller.STATUS_SUCCESS -> {
+                UpdateNotice.clearFinish(ctx)
+                AppUpdater.finished(true, null)
+            }
+            else -> {
+                UpdateNotice.clearFinish(ctx)
+                AppUpdater.finished(
+                    false,
+                    intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE) ?: "status $status",
+                )
+            }
         }
+    }
+
+    // the app is what's on screen now
+    private fun onScreen(ctx: Context): Boolean {
+        val info = android.app.ActivityManager.RunningAppProcessInfo()
+        android.app.ActivityManager.getMyMemoryState(info)
+        return info.importance <= android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
     }
 }
