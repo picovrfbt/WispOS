@@ -3,6 +3,24 @@
 What changed in each Wisp release, newest first. Each version is on the
 [releases page](https://github.com/picovrfbt/WispOS/releases) with its downloads.
 
+## v1.1.0 (2026-11-07)
+
+A map that drives like Google's, every voice command on the Car Thing itself, and Wisp OS that updates as a whole system, downloading only what changed.
+
+- **A 3D map that closes in at turns.** Directions start in a tilted 3D view, with the car near the bottom and the road ahead. The map zooms out as you speed up and in as a turn comes up, like Google Maps. The button on the left switches between 3D, turning with the car, and north up; **+** and **−** zoom in or out from there, and Wisp remembers both.
+- **The map keeps what it's shown.** Map pieces are kept on the Car Thing (up to 150 MB) and fetched ahead: around you, and along the whole route when one's shared. No more grey squares filling in slowly, and places you drive often show straight away.
+- **Every voice command works on the Car Thing, however you say it.** Wisp's own meaning-matcher now knows every command, from over 400 ways of saying them, and runs before the phone's model, so "I'm nodding off", "skip past the intro" or "let the passengers choose" work with no phone. In a test of 35 wordings it had never seen, it understood 25, up from 6.
+- **More voice commands**: "shuffle" and "stop shuffling", "put this on repeat", "set the volume to 40" (or "forty"), "skip ahead 30 seconds", "go back 10 seconds", and "open Settings" (or the map, Home, Up next, the visualizer, Now Playing). "Play my daylist" and "play my Time Capsule" join the mixes Wisp can play.
+- **Wind warnings.** When the wind on the mic (a window down, a convertible) is enough to matter, a small alert says so, and a request Wisp couldn't make out says it was the wind.
+- **A hands-on tutorial after you set Wisp up.** The first start after flashing walks through every control on a drawing of the Car Thing: tap, turn, press, back, the top buttons, power, swipe, two fingers and the voice. Settings → Storage → Learn the controls runs it again.
+- **Your phone connects by itself.** When the Car Thing starts, it reaches out to your phone for its internet, instead of waiting for you in the Bluetooth menu.
+- **Easier to hit while driving.** The player's buttons and the heart react to a bigger area around them, so you don't have to land exactly on them.
+- **A smoother Home.** The side list and the cards glide, and scrolling no longer stutters.
+- **Bolder visualizers.** Bars and Wave put the bass at the bottom, rising up both sides to the treble at the top, mirrored like YouTube Music's, and they move a lot more with the music.
+- **Backwoods**, a new Drive Mode sound.
+- **Wisp OS updates over the air as a whole system** (Car Things on Wisp OS, not the original firmware). Only what changed comes down, often a few MB rather than 220; a download cut short when the car turns off carries on next time. The new system is written beside the one running and starts the next time the Car Thing turns on (or Settings → Software update → Restart to finish). If it doesn't start properly, the Car Thing goes back to the one it had.
+- **Wisp app 1.1.0**: update it from inside the app (Backwoods, the phone's model knows the new commands).
+
 ## v1.0.7 (2026-10-20)
 
 Search for any address, Spotify that keeps playing, notifications that behave, and a Wisp that hears you out.

@@ -16,7 +16,7 @@
 <header class="top">
   <div class="wrap">
     <a class="brand" href="./" aria-label="Wisp, home"><img src="logo.svg" alt="">Wisp</a>
-    <a class="ver" href="new/1.0.7.html" title="What's new in 1.0.7">1.0.7</a>
+    <a class="ver" href="new/1.1.0.html" title="What's new in 1.1">1.1</a>
     <nav class="links" id="nav-links" aria-label="Main">
       <a href="./#features">Features</a>
       <a href="./#directions">Directions</a>
@@ -65,6 +65,7 @@
       <div class="row"><span><b>Buttons 1 to 4</b> (along the top)</span><span>Your shortcuts: a playlist, the map, Home, the voice, or whatever you set in Settings → Top buttons. Hold one to save what's playing to it.</span></div>
       <div class="row"><span><b>The screen</b></span><span>Touch works too, for the moments it's quicker.</span></div>
     </div>
+    <p>The first start after flashing Wisp tries each of these with you, in a short tutorial. <b>Settings → Storage → Learn the controls</b> runs it again.</p>
   </section>
 
   <section id="music" class="gstep">
@@ -117,8 +118,10 @@
       <div class="row"><span>"Take me to the beach" · "when do we get there?" · "stop navigation"</span><span>Directions (see below).</span></div>
       <div class="row"><span>"Call Mom"</span><span>Calls through your phone (allow "Call by voice" in the Wisp app).</span></div>
       <div class="row"><span>"I'm getting sleepy" · "dim the screen" · "start Drive Mode"</span><span>Music to wake you, the screen, Drive Mode.</span></div>
+      <div class="row"><span>"Shuffle" · "put this on repeat" · "set the volume to 40" · "skip ahead 30 seconds"</span><span>The player's controls, by voice.</span></div>
+      <div class="row"><span>"Open Settings" · "show me the map" · "pull up the queue"</span><span>Opens that screen.</span></div>
     </div>
-    <p class="note-doc">Everyday requests are understood on the Car Thing itself. With the Wisp app, a language model on your phone handles looser ones: Gemini Nano where your phone has it, or a free open model you can download (Wisp offers it once, and it's in the app under Options → Wisp's thinking).</p>
+    <p class="note-doc">Every command is understood on the Car Thing itself, however you say it, and windy clips get a small warning. With the Wisp app, a language model on your phone handles anything it can't place: Gemini Nano where your phone has it, or a free open model you can download (Wisp offers it once, and it's in the app under Options → Wisp's thinking).</p>
   </section>
 
   <section id="directions" class="gstep">
@@ -134,6 +137,7 @@
       <figure><img src="screenshots/nav-results.png" alt="Gas stations nearby, nearest first" loading="lazy"><figcaption><b>2. Pick a place.</b> The nearest first, with how far. Press for the ways there.</figcaption></figure>
       <figure><img src="screenshots/nav-routes.jpg" alt="Two routes to Long Beach Airport on the map" loading="lazy"><figcaption><b>3. Pick a route.</b> Up to three, each with its time, miles and main road; turning shows each one on the map. Avoid highways or tolls if you'd like, then <b>Start</b>, or <b>Google Maps</b> to drive it there with live traffic.</figcaption></figure>
       <figure><img src="screenshots/nav-driving.jpg" alt="Driving: the next turn, the one after, the speed and the time left" loading="lazy"><figcaption><b>4. Drive.</b> The next turn, the one after it, your speed, and the time, miles and arrival. The knob stays the volume. Wisp finds a new way if you leave the route.</figcaption></figure>
+      <figure><img src="screenshots/nav-3d.png" alt="Driving in the tilted 3D view, with the view button and + and −" loading="lazy"><figcaption><b>The view.</b> The map zooms out at speed and in as a turn comes up. The button on the left switches between 3D, turning with the car, and north up; <b>+</b> and <b>−</b> zoom from there. Map pieces are kept on the Car Thing, so places you've been show straight away.</figcaption></figure>
       <figure><img src="screenshots/nav-sound.jpg" alt="The spoken directions menu: every turn, just the turns, muted" loading="lazy"><figcaption><b>Sound.</b> Tap the speaker: every turn with a heads-up, just the turns, or muted. <b>Stop</b> ends the trip, as does "stop navigation".</figcaption></figure>
       <figure><img src="screenshots/nav.jpg" alt="Google Maps directions on the Car Thing's map" loading="lazy"><figcaption><b>With Google Maps</b>, its turns and arrows show here the same way. Share a destination to <b>Route on Car Thing</b> to see the whole route.</figcaption></figure>
     </div>
@@ -200,6 +204,7 @@
       <div>
         <p><b>Home → Settings</b>: brightness and auto brightness, night mode at sunset, accent colour, performance mode, lyrics, volume per turn, the top buttons, Wisp's voice, navigation, notifications and more. Your phone keeps a copy, so a reset or reflash doesn't lose them.</p>
         <p><b>Updates</b> come over the air. When a new Wisp is out, the Car Thing tells you what's new and asks: install it now or later. Tick <b>Download and install updates automatically</b> on that card (or turn on <b>Install updates automatically</b> in Settings → Software update) and later ones install by themselves. A cloud pulses by the battery while one downloads.</p>
+        <p>On <b>Wisp OS</b>, updates can bring the whole system too. Only what changed comes down, and a download cut short carries on next drive. The new system takes over the next time the Car Thing turns on, or press <b>Restart to finish</b> in Settings → Software update. If it doesn't start properly, the Car Thing goes back to the one it had.</p>
         <p>When nothing's playing, the Car Thing shows the <b>last song you played</b>: press Resume to pick up where you left off, pick a phone or speaker to play it on, or press back for Home. After a while the <b>screensaver</b> shows the clock and the weather.</p>
       </div>
       <img class="shot-doc" src="screenshots/settings.png" alt="Settings" loading="lazy">
