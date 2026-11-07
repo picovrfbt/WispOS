@@ -101,7 +101,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           BUILDS_APK: ${{ steps.key.outputs.have }}
         run: |
-          patterns="wisp-voice-*.zip wisp-drive-recorder-v*.apk wisp-drive-ethereal-v*.zip wisp-drive-cinematic-v*.zip wisp-drive-lofi-v*.zip wisp-drive-backwoods-v*.zip wisp-os-v*"
+          patterns="wisp-voice-*.zip wisp-drive-recorder-v*.apk wisp-drive-ethereal-v*.zip wisp-drive-cinematic-v*.zip wisp-drive-lofi-v*.zip wisp-drive-backwoods-v*.zip wisp-os-v*.swu wisp-os-v*.zck"
           [ "$BUILDS_APK" = "true" ] || patterns="$patterns wisp-companion-v*.apk"
           for pattern in $patterns; do
             mkdir -p "$RUNNER_TEMP/carry" && rm -f "$RUNNER_TEMP"/carry/*
