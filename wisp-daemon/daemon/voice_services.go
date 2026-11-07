@@ -21,13 +21,22 @@ type serviceVoiceRequest struct {
 	Query string
 }
 
+// the services by name, and as speech-to-text tends to hear them
+const serviceVoiceAlt = `youtube music|you tube music|yt music|y t music|you two music|u tube music|youtube|you tube|u tube|soundcloud|sound cloud`
+
 var (
-	// the play verbs, the words, and the service, which must close the sentence
-	serviceVoiceRe = regexp.MustCompile(
-		`^(?:hey wisp |wisp )?(?:please )?(?:play|put on|listen to|start|shuffle)\s+(.+?)\s+(?:on|from|in|using|with|off)\s+(youtube music|you tube music|yt music|y t music|youtube|you tube|soundcloud|sound cloud)(?: please)?$`)
+	// where the service is said: last ("play X on YouTube Music"), first
+	// ("on YouTube Music, play X" / "YouTube Music play X"), or right after
+	// the verb ("play on YouTube Music X")
+	serviceVoiceLast  = regexp.MustCompile(`^(.+?)\s+(?:on|from|in|using|with|through|via|off|over)\s+(` + serviceVoiceAlt + `)(?:\s+(?:please|now|for me|thanks|thank you))*$`)
+	serviceVoiceFirst = regexp.MustCompile(`^(?:(?:hey|okay|ok) wisp\s+|wisp\s+)?(?:(?:on|from|in|using|with|over)\s+)?(` + serviceVoiceAlt + `)\s+(.+)$`)
+	serviceVoiceMid   = regexp.MustCompile(`^(play|put on|listen to|start|shuffle)\s+(?:on|from|in|using|with)\s+(` + serviceVoiceAlt + `)\s+(.+)$`)
+	// what's left must ask to play something
+	serviceVoicePlay  = regexp.MustCompile(`^(?:play|listen to|start|shuffle)\s+(.+)$`)
 	serviceVoiceNames = map[string]string{
 		"youtube music": "ytmusic", "you tube music": "ytmusic", "yt music": "ytmusic", "y t music": "ytmusic",
-		"youtube": "ytmusic", "you tube": "ytmusic",
+		"you two music": "ytmusic", "u tube music": "ytmusic",
+		"youtube": "ytmusic", "you tube": "ytmusic", "u tube": "ytmusic",
 		"soundcloud": "soundcloud", "sound cloud": "soundcloud",
 	}
 	serviceVoiceLabel = map[string]string{"ytmusic": "YouTube Music", "soundcloud": "SoundCloud"}
@@ -35,7 +44,18 @@ var (
 
 func parseServiceVoice(transcript string) (serviceVoiceRequest, bool) {
 	t := strings.Join(strings.Fields(voiceNonWord.ReplaceAllString(strings.ToLower(transcript), " ")), " ")
-	m := serviceVoiceRe.FindStringSubmatch(t)
+	var service, rest string
+	if m := serviceVoiceMid.FindStringSubmatch(t); m != nil {
+		service, rest = m[2], m[1]+" "+m[3]
+	} else if m := serviceVoiceLast.FindStringSubmatch(t); m != nil {
+		service, rest = m[2], m[1]
+	} else if m := serviceVoiceFirst.FindStringSubmatch(t); m != nil {
+		service, rest = m[1], m[2]
+	} else {
+		return serviceVoiceRequest{}, false
+	}
+	// "hey wisp, can you put on X please" reads as "play X"
+	m := serviceVoicePlay.FindStringSubmatch(normalizeLoose(rest))
 	if m == nil {
 		return serviceVoiceRequest{}, false
 	}
@@ -70,7 +90,7 @@ loop:
 	if q == "" {
 		return serviceVoiceRequest{}, false
 	}
-	return serviceVoiceRequest{Service: serviceVoiceNames[m[2]], Kind: kind, Query: q}, true
+	return serviceVoiceRequest{Service: serviceVoiceNames[service], Kind: kind, Query: q}, true
 }
 
 // playOnService searches the service on the phone and plays the best match there

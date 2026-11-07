@@ -3,6 +3,7 @@ package daemon
 import (
 	"bufio"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
@@ -30,6 +31,16 @@ type voiceService struct {
 	busy bool
 	// when the command being handled started (you'd stopped talking), for the timings in the log
 	flowStart time.Time
+	// stops the command being handled, for a tap off Wisp (Cancel)
+	flowCancel context.CancelFunc
+	// the command being handled, and one the driver tapped away: what it would
+	// still say is dropped (emit)
+	activeGen atomic.Uint64
+	mutedGen  atomic.Uint64
+
+	// the music lowered or paused on the phone while Wisp listens (hush)
+	hushed atomic.Bool
+	hushCh chan string
 
 	bannerSeq atomic.Uint64
 	// how windy the command being handled was (a windLevel), for its messages
@@ -84,7 +95,7 @@ func newVoiceService(app *App) *voiceService {
 	for _, f := range fixed {
 		app.log.Infof("voice: config from an older Wisp, using what this system ships: %s", f)
 	}
-	v := &voiceService{app: app, cfg: cfg, ctx: ctx, cancel: cancel, wakeSignal: make(chan struct{}, 1), weather: newWeatherCache()}
+	v := &voiceService{app: app, cfg: cfg, ctx: ctx, cancel: cancel, wakeSignal: make(chan struct{}, 1), weather: newWeatherCache(), hushCh: make(chan string, 8)}
 	v.wakeEnabled.Store(true)
 	return v
 }
@@ -108,6 +119,7 @@ func (v *voiceService) Start() {
 	}
 	if v.cfg.Wake {
 		v.wakeEnabled.Store(voiceMicFromSettings(v.app.GetSettings()))
+		go v.runHush()
 		go v.runWakeLoop()
 	}
 }
@@ -226,6 +238,12 @@ func (v *voiceService) syncProgressSnapshot() *catalogProgress {
 const ApiEventTypeVoiceLevel ApiEventType = "voice/level"
 
 func (v *voiceService) emit(state, text string) {
+	// the driver tapped this command away: it says nothing more
+	if state != "idle" && state != "listening" {
+		if g := v.mutedGen.Load(); g != 0 && g == v.activeGen.Load() {
+			return
+		}
+	}
 	if state == "error" {
 		text = v.windyMessage(text)
 	}
@@ -250,8 +268,19 @@ func (v *voiceService) TriggerVoice(ctx context.Context, transcript, clipPath st
 	gen := v.gen
 	start := time.Now()
 	v.flowStart = start
+	ctx, cancel := context.WithCancel(ctx)
+	v.flowCancel = cancel
+	v.activeGen.Store(gen)
 	v.mu.Unlock()
-	defer func() { v.mu.Lock(); v.busy = false; v.mu.Unlock() }()
+	defer func() {
+		cancel()
+		v.mu.Lock()
+		v.busy = false
+		v.flowCancel = nil
+		v.mu.Unlock()
+		// Wisp has the request: the music comes back
+		v.hush(false)
+	}()
 
 	// "listening" is emitted by the wake loop the instant the wake word wakes
 	v.emit("thinking", "")
@@ -284,6 +313,12 @@ func (v *voiceService) TriggerVoice(ctx context.Context, transcript, clipPath st
 	if transcript != strings.ToLower(strings.TrimSpace(heard)) {
 		v.app.log.Infof("voice: %q reads as %q", heard, transcript)
 	}
+	// naming another music service sends it there, before Wisp's own rules can
+	// take "play my liked songs on YouTube Music" for Spotify
+	if req, ok := parseServiceVoice(heard); ok {
+		v.app.log.Infof("voice: transcript=%q -> %s %s %q", heard, req.Service, req.Kind, req.Query)
+		return v.playOnService(ctx, gen, req)
+	}
 	if u, ok := understand(transcript); ok {
 		return v.handleUnderstood(ctx, gen, u)
 	}
@@ -309,7 +344,8 @@ func (v *voiceService) TriggerVoice(ctx context.Context, transcript, clipPath st
 		return v.addToPlaylist(ctx, gen, name)
 	}
 
-	// naming another music service sends it there instead of Spotify
+	// naming another music service sends it there instead of Spotify (here
+	// too for what the phone's model or the meaning-matcher made of it)
 	if req, ok := parseServiceVoice(transcript); ok {
 		v.app.log.Infof("voice: transcript=%q -> %s %s %q", transcript, req.Service, req.Kind, req.Query)
 		return v.playOnService(ctx, gen, req)
@@ -407,7 +443,11 @@ func (v *voiceService) TriggerVoice(ctx context.Context, transcript, clipPath st
 
 // emits the playing banner
 func (v *voiceService) playUri(ctx context.Context, gen uint64, uri, label string) (string, error) {
-	shuffle := false
+	return v.playUriShuffled(ctx, gen, uri, label, false)
+}
+
+// playUriShuffled is playUri with shuffle on or off ("shuffle my liked songs")
+func (v *voiceService) playUriShuffled(ctx context.Context, gen uint64, uri, label string, shuffle bool) (string, error) {
 	data := ApiRequestDataPlay{Uri: uri, Shuffle: &shuffle}
 	_, err := v.app.server.Submit(ctx, ApiRequestTypePlay, data)
 	if errors.Is(err, ErrNotFound) {
@@ -711,10 +751,10 @@ func (v *voiceService) setWakeEnabled(on bool) {
 
 const wakeThresholdDebounce = 10 * time.Second
 
-// how long a pause ends a command: the wake listener's own default is 0.8 s,
-// which left Wisp waiting most of a second after every command. 0.6 s still
-// lets "play Midnight City … by M83" pause between the song and the artist
-const voiceHangSecs = 0.6
+// how long a pause ends a command. 0.6 s answered quicker but cut drivers off
+// mid-request ("play… Midnight City"), most of all over road noise; a second
+// lets them think, at the cost of Wisp answering a little later
+const voiceHangSecs = 1.0
 
 // the wake threshold for the current playback state
 func (v *voiceService) wakeThreshold() float64 {
@@ -785,6 +825,88 @@ func (v *voiceService) ListenNow() error {
 	}
 	v.app.log.Info("voice: listening on request")
 	return signalListen(p)
+}
+
+// Cancel is a tap off Wisp on the screen: it stops listening (the words so far
+// are thrown away) and drops the command it was working on, and the music
+// comes back
+func (v *voiceService) Cancel() {
+	v.mu.Lock()
+	if v.busy {
+		v.mutedGen.Store(v.gen)
+		if v.flowCancel != nil {
+			v.flowCancel()
+		}
+	}
+	v.mu.Unlock()
+	if v.capturing.Swap(false) {
+		v.app.log.Info("voice: listening cancelled")
+		// the listener starts again straight away, without the clip
+		v.thrRestart.Store(true)
+		if c := v.wakeCancel.Load(); c != nil {
+			(*c)()
+		}
+	}
+	v.hush(false)
+	v.emit("idle", "")
+}
+
+// listenMusicFromSettings: Settings → Music while Wisp listens, "lower"
+// unless set to "pause" or "off"
+func listenMusicFromSettings(body []byte) string {
+	var s struct {
+		Mode string `json:"listenMusic"`
+	}
+	if json.Unmarshal(body, &s) == nil && (s.Mode == "pause" || s.Mode == "off") {
+		return s.Mode
+	}
+	return "lower"
+}
+
+// hush asks the phone to lower or pause the music while Wisp listens, so the
+// mics hear the driver, and to bring it back after
+func (v *voiceService) hush(on bool) {
+	mode := "off"
+	if on {
+		mode = listenMusicFromSettings(v.app.GetSettings())
+		if mode == "off" {
+			return
+		}
+		v.hushed.Store(true)
+	} else if !v.hushed.Swap(false) {
+		return // nothing to bring back
+	}
+	select {
+	case v.hushCh <- mode:
+	default:
+	}
+}
+
+// unhushIfIdle brings the music back when listening ended without a command
+func (v *voiceService) unhushIfIdle() {
+	v.mu.Lock()
+	busy := v.busy
+	v.mu.Unlock()
+	if !busy && !v.capturing.Load() {
+		v.hush(false)
+	}
+}
+
+// runHush sends the hushes to the phone in order, off the wake listener's path
+func (v *voiceService) runHush() {
+	for {
+		select {
+		case <-v.ctx.Done():
+			return
+		case mode := <-v.hushCh:
+			if v.app.nav == nil {
+				continue
+			}
+			if err := v.app.nav.Hush(v.ctx, mode); err != nil {
+				v.app.log.Debugf("voice: music %q not sent to the phone: %v", mode, err)
+			}
+		}
+	}
 }
 
 // the shipped wake words, in the order one stands in for a missing one:
@@ -879,9 +1001,11 @@ func (v *voiceService) runWakeLoop() {
 				v.app.log.Info("voice: wake word detected")
 				v.capturing.Store(true)
 				v.emit("listening", "")
+				v.hush(true)
 				// if no CLIP ever follows (silence timeout, capture death)
-				// nothing else would dismiss the banner
+				// nothing else would dismiss the banner, or bring the music back
 				v.scheduleClear(15 * time.Second)
+				time.AfterFunc(15*time.Second, v.unhushIfIdle)
 				continue
 			}
 			if clip, ok := strings.CutPrefix(line, "CLIP "); ok {
@@ -896,6 +1020,7 @@ func (v *voiceService) runWakeLoop() {
 		}
 		v.capturing.Store(false)
 		v.wakeProc.Store(nil)
+		v.unhushIfIdle()
 		_ = cmd.Wait()
 		cancel()
 		v.wakeCancel.Store(nil)

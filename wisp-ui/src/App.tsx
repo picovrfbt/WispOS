@@ -28,6 +28,7 @@ import { useDeviceSwitch } from '@/hooks/useDeviceSwitch'
 import { useHardwareButtons } from '@/hooks/useHardwareButtons'
 import { useIdleScreensaver } from '@/hooks/useIdleScreensaver'
 import { useLastArtUrl } from '@/hooks/useLastArtUrl'
+import { useLastTrack } from '@/hooks/useLastTrack'
 import { isDJContext, useDJNarration } from '@/hooks/useDJNarration'
 import { useNotify } from '@/notify/notifyContext'
 import { usePhoneNotifications } from '@/hooks/usePhoneNotifications'
@@ -47,10 +48,11 @@ import { usePrefetch } from '@/hooks/usePrefetch'
 import { resolveDropReason, useHeldStatus } from '@/hooks/useReconnect'
 import { useUpdateNotice } from '@/hooks/useUpdateNotice'
 import { useUtcOffset } from '@/hooks/useUtcOffset'
+import { subscribeEvents } from '@/api/eventBus'
+import { pushFind, type NavFind } from '@/components/Navigation/navFind'
 import { fetchSavedState, listenNow, resumeLastDevice, setSavedState } from '@/api/client'
 import type { ButtonAction } from '@/presets'
 import type { ApiEvent, ObserverStatusActive } from '@/api/types'
-import { subscribeEvents } from '@/api/eventBus'
 import { Home } from '@/components/Home'
 import { PhoneMediaPage } from '@/components/PhoneMedia'
 import { usePhoneMedia } from '@/hooks/usePhoneMedia'
@@ -417,6 +419,7 @@ function AppContent() {
 
   // remembered across boots: the screensaver needs both on a cold start
   const lastArtUrl = useLastArtUrl(realStatus)
+  const lastTrack = useLastTrack(realStatus)
   const utcOffsetMin = useUtcOffset(realStatus)
 
   const {
@@ -480,6 +483,17 @@ function AppContent() {
   }, [statusActive, onPlayPauseActive, resumeLast])
 
   const openDebug = useCallback(() => openOverlay('debug'), [openOverlay])
+
+  // a place typed in the Wisp app, or said with more than one match: Where to? on it
+  useEffect(
+    () =>
+      subscribeEvents((evt) => {
+        if (evt.type !== 'nav/find') return
+        pushFind(evt.data as NavFind)
+        openOverlay('nav')
+      }),
+    [openOverlay],
+  )
 
   // back with nothing left to close goes up to the home screen, from Now Playing
   // or from idle (play then starts on the last device); not before sign-in
@@ -857,11 +871,11 @@ function AppContent() {
     return (
       <div className={styles.app}>
         <UpdateCard
-          latest="0.2.28"
+          latest="1.0.5"
           highlights={[
-            'Drive Mode on Home and the power menu',
-            'Visualizer with more range',
-            'Settings opens from Home with the knob',
+            'Pick up where you left off',
+            'Quieter music while Wisp listens',
+            '"Play my liked songs" by voice',
           ]}
           onInstall={() => setForced(null)}
           onRemindLater={() => setForced(null)}
@@ -891,7 +905,13 @@ function AppContent() {
   if (forced === 'idle') {
     return (
       <div className={styles.app}>
-        <IdleScreen connected={connected} devices={connectDevices} onSelectDevice={onPickDevice} />
+        <IdleScreen
+          connected={connected}
+          devices={connectDevices}
+          onSelectDevice={onPickDevice}
+          lastTrack={lastTrack}
+          onResume={resumeLast}
+        />
         {globalOverlays}
       </div>
     )
@@ -1016,6 +1036,8 @@ function AppContent() {
               connected={connected}
               devices={connectDevices}
               onSelectDevice={onPickDevice}
+              lastTrack={lastTrack}
+              onResume={resumeLast}
             />
             {globalOverlays}
           </div>

@@ -37,7 +37,9 @@ export function useConnectivity(): Connectivity {
     pairing,
     trouble,
     setDiscoverable,
-    hasKnownDevice: (knownDevices?.length ?? 0) > 0,
+    // not loaded yet counts as known: "reconnecting" while the list comes, not
+    // the first-time setup chooser on a Car Thing that has a phone
+    hasKnownDevice: knownDevices === null || knownDevices.length > 0,
     btConnectedDevice: knownDevices?.find((d) => d.connected) ?? null,
     topKnownDeviceName: knownDevices?.[0]?.name ?? null,
     wasOnline,

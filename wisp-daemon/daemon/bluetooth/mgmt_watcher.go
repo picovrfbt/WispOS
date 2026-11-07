@@ -165,8 +165,8 @@ func (m *Manager) handleDisconnectReason(address string, reason uint8) {
 			return
 		}
 		m.clearPanSession(address)
-		m.markManualDisconnect(address)
-		m.log.Infof("bluetooth: %s disconnected from the phone side, pausing auto-reconnect (reconnect from the phone or the Bluetooth menu)", address)
+		m.markPhoneSideDisconnect(address)
+		m.log.Infof("bluetooth: %s disconnected from the phone side, reconnecting in %s", address, phoneSideDisconnectPause)
 
 	case mgmtReasonTimeout:
 		// link lost

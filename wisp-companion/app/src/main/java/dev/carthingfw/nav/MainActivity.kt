@@ -104,6 +104,9 @@ class MainActivity : WispActivity() {
 
         col.addView(sectionHead("Car Thing"))
         col.addView(group().apply {
+            addView(groupRow(null, "Find a place on the Car Thing", "Type an address here; pick it on the Car Thing", chevron()) {
+                findPlaceDialog()
+            })
             addView(groupRow(null, "Car Thing settings", "Brightness, night mode, lyrics, Wisp's voice and more", chevron()) {
                 startActivity(Intent(this@MainActivity, CarSettingsActivity::class.java))
             })
@@ -354,7 +357,7 @@ class MainActivity : WispActivity() {
             { !PhoneViz.allowed(this) }) { requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), 5) }
         // so phones that clear background apps leave Wisp alone
         step(R.drawable.ic_w_battery, "battery", "Run in the background", "So the link to Wisp stays up", "Allow",
-            { getSystemService(android.os.PowerManager::class.java)?.isIgnoringBatteryOptimizations(packageName) != true }) {
+            { !unrestricted() }) {
             startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).setData(android.net.Uri.parse("package:$packageName")))
         }
         // with mobile data, a restricted app gets no internet in the background: no
@@ -363,9 +366,10 @@ class MainActivity : WispActivity() {
             { !backgroundDataOk() }) {
             startActivity(Intent(Settings.ACTION_IGNORE_BACKGROUND_DATA_RESTRICTIONS_SETTINGS).setData(android.net.Uri.parse("package:$packageName")))
         }
-        // Samsung puts apps to sleep on its own, battery setting or not
+        // Samsung puts Optimized apps to sleep on its own. An Unrestricted one (the
+        // step above) isn't, and Samsung leaves it out of that list, so only then
         step(R.drawable.ic_w_moon, "never sleeping", "Never sleeping apps", "Samsung: so Wisp isn't put to sleep", "Open",
-            { isSamsung && !Prefs.samsungSleepDone(this) }) { openSamsungSleeping() }
+            { isSamsung && !unrestricted() && !Prefs.samsungSleepDone(this) }) { openSamsungSleeping() }
         // Android only lets a background app open another one with this
         step(R.drawable.ic_w_open, "opening Spotify", "Opening Spotify for you", "When Wisp needs it playing", "Allow",
             { !Settings.canDrawOverlays(this) }) {
@@ -699,6 +703,38 @@ class MainActivity : WispActivity() {
         })
     }
 
+    // an address typed on the phone, looked up on the Car Thing (its Where to?)
+    private fun findPlaceDialog() {
+        val input = field("An address or a place", "", secret = false).apply {
+            imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH
+        }
+        val box = LinearLayout(this).apply {
+            setPadding(dp(20), dp(8), dp(20), 0)
+            addView(input)
+        }
+        val send = {
+            val q = input.text.toString().trim()
+            if (q.isNotEmpty()) {
+                val msg = if (NavServer.sendFind(q)) "On your Car Thing: pick it there" else "Connect your Car Thing first"
+                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+            }
+        }
+        val dialog = android.app.AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+            .setTitle("Find a place on the Car Thing")
+            .setView(box)
+            .setPositiveButton("Send") { _, _ -> send() }
+            .setNegativeButton("Cancel", null)
+            .create()
+        input.setOnEditorActionListener { _, _, _ ->
+            send()
+            dialog.dismiss()
+            true
+        }
+        dialog.window?.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
+        dialog.show()
+        input.requestFocus()
+    }
+
     // a large download: said plainly before it starts
     private fun confirmModelDownload(sheet: android.app.Dialog?, preferOpen: Boolean = false, fromSetup: Boolean = false) {
         android.app.AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
@@ -756,6 +792,10 @@ class MainActivity : WispActivity() {
     // ---------------------------------------------------------------- keeping it current
 
     private fun granted(p: String) = checkSelfPermission(p) == PackageManager.PERMISSION_GRANTED
+
+    // battery set to Unrestricted: Android's "always run in the background"
+    private fun unrestricted() =
+        getSystemService(android.os.PowerManager::class.java)?.isIgnoringBatteryOptimizations(packageName) == true
 
     private fun notificationAccess(): Boolean {
         val me = ComponentName(this, NavListenerService::class.java).flattenToString()

@@ -61,7 +61,7 @@ type Manager struct {
 
 	// manual-disconnect marks + per-device connect timestamps
 	manualMu          sync.Mutex
-	manualDisconnects map[string]time.Time
+	manualDisconnects map[string]time.Time // address -> paused until
 	connectedSince    map[string]time.Time
 	connectedNow      map[string]bool
 

@@ -98,3 +98,33 @@ func TestArrivalSentence(t *testing.T) {
 		}
 	}
 }
+
+func TestUnderstandLibrary(t *testing.T) {
+	for in, want := range map[string]string{
+		"Play my liked songs":                    "liked",
+		"play my likes":                          "liked",
+		"shuffle my liked songs":                 "shuffle liked",
+		"play my liked songs on shuffle":         "shuffle liked",
+		"put on my favorites":                    "liked",
+		"can you play my library":                "liked",
+		"my liked songs":                         "liked",
+		"play my Discover Weekly":                "discover weekly",
+		"play discover weekly":                   "discover weekly",
+		"shuffle my release radar":               "shuffle release radar",
+		"play daily mix two":                     "daily mix 2",
+		"play my daily mix 3":                    "daily mix 3",
+		"play my on repeat playlist":             "on repeat",
+		"I want to listen to my discover weekly": "discover weekly",
+	} {
+		u, ok := understand(normalizeLoose(in))
+		if !ok || u.what != doLibrary || u.arg != want {
+			t.Errorf("%q: got %v %q (%v), want library %q", in, u.what, u.arg, ok, want)
+		}
+	}
+	// not library requests
+	for _, in := range []string{"add it to my likes", "play liked by bring me the horizon", "library", "play midnight city"} {
+		if u, ok := understand(normalizeLoose(in)); ok && u.what == doLibrary {
+			t.Errorf("%q read as a library request (%q)", in, u.arg)
+		}
+	}
+}

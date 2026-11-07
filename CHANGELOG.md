@@ -3,6 +3,42 @@
 What changed in each Wisp release, newest first. Each version is on the
 [releases page](https://github.com/picovrfbt/WispOS/releases) with its downloads.
 
+## v1.0.7 (2026-10-20)
+
+Search for any address, Spotify that keeps playing, notifications that behave, and a Wisp that hears you out.
+
+- **Spotify keeps playing while Maps is open.** With the Car Thing connected and Spotify playing, the Wisp app holds on to Spotify so Android is far less likely to close it to make room for Google Maps. If it's closed anyway mid-song, the Wisp app starts it again and carries on (up to 3 times in 10 minutes), instead of the Car Thing dropping to "Pick up where you left off".
+- **Wisp hears you out.** Wisp waits a full second of quiet before it takes your request, so a pause mid-sentence ("play… Midnight City") no longer cuts you off.
+- **Search for any address.** Where to? has a Search row: type with the knob (turn to a letter, press to type; turn back from A for the matches as you type) or tap the keys. "Okay Wisp, take me to 1420 Oak Street" now shows the matches to pick from when there's more than one. And in the Wisp app, "Find a place on the Car Thing" sends an address you type on the phone to the Car Thing's Where to?. Needs the Wisp app update for the phone part.
+- **A small QR code on the update card** opens that version's What's new page on your phone, with everything it brings. The card is tidier too.
+- **Wisp app 1.0.6**: update it from inside the app for the phone parts (Spotify kept awake, music right down while Wisp listens, Find a place on the Car Thing).
+- **Music turns right down while Wisp listens.** With Settings → Wisp's voice → Music while listening on "Lower it", the Wisp app turns the phone's music volume down to about a third, and back when Wisp has your request (before it answers). Spotify barely got quieter before. Turn the volume yourself meanwhile and yours stays. Needs the Wisp app update.
+- **YouTube Music and SoundCloud, however you say it.** "On YouTube Music play X", "YouTube Music, play X", "play X in YT Music please" and misheard names ("you two music", "u tube") all work, and asking for a service always goes to that service, even for "play my liked songs on YouTube Music".
+- **The turn banner gets out of the way.** While directions are on, the next turn shows at the top for 5 seconds when it comes up, and again as you near it. Swiped away, it stays away until the next turn. Choose 5 seconds, 10 seconds or until the turn in Settings → Navigation → Turn banner.
+- **Swipe notifications away any way**: up, left or right.
+- **Notifications stack.** Several at once pile up with the newest on top and a count; swipe them away one by one. Their icons follow your accent colour.
+
+## v1.0.6 (2026-10-19)
+
+The Car Thing finds your phone again by itself: when the car starts, and after a drop.
+
+- **Reconnects after the phone drops the link.** When the phone ended the Bluetooth link by itself mid-drive (phones do, to save power), the Car Thing took it as you disconnecting on purpose and waited 10 minutes before trying again. Now it tries again after a minute; disconnecting from the Car Thing's own Bluetooth menu still waits the full 10.
+- **Clearer setup on Samsung phones.** The Wisp app's "Never sleeping apps" step only shows when the app isn't already set to run in the background (Unrestricted): Samsung leaves Unrestricted apps out of that list, so the step sent you looking for something that wasn't there.
+- **No more "pick a connection" when the car starts.** If the screen asked for your paired phone before the Car Thing's Bluetooth was up, it never asked again and showed first-time setup until a phone connected. It now asks again, and says "Reconnecting…" meanwhile.
+- **Wisp app 1.0.5.**
+
+## v1.0.5 (2026-10-18)
+
+Pick up where you left off, see every update coming, and talk to Wisp over the music.
+
+- **Pick up where you left off.** The "Nothing playing" screen now shows the last song you played, big, with a Resume button, buttons to choose which phone or speaker plays it, and a reminder that the back button goes Home.
+- **Updates ask first again.** A new Wisp shows its "Update available" card as soon as it's found (the Car Thing looks every hour), even while music plays, so you see what's new. Tick "Download and install updates automatically" on the card and later updates install by themselves, without the card. Automatic installs are off for everyone once, including those 1.0.4 turned on.
+- **A cloud by the battery** pulses while an update downloads in the background.
+- **Quieter music while Wisp listens.** After "Okay Wisp" the music dips (or pauses) until Wisp has your request, so the mics hear you. Settings → Wisp's voice → Music while listening: Lower it, Pause it or Leave it. Needs the Wisp app on your phone.
+- **Tap off Wisp to close it.** A tap anywhere above Wisp's bar closes it at once, stops it listening and drops what it was working on.
+- **"Play my liked songs"** and its cousins ("play my likes", "shuffle my favourites", "play my Discover Weekly", "Release Radar", "Daily Mix 2", "On Repeat") work on the Car Thing's own rules, without the phone's model. "Shuffle" or "on shuffle" turns shuffle on.
+- **Wisp app 1.0.4.**
+
 ## v1.0.4 (2026-10-18)
 
 Updates take care of themselves, on the Car Thing and on your phone.

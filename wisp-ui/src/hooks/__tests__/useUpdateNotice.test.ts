@@ -35,6 +35,7 @@ describe('updateCardEligible', () => {
       busy: false,
       loading: false,
       status: idle(),
+      autoInstall: false,
       ...over,
     }
   }
@@ -52,6 +53,14 @@ describe('updateCardEligible', () => {
     expect(updateCardEligible(input({ skippedVersion: '1.1.0' }))).toBe(true)
   })
 
+  it('comes over the music too', () => {
+    expect(updateCardEligible(input({ status: activeStatus }))).toBe(true)
+  })
+
+  it('never comes once updates install by themselves', () => {
+    expect(updateCardEligible(input({ autoInstall: true }))).toBe(false)
+  })
+
   it('ignores a skip when the update is mandatory', () => {
     expect(updateCardEligible(input({ mandatory: true, skippedVersion: '1.2.0' }))).toBe(true)
   })
@@ -61,7 +70,6 @@ describe('updateCardEligible', () => {
     ['something else owns the screen', { busy: true }],
     ['we are still loading', { loading: true }],
     ['the daemon has not answered yet', { status: null }],
-    ['something is playing', { status: activeStatus }],
     ['first-boot setup is running', { status: idle({ setting_up: true }) }],
   ])('waits while %s', (_why, over) => {
     expect(updateCardEligible(input(over))).toBe(false)
@@ -115,10 +123,10 @@ describe('useUpdateNotice', () => {
     expect(onShow).toHaveBeenCalledTimes(1)
   })
 
-  it('gets out of the way when playback starts', () => {
+  it('stays up when playback starts, so the driver sees it', () => {
     const onDismiss = vi.fn()
     renderHook(() => useUpdateNotice(params({ open: true, status: activeStatus, onDismiss })))
-    expect(onDismiss).toHaveBeenCalledTimes(1)
+    expect(onDismiss).not.toHaveBeenCalled()
   })
 
   describe('skip', () => {

@@ -36,6 +36,8 @@ class NavServer private constructor(private val app: Context) :
         Log.i(TAG, "Car Thing connected from $remote")
         // with the screen off the phone would sleep, and the tether with it
         TetherAwake.hold(app)
+        // and Spotify with it, while it plays for the Car Thing
+        SpotifyKeeper.carLinked(app)
         LinkService.update(app)
         lastConnected = "$remote (${ClientFilter.ifaceFor(remote) ?: "?"})"
         NavStore.snapshot().forEach(conn::send)
@@ -83,6 +85,7 @@ class NavServer private constructor(private val app: Context) :
         if (clients.decrementAndGet() <= 0) {
             clients.set(0)
             TetherAwake.letGoSoon()
+            SpotifyKeeper.carGone()
             PhoneCalls.stop()
             PhoneBattery.stop()
             PhoneViz.disconnected()
@@ -123,6 +126,8 @@ class NavServer private constructor(private val app: Context) :
                 )
             }
         }
+        // Wisp is listening: the music lower or paused until it has the request
+        if (type == "hush") WispHush.set(app, org.json.JSONObject(message).optString("mode"))
         if (type == "voice_wanted") {
             WispVoice.setWanted(app, org.json.JSONObject(message).optBoolean("enabled", false))
         }
@@ -216,6 +221,24 @@ class NavServer private constructor(private val app: Context) :
         fun sendSettings(patch: org.json.JSONObject): Boolean {
             val s = instance ?: return false
             val msg = org.json.JSONObject().put("type", "settings_set").put("settings", patch).toString()
+            var sent = false
+            s.connections.forEach { c ->
+                val remote = c.remoteSocketAddress?.address
+                if (c.isOpen && remote != null && ClientFilter.allowed(remote, allowLan = Prefs.allowLan(s.app))) {
+                    c.send(msg)
+                    sent = true
+                }
+            }
+            return sent
+        }
+
+        /**
+         * An address or place typed here, for the Car Thing to look up and show
+         * on its Where to?; false when none is connected to take it
+         */
+        fun sendFind(q: String): Boolean {
+            val s = instance ?: return false
+            val msg = org.json.JSONObject().put("type", "find_place").put("q", q.trim().take(120)).toString()
             var sent = false
             s.connections.forEach { c ->
                 val remote = c.remoteSocketAddress?.address

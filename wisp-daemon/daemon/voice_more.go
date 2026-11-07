@@ -6,7 +6,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 )
 
 // More of what Wisp understands on its own, without the phone's model: shuffle
@@ -26,8 +25,6 @@ const (
 	doSeekAhead  = "seek_ahead"
 	doSeekBack   = "seek_back"
 	doOpen       = "open"
-	doLiked      = "liked"
-	doMadeForYou = "made_for_you"
 )
 
 // ApiEventTypeVoiceOpen asks the screen to open one of its pages
@@ -41,11 +38,6 @@ var moreRules = []struct {
 	what string
 	arg  int
 }{
-	// the library before shuffle, so "shuffle my liked songs" plays them shuffled
-	{regexp.MustCompile(`^(?:(play|put on|start|play me|shuffle|play all of) )?(?:all )?my (?:liked songs|liked music|liked tracks|likes|liked|favou?rites|favou?rite songs|saved songs|library)(?: on shuffle| shuffled)?$`), doLiked, 1},
-	// a verb or "my" first: "on repeat" alone is the repeat button
-	{regexp.MustCompile(`^(?:(?:play|put on|start|shuffle) (?:my |the )?|my )(discover weekly|release radar|daylist|daily mix(?: \d)?|on repeat|repeat rewind|time capsule)$|^(?:(?:play|put on|start|shuffle) )?(?:my |the )?(discover weekly|release radar|daylist|daily mix(?: \d)?|time capsule)$`), doMadeForYou, -2},
-
 	{regexp.MustCompile(`^(?:turn |switch )?shuffle on$|^(?:turn|switch) on (?:the )?shuffle$|^(?:shuffle(?: it| this| (?:the|this) (?:music|songs|playlist|album))?|mix it up|put (?:it|this) on shuffle|shuffle mode)$`), doShuffleOn, 0},
 	{regexp.MustCompile(`^(?:turn |switch )?shuffle off$|^(?:turn|switch) off (?:the )?shuffle$|^(?:stop|no more|don'?t) shuffl(?:e|ing)(?: it)?$|^unshuffle$|^play (?:it |them )?in order$`), doShuffleOff, 0},
 
@@ -220,34 +212,6 @@ func (v *voiceService) handleMore(ctx context.Context, gen uint64, u understood,
 		}[page])
 		return page, nil, true
 
-	case doLiked:
-		shuffle := u.arg == "shuffle" || strings.Contains(said, "shuffle")
-		data := ApiRequestDataPlay{Uri: likedCollectionUri, Shuffle: &shuffle}
-		if _, err := v.app.server.Submit(ctx, ApiRequestTypePlay, data); err != nil {
-			out, err := v.fail(gen, "Couldn't play your Liked Songs")
-			return out, err, true
-		}
-		v.memory.remember(voiceTurn{uri: likedCollectionUri, label: "Liked Songs"})
-		msg := "Liked Songs"
-		if shuffle {
-			msg = "Shuffling your Liked Songs"
-		}
-		v.emit("playing", msg)
-		v.scheduleIdle(gen, 5*time.Second)
-		return msg, nil, true
-
-	case doMadeForYou:
-		name := u.arg
-		v.emit("thinking", "")
-		res, err := v.app.server.Submit(ctx, ApiRequestTypeSearch, ApiRequestDataSearch{Query: name, TopN: true, Kind: "playlist"})
-		lists, _ := res.([]searchTrackResult)
-		if err != nil || len(lists) == 0 || lists[0].Uri == "" {
-			out, err := v.fail(gen, "Couldn't find your "+titleWords(name))
-			return out, err, true
-		}
-		v.memory.remember(voiceTurn{uri: lists[0].Uri, label: lists[0].Name})
-		out, err := v.playUri(ctx, gen, lists[0].Uri, lists[0].Name)
-		return out, err, true
 	}
 	return "", nil, false
 }
@@ -277,12 +241,4 @@ func spokenDuration(secs int) string {
 		return fmt.Sprintf("%d minutes", secs/60)
 	}
 	return fmt.Sprintf("%d seconds", secs)
-}
-
-func titleWords(s string) string {
-	w := strings.Fields(s)
-	for i, x := range w {
-		w[i] = strings.ToUpper(x[:1]) + x[1:]
-	}
-	return strings.Join(w, " ")
 }

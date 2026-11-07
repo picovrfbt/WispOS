@@ -17,7 +17,7 @@
 <header class="top">
   <div class="wrap">
     <a class="brand" href="./" aria-label="Wisp, home"><img src="logo.svg" alt="">Wisp</a>
-    <a class="ver" href="new/1.0.4.html" title="What's new in 1.0.4">1.0.4</a>
+    <a class="ver" href="new/1.0.7.html" title="What's new in 1.0.7">1.0.7</a>
     <nav class="links" id="nav-links" aria-label="Main">
       <a href="./#features">Features</a>
       <a href="./#directions">Directions</a>
@@ -28,6 +28,7 @@
       <a href="updates.html" aria-current="page">Updates</a>
     </nav>
     <div class="top-actions">
+      <a class="gh" href="https://github.com/picovrfbt/WispOS" aria-label="Wisp on GitHub"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.09 0 4.42-2.7 5.4-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg></a>
       <a class="btn primary dl" href="https://github.com/picovrfbt/WispOS/releases/latest">Download</a>
       <button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Menu"><span></span></button>
     </div>
@@ -38,13 +39,76 @@
 <div class="wrap">
   <p class="eyebrow">Updates</p>
   <h1>What's changed</h1>
-  <p class="lead-doc">Wisp updates itself over the air: Settings &rarr; Software update. Here's everything each release brought, newest first.</p>
+  <p class="lead-doc">Wisp's updates come over the air: Settings &rarr; Software update. Here's everything each release brought, newest first.</p>
 
   <article class="upd-latest">
-    <div class="upd-head"><span class="tag">Latest</span><span class="upd-date">October 18, 2026</span></div>
-    <h2>Wisp 1.0.4</h2>
+    <div class="upd-head"><span class="tag">Latest</span><span class="upd-date">October 20, 2026</span></div>
+    <h2>Wisp 1.0.7</h2>
     <div class="upd-body">
-<p>Updates take care of themselves, on the Car Thing and on your phone.</p>
+<p>Search for any address, Spotify that keeps playing, notifications that behave, and a Wisp that hears you out.</p>
+<ul>
+<li><b>Spotify keeps playing while Maps is open.</b> With the Car Thing connected and Spotify playing, the Wisp app holds on to Spotify so Android is far less likely to close it to make room for Google Maps. If it's closed anyway mid-song, the Wisp app starts it again and carries on (up to 3 times in 10 minutes), instead of the Car Thing dropping to "Pick up where you left off".
+</li>
+<li><b>Wisp hears you out.</b> Wisp waits a full second of quiet before it takes your request, so a pause mid-sentence ("play… Midnight City") no longer cuts you off.
+</li>
+<li><b>Search for any address.</b> Where to? has a Search row: type with the knob (turn to a letter, press to type; turn back from A for the matches as you type) or tap the keys. "Okay Wisp, take me to 1420 Oak Street" now shows the matches to pick from when there's more than one. And in the Wisp app, "Find a place on the Car Thing" sends an address you type on the phone to the Car Thing's Where to?. Needs the Wisp app update for the phone part.
+</li>
+<li><b>A small QR code on the update card</b> opens that version's What's new page on your phone, with everything it brings. The card is tidier too.
+</li>
+<li><b>Wisp app 1.0.6</b>: update it from inside the app for the phone parts (Spotify kept awake, music right down while Wisp listens, Find a place on the Car Thing).
+</li>
+<li><b>Music turns right down while Wisp listens.</b> With Settings → Wisp's voice → Music while listening on "Lower it", the Wisp app turns the phone's music volume down to about a third, and back when Wisp has your request (before it answers). Spotify barely got quieter before. Turn the volume yourself meanwhile and yours stays. Needs the Wisp app update.
+</li>
+<li><b>YouTube Music and SoundCloud, however you say it.</b> "On YouTube Music play X", "YouTube Music, play X", "play X in YT Music please" and misheard names ("you two music", "u tube") all work, and asking for a service always goes to that service, even for "play my liked songs on YouTube Music".
+</li>
+<li><b>The turn banner gets out of the way.</b> While directions are on, the next turn shows at the top for 5 seconds when it comes up, and again as you near it. Swiped away, it stays away until the next turn. Choose 5 seconds, 10 seconds or until the turn in Settings → Navigation → Turn banner.
+</li>
+<li><b>Swipe notifications away any way</b>: up, left or right.
+</li>
+<li><b>Notifications stack.</b> Several at once pile up with the newest on top and a count; swipe them away one by one. Their icons follow your accent colour.
+</li></ul>
+    </div>
+    <div class="cta-row"><a class="btn primary" href="new/1.0.7.html">What's new in 1.0.7</a><a class="btn" href="https://github.com/picovrfbt/WispOS/releases/tag/v1.0.7">Downloads</a></div>
+  </article>
+
+  <h2 class="upd-earlier">Earlier updates</h2>
+  <details class="upd-old">
+    <summary><span class="upd-v">Wisp 1.0.6</span><span class="upd-date">October 19, 2026</span><span class="upd-sum">The Car Thing finds your phone again by itself: when the car starts, and after a drop.</span></summary>
+    <div class="upd-body">
+<ul>
+<li><b>Reconnects after the phone drops the link.</b> When the phone ended the Bluetooth link by itself mid-drive (phones do, to save power), the Car Thing took it as you disconnecting on purpose and waited 10 minutes before trying again. Now it tries again after a minute; disconnecting from the Car Thing's own Bluetooth menu still waits the full 10.
+</li>
+<li><b>Clearer setup on Samsung phones.</b> The Wisp app's "Never sleeping apps" step only shows when the app isn't already set to run in the background (Unrestricted): Samsung leaves Unrestricted apps out of that list, so the step sent you looking for something that wasn't there.
+</li>
+<li><b>No more "pick a connection" when the car starts.</b> If the screen asked for your paired phone before the Car Thing's Bluetooth was up, it never asked again and showed first-time setup until a phone connected. It now asks again, and says "Reconnecting…" meanwhile.
+</li>
+<li><b>Wisp app 1.0.5.</b>
+</li></ul>
+    </div>
+  </details>
+  <details class="upd-old">
+    <summary><span class="upd-v">Wisp 1.0.5</span><span class="upd-date">October 18, 2026</span><span class="upd-sum">Pick up where you left off, see every update coming, and talk to Wisp over the music.</span></summary>
+    <div class="upd-body">
+<ul>
+<li><b>Pick up where you left off.</b> The "Nothing playing" screen now shows the last song you played, big, with a Resume button, buttons to choose which phone or speaker plays it, and a reminder that the back button goes Home.
+</li>
+<li><b>Updates ask first again.</b> A new Wisp shows its "Update available" card as soon as it's found (the Car Thing looks every hour), even while music plays, so you see what's new. Tick "Download and install updates automatically" on the card and later updates install by themselves, without the card. Automatic installs are off for everyone once, including those 1.0.4 turned on.
+</li>
+<li><b>A cloud by the battery</b> pulses while an update downloads in the background.
+</li>
+<li><b>Quieter music while Wisp listens.</b> After "Okay Wisp" the music dips (or pauses) until Wisp has your request, so the mics hear you. Settings → Wisp's voice → Music while listening: Lower it, Pause it or Leave it. Needs the Wisp app on your phone.
+</li>
+<li><b>Tap off Wisp to close it.</b> A tap anywhere above Wisp's bar closes it at once, stops it listening and drops what it was working on.
+</li>
+<li><b>"Play my liked songs"</b> and its cousins ("play my likes", "shuffle my favourites", "play my Discover Weekly", "Release Radar", "Daily Mix 2", "On Repeat") work on the Car Thing's own rules, without the phone's model. "Shuffle" or "on shuffle" turns shuffle on.
+</li>
+<li><b>Wisp app 1.0.4.</b>
+</li></ul>
+    </div>
+  </details>
+  <details class="upd-old">
+    <summary><span class="upd-v">Wisp 1.0.4</span><span class="upd-date">October 18, 2026</span><span class="upd-sum">Updates take care of themselves, on the Car Thing and on your phone.</span></summary>
+    <div class="upd-body">
 <ul>
 <li><b>The Car Thing updates itself.</b> "Install updates automatically" and "Update in the background" are now on by default: a new Wisp installs while you drive, without taking over the screen, and is there the next time it starts. Settings that were still on the old defaults move once; turn either off in Settings → Software update and it stays off.
 </li>
@@ -57,10 +121,7 @@
 <li><b>Wisp app 1.0.3.</b>
 </li></ul>
     </div>
-    <div class="cta-row"><a class="btn primary" href="new/1.0.4.html">What's new in 1.0.4</a><a class="btn" href="https://github.com/picovrfbt/WispOS/releases/tag/v1.0.4">Downloads</a></div>
-  </article>
-
-  <h2 class="upd-earlier">Earlier updates</h2>
+  </details>
   <details class="upd-old">
     <summary><span class="upd-v">Wisp 1.0.3</span><span class="upd-date">October 18, 2026</span><span class="upd-sum">Wisp's thinking gets ready and answers, and Wisp's voice is on from the start.</span></summary>
     <div class="upd-body">
@@ -155,10 +216,13 @@
     <nav>
       <a href="guide.html">Set up</a>
       <a href="use.html">How to use</a>
-      <a href="updates.html">Updates</a>
+      <a href="updates.html" aria-current="page">Updates</a>
       <a href="addons.html">Make an add-on</a>
+      <a href="studio.html">Add-on Studio</a>
       <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
       <a href="https://github.com/picovrfbt/WispOS">GitHub</a>
+      <a href="mailto:support@picovr.store">Contact</a>
     </nav>
     <p class="legal">Wisp is not affiliated with, endorsed by or sponsored by Spotify, Google or YouTube. Spotify and Car Thing are trademarks of Spotify AB.</p>
   </div>

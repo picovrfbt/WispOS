@@ -221,7 +221,7 @@ func TestManualDisconnect_ExpiresAfterTTL(t *testing.T) {
 
 	// age the mark past the TTL
 	m.manualMu.Lock()
-	m.manualDisconnects["AA"] = time.Now().Add(-manualDisconnectTTL - time.Minute)
+	m.manualDisconnects["AA"] = time.Now().Add(-time.Minute)
 	m.manualMu.Unlock()
 
 	if m.isManualDisconnect("AA") {

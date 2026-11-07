@@ -181,6 +181,15 @@ export function eventsUrl(): string {
   return WS_URL
 }
 
+/** a tap off Wisp: stop listening and drop the command it was working on */
+export async function cancelVoice(): Promise<void> {
+  try {
+    await fetch(`${API_BASE}/voice/cancel`, { method: 'POST' })
+  } catch {
+    // the screen has closed it already
+  }
+}
+
 /** the Voice button: capture a command now, as if "Okay Wisp" had been heard */
 export type ListenResult = 'listening' | 'mic-off' | 'unavailable'
 export async function listenNow(): Promise<ListenResult> {

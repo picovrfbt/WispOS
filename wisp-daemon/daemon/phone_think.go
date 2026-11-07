@@ -305,7 +305,11 @@ func (v *voiceService) doThought(ctx context.Context, gen uint64, a thinkAction)
 	case "open":
 		return v.handleUnderstood(ctx, gen, understood{what: doOpen, arg: strings.ToLower(strings.TrimSpace(a.Query))})
 	case "liked":
-		return v.handleUnderstood(ctx, gen, understood{what: doLiked, said: strings.ToLower(a.Query)})
+		arg := "liked"
+		if strings.Contains(strings.ToLower(a.Query), "shuffle") {
+			arg = "shuffle liked"
+		}
+		return v.handleUnderstood(ctx, gen, understood{what: doLibrary, arg: arg})
 	case "brighter":
 		return v.stepBrightness(gen, true)
 	case "dimmer":

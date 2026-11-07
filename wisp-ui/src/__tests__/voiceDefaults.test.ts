@@ -35,25 +35,34 @@ describe("Wisp's voice defaults", () => {
     expect(getSettings().wispVoice).toBe('off')
   })
 
-  it('updates install by themselves, in the background, and old settings move once', () => {
+  it('updates ask first, in the background, and old settings move once', () => {
     localStorage.clear()
     __resetSettings()
-    expect(getSettings()).toMatchObject({ autoInstallUpdates: true, updateInBackground: true })
+    expect(getSettings()).toMatchObject({ autoInstallUpdates: false, updateInBackground: true })
+    // 1.0.4 turned installing by itself on for everyone: 1.0.5 asks again
+    localStorage.setItem(
+      KEY,
+      JSON.stringify({
+        autoInstallUpdates: true,
+        updateInBackground: true,
+        updateDefaultsOn: true,
+      }),
+    )
+    __resetSettings()
+    expect(getSettings()).toMatchObject({ autoInstallUpdates: false, updateAskDefaults: true })
+    // from before 1.0.4 too
     localStorage.setItem(
       KEY,
       JSON.stringify({ autoInstallUpdates: false, updateInBackground: false }),
     )
     __resetSettings()
-    expect(getSettings()).toMatchObject({ autoInstallUpdates: true, updateInBackground: true })
+    expect(getSettings()).toMatchObject({ autoInstallUpdates: false, updateInBackground: true })
+    // a tick on the update card after the move sticks
     localStorage.setItem(
       KEY,
-      JSON.stringify({
-        autoInstallUpdates: false,
-        updateInBackground: false,
-        updateDefaultsOn: true,
-      }),
+      JSON.stringify({ autoInstallUpdates: true, updateDefaultsOn: true, updateAskDefaults: true }),
     )
     __resetSettings()
-    expect(getSettings()).toMatchObject({ autoInstallUpdates: false, updateInBackground: false })
+    expect(getSettings().autoInstallUpdates).toBe(true)
   })
 })

@@ -21,7 +21,7 @@ export interface Settings {
   nightMode: NightMode
   /** show the phone's notifications as banners */
   phoneNotifications: boolean
-  /** install new releases on their own, while nothing is playing */
+  /** install new releases on their own, while nothing is playing; off unless ticked */
   autoInstallUpdates: boolean
   /** what happens when directions end at the destination, beyond the arrival card */
   arrivalAction: ArrivalAction
@@ -35,6 +35,8 @@ export interface Settings {
   navZoom: number
   /** the controls tutorial has been through (or skipped); false right after a flash */
   tutorialDone: boolean
+  /** how long the turn banner stays up for each turn, in seconds; 0 until the turn */
+  navBannerSecs: NavBannerSecs
   /** the colour of toggles, sliders and focus */
   accentTheme: AccentTheme
   /** updates install behind whatever is on screen, rather than taking the Car Thing over */
@@ -47,6 +49,10 @@ export interface Settings {
   voiceDefaultsOn: boolean
   /** updates went from asking to installing by themselves, in the background (1.0.4): set once moved */
   updateDefaultsOn: boolean
+  /** updates went back to asking first (1.0.5), so people see what's new: set once moved */
+  updateAskDefaults: boolean
+  /** while Wisp listens after "Okay Wisp": lower the music, pause it, or leave it */
+  listenMusic: ListenMusic
   /** how loud Wisp talks, 10 to 100%, apart from the music's volume */
   voiceVolumePct: number
   /** which library Home opens on: 'spotify' or a music service's id */
@@ -70,12 +76,17 @@ const VOICE_MODES: readonly WispVoiceMode[] = ['off', 'confirmations', 'everythi
 export const VOICE_SPEED_MIN = 0.5
 export const VOICE_SPEED_MAX = 2
 
+export type ListenMusic = 'lower' | 'pause' | 'off'
+const LISTEN_MUSIC: readonly ListenMusic[] = ['lower', 'pause', 'off']
+
 export type ArrivalAction = 'none' | 'pause'
 export type NavVoice = 'all' | 'turns' | 'off'
 export type NavView = 'north' | 'heading' | '3d'
 /** how far the map's + and - go from the automatic zoom */
 export const NAV_ZOOM_MIN = -3
 export const NAV_ZOOM_MAX = 2
+export type NavBannerSecs = 5 | 10 | 0
+const NAV_BANNER_SECS: readonly NavBannerSecs[] = [5, 10, 0]
 
 export type NightMode = 'off' | 'on' | 'auto'
 const NIGHT_MODES: readonly NightMode[] = ['off', 'on', 'auto']
@@ -105,19 +116,22 @@ const DEFAULTS: Settings = {
   presets: {},
   nightMode: 'off',
   phoneNotifications: false,
-  autoInstallUpdates: true,
+  autoInstallUpdates: false,
   arrivalAction: 'none',
   navEngine: 'google',
   navVoice: 'all',
   navView: '3d',
   navZoom: 0,
   tutorialDone: false,
+  navBannerSecs: 5,
   accentTheme: 'green',
   updateInBackground: true,
   wispVoice: 'confirmations',
   voiceSpeed: 1.1,
   voiceDefaultsOn: true,
   updateDefaultsOn: true,
+  updateAskDefaults: true,
+  listenMusic: 'lower',
   voiceVolumePct: 80,
   homeSource: 'spotify',
   phoneLyrics: false,
@@ -148,7 +162,9 @@ function coerceUiScale(raw: unknown): number {
 // Defaults that changed move stored settings once (and only once: turning one
 // back later sticks). Wisp's voice used to start off at 1x: settings still on
 // exactly that move to the new voice. Updates used to wait to be installed and
-// take the screen over: they now install by themselves, in the background.
+// take the screen over: they then installed by themselves, in the background
+// (1.0.4), and now ask first again, so everyone sees what's new (1.0.5); the
+// update card's checkbox turns installing by themselves back on.
 function voiceDefaults(
   partial: Partial<Settings> | null | undefined,
 ): Partial<Settings> | null | undefined {
@@ -170,12 +186,20 @@ function voiceDefaults(
   if (out.updateDefaultsOn !== true) {
     out = { ...out, autoInstallUpdates: true, updateInBackground: true, updateDefaultsOn: true }
   }
+  if (out.updateAskDefaults !== true) {
+    out = { ...out, autoInstallUpdates: false, updateAskDefaults: true }
+  }
   return out
 }
 
 /** whether these stored settings still need a changed default written back */
 function needsVoiceDefaults(partial: Partial<Settings> | null | undefined): boolean {
-  return !!partial && (partial.voiceDefaultsOn !== true || partial.updateDefaultsOn !== true)
+  return (
+    !!partial &&
+    (partial.voiceDefaultsOn !== true ||
+      partial.updateDefaultsOn !== true ||
+      partial.updateAskDefaults !== true)
+  )
 }
 
 function coerce(raw: Partial<Settings> | null | undefined): Settings {
@@ -198,9 +222,7 @@ function coerce(raw: Partial<Settings> | null | undefined): Settings {
       ? (partial?.nightMode as NightMode)
       : DEFAULTS.nightMode,
     phoneNotifications: partial?.phoneNotifications === true,
-    autoInstallUpdates: partial
-      ? partial.autoInstallUpdates !== false
-      : DEFAULTS.autoInstallUpdates,
+    autoInstallUpdates: partial?.autoInstallUpdates === true,
     arrivalAction: partial?.arrivalAction === 'pause' ? 'pause' : 'none',
     navEngine: partial?.navEngine === 'wisp' ? 'wisp' : 'google',
     navVoice:
@@ -213,6 +235,9 @@ function coerce(raw: Partial<Settings> | null | undefined): Settings {
       typeof partial?.navZoom === 'number' && Number.isFinite(partial.navZoom)
         ? Math.min(NAV_ZOOM_MAX, Math.max(NAV_ZOOM_MIN, partial.navZoom))
         : 0,
+    navBannerSecs: NAV_BANNER_SECS.includes(partial?.navBannerSecs as NavBannerSecs)
+      ? (partial?.navBannerSecs as NavBannerSecs)
+      : DEFAULTS.navBannerSecs,
     accentTheme: ACCENT_ORDER.includes(partial?.accentTheme as AccentTheme)
       ? (partial?.accentTheme as AccentTheme)
       : DEFAULTS.accentTheme,
@@ -229,6 +254,10 @@ function coerce(raw: Partial<Settings> | null | undefined): Settings {
         : DEFAULTS.voiceSpeed,
     voiceDefaultsOn: partial ? partial.voiceDefaultsOn === true : DEFAULTS.voiceDefaultsOn,
     updateDefaultsOn: partial ? partial.updateDefaultsOn === true : DEFAULTS.updateDefaultsOn,
+    updateAskDefaults: partial ? partial.updateAskDefaults === true : DEFAULTS.updateAskDefaults,
+    listenMusic: LISTEN_MUSIC.includes(partial?.listenMusic as ListenMusic)
+      ? (partial?.listenMusic as ListenMusic)
+      : DEFAULTS.listenMusic,
     voiceVolumePct:
       typeof partial?.voiceVolumePct === 'number' && Number.isFinite(partial.voiceVolumePct)
         ? clamp(Math.round(partial.voiceVolumePct / 10) * 10, 10, 100)

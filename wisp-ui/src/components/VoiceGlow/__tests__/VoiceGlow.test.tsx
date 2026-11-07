@@ -1,4 +1,4 @@
-import { act, render } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 const bus = vi.hoisted(() => ({
@@ -13,6 +13,9 @@ vi.mock('@/api/eventBus', () => ({
     }
   },
 }))
+
+const api = vi.hoisted(() => ({ cancelVoice: vi.fn(() => Promise.resolve()) }))
+vi.mock('@/api/client', () => api)
 
 import { VoiceGlow } from '../VoiceGlow'
 
@@ -54,5 +57,22 @@ describe('VoiceGlow', () => {
     expect(level.style.transform).toBe('scaleY(0.42)')
     voice('thinking')
     expect(level.style.transform).toBe('')
+  })
+
+  it('closes on a tap above the bar, and stops listening', () => {
+    const { container } = render(<VoiceGlow />)
+    expect(screen.queryByTestId('wisp-catcher')).toBeNull()
+    voice('listening')
+    const dismissed = vi.fn()
+    window.addEventListener('wisp:dismiss', dismissed)
+    // a tap on the bar itself leaves it be
+    fireEvent.pointerDown(screen.getByTestId('wisp-catcher'), { clientY: window.innerHeight - 20 })
+    expect(container.firstElementChild!.getAttribute('data-state')).toBe('listening')
+    fireEvent.pointerDown(screen.getByTestId('wisp-catcher'), { clientY: 100 })
+    expect(container.firstElementChild!.getAttribute('data-state')).toBe('off')
+    expect(api.cancelVoice).toHaveBeenCalledTimes(1)
+    expect(dismissed).toHaveBeenCalledTimes(1)
+    expect(screen.queryByTestId('wisp-catcher')).toBeNull()
+    window.removeEventListener('wisp:dismiss', dismissed)
   })
 })

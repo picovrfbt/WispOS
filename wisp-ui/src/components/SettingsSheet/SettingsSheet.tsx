@@ -23,7 +23,13 @@ import type { NightMode } from '@/settings'
 import { ACCENT_LABEL, ACCENT_ORDER } from '@/theme'
 import { useNav } from '@/hooks/navContext'
 import { sayNow } from '@/voice/speak'
-import { VOICE_SPEED_MAX, VOICE_SPEED_MIN, type WispVoiceMode } from '@/settings'
+import {
+  VOICE_SPEED_MAX,
+  VOICE_SPEED_MIN,
+  type ListenMusic,
+  type NavBannerSecs,
+  type WispVoiceMode,
+} from '@/settings'
 import { clearSavedData, fetchSavedData, type SavedData } from '@/api/savedData'
 import { useNotify } from '@/notify/notifyContext'
 import { formatTemp, HOT_C, useThermal, zoneName } from '@/api/thermal'
@@ -296,6 +302,7 @@ export function SettingsPanel({ active, phoneVolume = false, onOpenBluetooth }: 
       </div>
       <NavEngineRow />
       <NavVoiceRow />
+      <NavBannerRow />
       <ArrivalRow />
 
       {/* the four buttons along the top of the Car Thing */}
@@ -491,6 +498,31 @@ function NavVoiceRow() {
   )
 }
 
+const NAV_BANNER_LABEL: Record<NavBannerSecs, string> = {
+  5: '5 seconds',
+  10: '10 seconds',
+  0: 'Until the turn',
+}
+const NAV_BANNER_NEXT: Record<NavBannerSecs, NavBannerSecs> = { 5: 10, 10: 0, 0: 5 }
+
+// how long the turn over other screens stays up, each turn and again near it
+function NavBannerRow() {
+  const { navBannerSecs } = useSettings()
+  return (
+    <button
+      type="button"
+      className={styles.buttonRow}
+      onClick={() => updateSettings({ navBannerSecs: NAV_BANNER_NEXT[navBannerSecs] })}
+    >
+      <span className={`${styles.chip} ${styles.chipOn}`} aria-hidden>
+        <FlagIcon />
+      </span>
+      <span className={styles.label}>Turn banner</span>
+      <span className={styles.value}>{NAV_BANNER_LABEL[navBannerSecs]}</span>
+    </button>
+  )
+}
+
 // what else happens when directions end at the destination
 function ArrivalRow() {
   const { arrivalAction } = useSettings()
@@ -674,10 +706,16 @@ const VOICE_NEXT: Record<WispVoiceMode, WispVoiceMode> = {
   everything: 'off',
 }
 const PREVIEW_MS = 650
+const LISTEN_LABEL: Record<ListenMusic, string> = {
+  lower: 'Lower it',
+  pause: 'Pause it',
+  off: 'Leave it',
+}
+const LISTEN_NEXT: Record<ListenMusic, ListenMusic> = { lower: 'pause', pause: 'off', off: 'lower' }
 
 // Wisp talking through the phone: how much, and how fast
 function WispVoiceSection() {
-  const { wispVoice, voiceSpeed, voiceVolumePct } = useSettings()
+  const { wispVoice, voiceSpeed, voiceVolumePct, listenMusic } = useSettings()
   const nav = useNav()
   // the voice downloads to the phone the first time it's turned on
   const status =
@@ -718,6 +756,22 @@ function WispVoiceSection() {
         </span>
         <span className={styles.label}>Speak</span>
         <span className={styles.value}>{VOICE_LABEL[wispVoice]}</span>
+      </button>
+      {/* after "Okay Wisp", so the mics hear you over the car's speakers */}
+      <button
+        type="button"
+        className={styles.buttonRow}
+        aria-label={`Music while Wisp listens: ${LISTEN_LABEL[listenMusic]}`}
+        onClick={() => updateSettings({ listenMusic: LISTEN_NEXT[listenMusic] })}
+      >
+        <span
+          className={`${styles.chip} ${listenMusic !== 'off' ? styles.chipOn : ''}`}
+          aria-hidden
+        >
+          <SpeakerIcon />
+        </span>
+        <span className={styles.label}>Music while listening</span>
+        <span className={styles.value}>{LISTEN_LABEL[listenMusic]}</span>
       </button>
       <SettingRow icon={<SpeedIcon />} label="Voice speed" value={`${voiceSpeed.toFixed(1)}×`}>
         <NotchedSlider

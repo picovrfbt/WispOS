@@ -29,12 +29,6 @@ func TestUnderstandMore(t *testing.T) {
 		{"go to the home screen", doOpen, "home screen"},
 		{"open home", doOpen, "home"},
 		{"pull up the queue", doOpen, "queue"},
-		{"play my likes", doLiked, "play"},
-		{"shuffle my liked songs", doLiked, "shuffle"},
-		{"my favorites", doLiked, ""},
-		{"play my discover weekly", doMadeForYou, "discover weekly"},
-		{"put on my daylist", doMadeForYou, "daylist"},
-		{"release radar", doMadeForYou, "release radar"},
 	}
 	for _, c := range cases {
 		u, ok := understand(c.said)
@@ -52,15 +46,12 @@ func TestUnderstandMoreLeavesTheRest(t *testing.T) {
 	if u, ok := understand("take me to the beach"); !ok || u.what != doNavigate {
 		t.Errorf("take me to the beach: %+v", u)
 	}
-	if u, _ := understand("on repeat"); u.what == doMadeForYou {
-		t.Error("bare on repeat played the playlist")
-	}
 	// a volume that isn't a number is left to the rest
 	if u, ok := understand("volume banana"); ok && u.what == doVolumeTo {
 		t.Error("volume banana understood")
 	}
 	for _, s := range []string{"skip", "next song", "play some jazz"} {
-		if u, ok := understand(s); ok && (u.what == doSeekAhead || u.what == doLiked || u.what == doOpen) {
+		if u, ok := understand(s); ok && (u.what == doSeekAhead || u.what == doLibrary || u.what == doOpen) {
 			t.Errorf("%q taken as %s", s, u.what)
 		}
 	}

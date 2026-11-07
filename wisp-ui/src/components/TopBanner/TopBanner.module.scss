@@ -6,7 +6,7 @@
   max-width: calc(100% - 24px);
   z-index: $z-menu;
 
-  transform: translate(-50%, calc(-100% - 24px));
+  transform: translate(calc(-50% + var(--drag-x, 0px)), calc(-100% - 24px));
   touch-action: none;
   opacity: 0;
   visibility: hidden;
@@ -29,8 +29,8 @@
 }
 
 .visible {
-  // --drag-y/--drag-fade come from useSwipeDismiss while a finger is on it
-  transform: translate(-50%, var(--drag-y, 0px));
+  // --drag-x/--drag-y/--drag-fade come from useSwipeDismiss while a finger is on it
+  transform: translate(calc(-50% + var(--drag-x, 0px)), var(--drag-y, 0px));
   opacity: var(--drag-fade, 1);
   visibility: visible;
   transition-delay: 0s;
@@ -47,7 +47,8 @@
 .icon {
   display: flex;
   flex-shrink: 0;
-  color: rgba(255, 255, 255, 0.85);
+  // in the colour picked in Settings → Accent colour; warnings and errors keep theirs
+  color: $accent;
 }
 .warning {
   color: #efc479;
@@ -63,6 +64,40 @@
   text-align: left;
   max-width: 460px;
   overflow-wrap: break-word;
+}
+
+// more waiting underneath: the edges of the next ones peek out below this
+// one, outside its box so they never shade it
+.peek {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: -7px;
+  height: 7px;
+  border-radius: 0 0 $r-md $r-md;
+  background: rgba(52, 52, 58, 0.95);
+  pointer-events: none;
+}
+
+.peek2 {
+  left: 30px;
+  right: 30px;
+  bottom: -12px;
+  height: 5px;
+  background: rgba(42, 42, 48, 0.9);
+}
+
+.count {
+  flex-shrink: 0;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 $s-2;
+  border-radius: $r-pill;
+  background: $accent;
+  color: #000;
+  font-size: $fs-md;
+  font-weight: $fw-bold;
+  @include flex-center;
 }
 
 @media (prefers-reduced-motion: reduce) {
